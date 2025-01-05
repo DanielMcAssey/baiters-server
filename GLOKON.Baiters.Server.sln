@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35527.113
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GLOKON.Baiters.Server", "GLOKON.Baiters.Server\GLOKON.Baiters.Server.csproj", "{C5BB002E-0AB1-4B75-A3A9-084052F755DA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GLOKON.Baiters.Core", "GLOKON.Baiters.Core\GLOKON.Baiters.Core.csproj", "{161E8C8F-D2C5-45AB-B95B-CABD6AD91A12}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GLOKON.Baiters.GodotInterop", "GLOKON.Baiters.GodotInterop\GLOKON.Baiters.GodotInterop.csproj", "{AE92C627-3BD6-4301-B537-5514360E5365}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C5BB002E-0AB1-4B75-A3A9-084052F755DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5BB002E-0AB1-4B75-A3A9-084052F755DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5BB002E-0AB1-4B75-A3A9-084052F755DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5BB002E-0AB1-4B75-A3A9-084052F755DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{161E8C8F-D2C5-45AB-B95B-CABD6AD91A12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{161E8C8F-D2C5-45AB-B95B-CABD6AD91A12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{161E8C8F-D2C5-45AB-B95B-CABD6AD91A12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{161E8C8F-D2C5-45AB-B95B-CABD6AD91A12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE92C627-3BD6-4301-B537-5514360E5365}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE92C627-3BD6-4301-B537-5514360E5365}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE92C627-3BD6-4301-B537-5514360E5365}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE92C627-3BD6-4301-B537-5514360E5365}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
