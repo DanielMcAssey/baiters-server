@@ -38,8 +38,8 @@ namespace GLOKON.Baiters.Server
             //services.AddSingleton<BaitersServer, SocketBaitersServer>(); // TODO: When GameServer supports SteamNetworkingSockets
             services.AddSingleton<BaitersServer, P2PBaitersServer>();
             services.AddSingleton<ActorSpawner>();
-            services.AddHostedService<BaitersServerService>();
-            services.AddHostedService<ActorSpawnerService>();
+            services.AddSingleton<GameManager>();
+            services.AddHostedService<GameManagerService>();
 
             if (serverOptions.LetsEncrypt.IsEnabled())
             {
@@ -67,6 +67,7 @@ namespace GLOKON.Baiters.Server
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                Program.LoggingLevel.MinimumLevel = Serilog.Events.LogEventLevel.Debug;
             }
             else
             {

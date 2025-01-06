@@ -7,7 +7,7 @@ namespace GLOKON.Baiters.Core.Plugins
     {
         public static IList<BaitersPlugin> Plugins { get; private set; } = [];
 
-        public static void LoadPlugins(BaitersServer server)
+        public static void LoadPlugins(GameManager gm)
         {
             UnloadPlugins();
 
@@ -39,7 +39,7 @@ namespace GLOKON.Baiters.Core.Plugins
 
                 foreach (Type pluginType in pluginTypes)
                 {
-                    if (Activator.CreateInstance(pluginType, server) is BaitersPlugin plugin)
+                    if (Activator.CreateInstance(pluginType, gm) is BaitersPlugin plugin)
                     {
                         try
                         {

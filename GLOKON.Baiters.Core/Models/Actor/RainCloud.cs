@@ -1,4 +1,5 @@
-﻿using GLOKON.Baiters.GodotInterop.Models;
+﻿using GLOKON.Baiters.Core.Constants;
+using GLOKON.Baiters.GodotInterop.Models;
 
 namespace GLOKON.Baiters.Core.Models.Actor
 {
@@ -8,7 +9,7 @@ namespace GLOKON.Baiters.Core.Models.Actor
 
         public bool IsStatic { get; } = false;
 
-        public RainCloud(Vector3 position): base("raincloud", position)
+        public RainCloud(Vector3 position): base(ActorType.RainCloud, position)
         {
             Vector3 toCenter = (position - new Vector3(30, 40, -50)).Normalized();
             _wanderDirection = new Vector2(toCenter.x, toCenter.z).Angle();

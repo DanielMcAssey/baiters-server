@@ -1,14 +1,20 @@
 ﻿using GLOKON.Baiters.GodotInterop;
-using Steamworks;
 using System.IO.Compression;
 
-namespace GLOKON.Baiters.Core
+namespace GLOKON.Baiters.Core.Models.Networking
 {
-    internal static class PacketIO
+    public class Packet : Dictionary<string, object>
     {
-        public static byte[] WritePacket(Dictionary<string, object> packet)
+        public Packet(string type) : base()
         {
-            byte[] data = GodotWriter.WritePacket(packet);
+            Add("type", type);
+        }
+
+        public string Type { get { return (string)(this.GetValueOrDefault("type") ?? "unknown"); } }
+
+        public byte[] Serialize()
+        {
+            byte[] data = GodotWriter.WritePacket(this);
 
             using var outputStream = new MemoryStream();
             using var gzipStream = new GZipStream(outputStream, CompressionMode.Compress);
@@ -17,14 +23,14 @@ namespace GLOKON.Baiters.Core
             return outputStream.ToArray();
         }
 
-        public static Dictionary<string, object> ReadPacket(byte[] data)
+        public static Packet Parse(byte[] data)
         {
             using var compressedStream = new MemoryStream(data);
             using var gzipStream = new GZipStream(compressedStream, CompressionMode.Decompress);
             using var resultStream = new MemoryStream();
 
             gzipStream.CopyTo(resultStream);
-            return GodotReader.ReadPacket(resultStream.ToArray());
+            return (Packet)GodotReader.ReadPacket(resultStream.ToArray());
         }
     }
 }

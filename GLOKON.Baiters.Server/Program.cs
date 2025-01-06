@@ -9,21 +9,27 @@ using System.Net;
 using GLOKON.Baiters.Server.Configuration;
 using Serilog;
 using Serilog.Events;
+using Serilog.Core;
 
 namespace GLOKON.Baiters.Server
 {
     public class Program
     {
+        public static readonly LoggingLevelSwitch LoggingLevel = new();
+
         public static void Main(string[] args)
         {
             Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Information()
-            .MinimumLevel.Override("Microsoft.AspNetCore.Hosting", LogEventLevel.Warning)
-            .MinimumLevel.Override("Microsoft.AspNetCore.Mvc", LogEventLevel.Warning)
-            .MinimumLevel.Override("Microsoft.AspNetCore.Routing", LogEventLevel.Warning)
-            .WriteTo.Console()
-            .WriteTo.File("logs/server-.log", rollingInterval: RollingInterval.Day)
-            .CreateLogger();
+                .MinimumLevel.ControlledBy(LoggingLevel)
+                .MinimumLevel.Override("Microsoft.AspNetCore.Mvc.Internal", LogEventLevel.Warning)
+                .MinimumLevel.Override("Microsoft.AspNetCore.DataProtection", LogEventLevel.Warning)
+                .MinimumLevel.Override("Microsoft.AspNetCore.Authentication", LogEventLevel.Warning)
+                .MinimumLevel.Override("Microsoft.AspNetCore.Hosting", LogEventLevel.Warning)
+                .MinimumLevel.Override("Microsoft.AspNetCore.Mvc", LogEventLevel.Warning)
+                .MinimumLevel.Override("Microsoft.AspNetCore.Routing", LogEventLevel.Warning)
+                .WriteTo.Console()
+                .WriteTo.File("logs/server-.log", rollingInterval: RollingInterval.Day)
+                .CreateLogger();
 
             var builder = WebHost.CreateDefaultBuilder<Server>(args)
                 .SuppressStatusMessages(true)
@@ -48,7 +54,7 @@ namespace GLOKON.Baiters.Server
                         {
                             IPAddress listenAddress = IPAddress.Parse(serverOptions.ListenOn);
                             kestrelOptions.Listen(listenAddress, serverOptions.HttpPort);
-                            Log.Information(string.Format("Listening (HTTP): http://{0}:{1}", listenAddress.ToString(), serverOptions.HttpPort));
+                            Log.Information("Listening (HTTP): http://{0}:{1}", listenAddress, serverOptions.HttpPort);
 
                             if (serverOptions.LetsEncrypt.IsEnabled())
                             {
@@ -61,13 +67,13 @@ namespace GLOKON.Baiters.Server
                                     });
                                 });
 
-                                Log.Information(string.Format("Listening (LetsEncrypt): https://{0}:{1}", listenAddress.ToString(), serverOptions.HttpsPort));
+                                Log.Information("Listening (LetsEncrypt): https://{0}:{1}", listenAddress, serverOptions.HttpsPort);
                             }
                             else if (serverOptions.SSL.IsEnabled())
                             {
                                 if (!File.Exists(serverOptions.SSL.CertificatePath))
                                 {
-                                    Log.Error(string.Format("Failed to find SSL certificate: {0}", serverOptions.SSL.CertificatePath));
+                                    Log.Error("Failed to find SSL certificate: {0}", serverOptions.SSL.CertificatePath);
                                 }
                                 else
                                 {
@@ -77,7 +83,7 @@ namespace GLOKON.Baiters.Server
                                         listenOptions.UseHttps(serverOptions.SSL.CertificatePath, serverOptions.SSL.CertificatePassword);
                                     });
 
-                                    Log.Information(string.Format("Listening (SSL): https://{0}:{1}", listenAddress.ToString(), serverOptions.HttpsPort));
+                                    Log.Information("Listening (SSL): https://{0}:{1}", listenAddress, serverOptions.HttpsPort);
                                 }
                             }
                             else if (context.HostingEnvironment.IsDevelopment())
@@ -89,20 +95,20 @@ namespace GLOKON.Baiters.Server
                                     listenOptions.UseHttps();
                                 });
 
-                                Log.Information(string.Format("Listening (DevSSL): https://{0}:{1}", listenAddress.ToString(), serverOptions.HttpsPort));
+                                Log.Information("Listening (DevSSL): https://{0}:{1}", listenAddress, serverOptions.HttpsPort);
                             }
                         }
 
                         if (!string.IsNullOrEmpty(serverOptions.ListenOnSocket))
                         {
                             kestrelOptions.ListenUnixSocket(serverOptions.ListenOnSocket);
-                            Log.Information(string.Format("Listening (Unix Socket): {0}", serverOptions.ListenOnSocket));
+                            Log.Information("Listening (Unix Socket): {0}", serverOptions.ListenOnSocket);
                         }
 
                         if (!string.IsNullOrEmpty(serverOptions.ListenOnNamedPipe))
                         {
                             kestrelOptions.ListenNamedPipe(serverOptions.ListenOnNamedPipe);
-                            Log.Information(string.Format("Listening (Named Pipe): {0}", serverOptions.ListenOnNamedPipe));
+                            Log.Information("Listening (Named Pipe): {0}", serverOptions.ListenOnNamedPipe);
                         }
                     }
                 })

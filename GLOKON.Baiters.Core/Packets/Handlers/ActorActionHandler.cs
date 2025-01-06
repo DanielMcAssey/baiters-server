@@ -1,4 +1,5 @@
-﻿using GLOKON.Baiters.Core.Models.Actor;
+﻿using GLOKON.Baiters.Core.Constants;
+using GLOKON.Baiters.Core.Models.Networking;
 using Serilog;
 using Steamworks;
 
@@ -6,7 +7,7 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
 {
     internal class ActorActionHandler(BaitersServer server) : IPacketHandler
     {
-        public void Handle(SteamId sender, Dictionary<string, object> data)
+        public void Handle(SteamId sender, Packet data)
         {
             switch ((string)data["action"])
             {
@@ -18,12 +19,12 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
                     long wipeActorId = (long)((Dictionary<int, object>)data["params"])[0];
                     if (server.TryGetActor(wipeActorId, out var actor) && actor != null)
                     {
-                        if (Actor.ServerOnly.Contains(actor.Type))
+                        if (ActorType.ServerOnly.Contains(actor.Type))
                         {
                             return;
                         }
 
-                        Log.Debug($"Player asked to remove {actor.Type} actor");
+                        Log.Debug("Player asked to remove {0} actor", actor.Type);
                         server.RemoveActor(wipeActorId);
                     }
                     break;

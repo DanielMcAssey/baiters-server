@@ -2,17 +2,15 @@
 
 namespace GLOKON.Baiters.Core.Models.Actor
 {
-    public class Actor(string type, ulong ownerId = 0)
+    public abstract class Actor(string type, ulong ownerId = 0)
     {
-        public static readonly string[] ServerOnly = ["fish_spawn_alien", "fish_spawn", "raincloud"];
-
-        public readonly DateTimeOffset SpawnTime = DateTimeOffset.UtcNow;
-
         private DateTimeOffset? _despawnAt = null;
+
+        public DateTimeOffset SpawnTime { get; } = DateTimeOffset.UtcNow;
 
         public string Type { get; } = type;
 
-        public SteamId OwnerId { get; } = new SteamId() { Value = ownerId };
+        public ulong OwnerId { get; } = ownerId;
 
         public int DespawnTime { get; protected set; } = -1;
 

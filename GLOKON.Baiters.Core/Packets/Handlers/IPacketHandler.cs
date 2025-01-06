@@ -1,14 +1,10 @@
-﻿using Steamworks;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using GLOKON.Baiters.Core.Models.Networking;
+using Steamworks;
 
 namespace GLOKON.Baiters.Core.Packets.Handlers
 {
     internal interface IPacketHandler
     {
-        void Handle(SteamId sender, Dictionary<string, object> data);
+        void Handle(SteamId sender, Packet packet);
     }
 }

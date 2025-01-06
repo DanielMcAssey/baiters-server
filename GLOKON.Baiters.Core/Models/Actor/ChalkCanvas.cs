@@ -1,8 +1,9 @@
-﻿using GLOKON.Baiters.GodotInterop.Models;
+﻿using GLOKON.Baiters.Core.Constants;
+using GLOKON.Baiters.GodotInterop.Models;
 
 namespace GLOKON.Baiters.Core.Models.Actor
 {
-    public sealed class ChalkCanvas() : Actor("chalkcanvas")
+    public sealed class ChalkCanvas() : Actor(ActorType.ChalkCanvas)
     {
         public Dictionary<Vector2, long> ChalkPoints { get; private set; } = [];
 

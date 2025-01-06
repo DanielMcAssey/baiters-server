@@ -8,7 +8,9 @@ using System.Runtime.InteropServices;
 
 namespace GLOKON.Baiters.Core
 {
-    public sealed class SocketBaitersServer(PacketManager packetManager, IOptions<WebFishingOptions> options) : BaitersServer(packetManager, options)
+    public sealed class SocketBaitersServer(
+        IOptions<WebFishingOptions> options,
+        PacketManager packetManager) : BaitersServer(options, packetManager)
     {
         private readonly ConcurrentDictionary<SteamId, Connection> _connections = new();
 

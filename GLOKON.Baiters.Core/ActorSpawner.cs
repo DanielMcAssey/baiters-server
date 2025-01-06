@@ -1,13 +1,17 @@
-﻿using GLOKON.Baiters.Core.Models.Actor;
+﻿using GLOKON.Baiters.Core.Configuration;
+using GLOKON.Baiters.Core.Constants;
+using GLOKON.Baiters.Core.Models.Actor;
 using GLOKON.Baiters.Core.Utils;
 using GLOKON.Baiters.GodotInterop;
 using GLOKON.Baiters.GodotInterop.Models;
+using Microsoft.Extensions.Options;
 using Serilog;
-using Steamworks;
 
 namespace GLOKON.Baiters.Core
 {
-    public sealed class ActorSpawner(BaitersServer server)
+    public sealed class ActorSpawner(
+        IOptions<WebFishingOptions> options,
+        BaitersServer server)
     {
         private readonly Random random = new();
         private readonly TextScene mainZone = LoadScene("main_zone");
@@ -15,49 +19,49 @@ namespace GLOKON.Baiters.Core
 
         public void Setup()
         {
-            spawnProbabilities.Add("none", (long)(server.Options.Modifiers.FishChance * 1000));
-            spawnProbabilities.Add("fish_spawn", (long)(server.Options.Modifiers.FishChance * 1000)); // Fish and None share the same probability, as one or the other is more likely
-            spawnProbabilities.Add("raincloud", (long)(server.Options.Modifiers.RainChance * 1000));
-            spawnProbabilities.Add("fish_spawn_alien", (long)(server.Options.Modifiers.MeteorChance * 1000));
-            spawnProbabilities.Add("void_portal", (long)(server.Options.Modifiers.VoidPortalChance * 1000));
+            spawnProbabilities.Add("none", (long)(options.Value.Modifiers.FishChance * 1000));
+            spawnProbabilities.Add(ActorType.Fish, (long)(options.Value.Modifiers.FishChance * 1000)); // Fish and None share the same probability, as one or the other is more likely
+            spawnProbabilities.Add(ActorType.RainCloud, (long)(options.Value.Modifiers.RainChance * 1000));
+            spawnProbabilities.Add(ActorType.Meteor, (long)(options.Value.Modifiers.MeteorChance * 1000));
+            spawnProbabilities.Add(ActorType.VoidPortal, (long)(options.Value.Modifiers.VoidPortalChance * 1000));
         }
 
         public async Task RunAsync(CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                if (server.NpcActorCount < server.Options.Modifiers.MaxNpcActors)
+                if (server.NpcActorCount < options.Value.Modifiers.MaxNpcActors)
                 {
                     try
                     {
                         switch (spawnProbabilities.Next())
                         {
-                            case "fish_spawn":
-                                if (server.GetActorsByType("fish_spawn").Count() < server.Options.Modifiers.MaxFish)
+                            case ActorType.Fish:
+                                if (server.GetActorsByType(ActorType.Fish).Count() < options.Value.Modifiers.MaxFish)
                                 {
                                     SpawnFish();
                                 }
 
                                 break;
-                            case "raincloud":
+                            case ActorType.RainCloud:
                                 SpawnRainCloud();
                                 break;
-                            case "fish_spawn_alien":
-                                SpawnFish("fish_spawn_alien");
+                            case ActorType.Meteor:
+                                SpawnFish(ActorType.Meteor);
                                 break;
-                            case "void_portal":
+                            case ActorType.VoidPortal:
                                 SpawnVoidPortal();
                                 break;
                         }
 
-                        if (server.GetActorsByType("metal_spawn").Count() < server.Options.Modifiers.MaxMetal)
+                        if (server.GetActorsByType(ActorType.Metal).Count() < options.Value.Modifiers.MaxMetal)
                         {
                             SpawnMetal(); // Always spawn metal every iteration, if needed
                         }
                     }
                     catch (Exception ex)
                     {
-                        Log.Error(ex, "Failed to run server spawner");
+                        Log.Error(ex, "Failed to run actor spawner");
                     }
                 }
 
@@ -69,35 +73,35 @@ namespace GLOKON.Baiters.Core
         {
             Vector3 position = new(random.Next(-100, 150), 42f, random.Next(-150, 100));
             var rainCloud = new RainCloud(position);
-            SpawnActor(rainCloud);
+            server.SpawnActor(rainCloud);
             rainCloud.Despawn();
         }
 
-        public void SpawnFish(string type = "fish_spawn")
+        public void SpawnFish(string type = ActorType.Fish)
         {
-            if (mainZone.SceneLocations.TryGetValue("fish_spawn", out var fishPoints))
+            if (mainZone.SceneLocations.TryGetValue(MainZoneGroup.FishSpawns, out var fishPoints))
             {
                 Vector3 position = fishPoints[random.Next(fishPoints.Length)] + new Vector3(0, .08f, 0);
-                Fish actor = new(type, position);
-                SpawnActor(actor);
-                actor.Despawn();
+                var fish = new Fish(type, position);
+                server.SpawnActor(fish);
+                fish.Despawn();
             }
         }
 
         public void SpawnVoidPortal()
         {
-            if (mainZone.SceneLocations.TryGetValue("hidden_spot", out var hiddenPoints))
+            if (mainZone.SceneLocations.TryGetValue(MainZoneGroup.HiddenSpots, out var hiddenPoints))
             {
                 Vector3 position = hiddenPoints[random.Next(hiddenPoints.Length)];
                 var voidPortal = new VoidPortal(position);
-                SpawnActor(voidPortal);
+                server.SpawnActor(voidPortal);
                 voidPortal.Despawn();
             }
         }
 
         public void SpawnMetal()
         {
-            if (mainZone.SceneLocations.TryGetValue("trash_point", out var trashPoints) && mainZone.SceneLocations.TryGetValue("shoreline_point", out var shorelinePoints))
+            if (mainZone.SceneLocations.TryGetValue(MainZoneGroup.TrashPoints, out var trashPoints) && mainZone.SceneLocations.TryGetValue(MainZoneGroup.ShorelinePoints, out var shorelinePoints))
             {
                 Vector3 position = trashPoints[random.Next(trashPoints.Length)];
                 if (random.NextSingle() < .15f)
@@ -105,58 +109,24 @@ namespace GLOKON.Baiters.Core
                     position = shorelinePoints[random.Next(shorelinePoints.Length)];
                 }
 
-                SpawnActor(new Metal(position));
+                server.SpawnActor(new Metal(position));
             }
-        }
-
-        private void SpawnActor(Actor actor)
-        {
-            long actorId = random.NextInt64();
-
-            Dictionary<string, object> spawnPkt = new()
-            {
-                ["type"] = "instance_actor"
-            };
-
-            Dictionary<string, object> instanceSpaceParams = [];
-            spawnPkt["params"] = instanceSpaceParams;
-
-            instanceSpaceParams["actor_type"] = actor.Type;
-
-            if (actor is MovableActor movableActor)
-            {
-                instanceSpaceParams["at"] = movableActor.Position;
-                instanceSpaceParams["rot"] = movableActor.Rotation;
-            }
-            else
-            {
-                instanceSpaceParams["at"] = Vector3.Zero;
-                instanceSpaceParams["rot"] = Vector3.Zero;
-            }
-
-            instanceSpaceParams["zone"] = "main_zone";
-            instanceSpaceParams["zone_owner"] = -1;
-            instanceSpaceParams["actor_id"] = actorId;
-            instanceSpaceParams["creator_id"] = (long)SteamClient.SteamId.Value;
-
-            server.AddActor(actorId, actor);
-            server.SendPacket(spawnPkt);
         }
 
         private static TextScene LoadScene(string scene)
         {
-            Log.Information($"Loading {scene} scene");
+            Log.Information("Loading {scene} scene", scene);
 
             var sceneFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "scenes", $"{scene}.tscn");
 
             if (!File.Exists(sceneFile))
             {
-                throw new ArgumentException($"Scene File is missing from {sceneFile}");
+                throw new ArgumentException($"Scene file is missing from {sceneFile}");
             }
 
-            TextScene loadedScene = TscnReader.ReadTextScene(sceneFile, ["fish_spawn", "trash_point", "shoreline_point", "hidden_spot"]);
+            TextScene loadedScene = TscnReader.ReadTextScene(sceneFile, [MainZoneGroup.FishSpawns, MainZoneGroup.TrashPoints, MainZoneGroup.ShorelinePoints, MainZoneGroup.HiddenSpots]);
 
-            Log.Information($"{scene} Scene loaded");
+            Log.Information("{scene} scene loaded", scene);
 
             return loadedScene;
         }

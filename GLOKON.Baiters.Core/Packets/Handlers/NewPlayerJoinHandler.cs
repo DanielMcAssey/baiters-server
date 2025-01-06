@@ -1,24 +1,24 @@
-﻿using GLOKON.Baiters.Core.Models.Actor;
+﻿using GLOKON.Baiters.Core.Constants;
+using GLOKON.Baiters.Core.Models.Actor;
+using GLOKON.Baiters.Core.Models.Networking;
 using Serilog;
 using Steamworks;
 
 namespace GLOKON.Baiters.Core.Packets.Handlers
 {
-    internal class NewPlayerJoinHandler(BaitersServer server) : IPacketHandler
+    internal class NewPlayerJoinHandler(BaitersServer server, string? joinMessage) : IPacketHandler
     {
-        public void Handle(SteamId sender, Dictionary<string, object> data)
+        public void Handle(SteamId sender, Packet data)
         {
-            if (!string.IsNullOrEmpty(server.Options.JoinMessage))
+            if (!string.IsNullOrEmpty(joinMessage))
             {
-                server.SendMessage(server.Options.JoinMessage, steamId: sender);
+                server.SendMessage(joinMessage, steamId: sender);
             }
 
-            Dictionary<string, object> handshakePkt = new()
+            server.SendPacket(new("recieve_host")
             {
-                ["type"] = "recieve_host",
-                ["host_id"] = SteamClient.SteamId.ToString()
-            };
-            server.SendPacket(handshakePkt);
+                ["host_id"] = SteamClient.SteamId.ToString(),
+            });
 
             if (server.IsAdmin(sender))
             {
@@ -35,7 +35,7 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
         {
             try
             {
-                foreach (KeyValuePair<long, Actor> actor in server.GetActorsByType("chalkcanvas"))
+                foreach (KeyValuePair<long, Actor> actor in server.GetActorsByType(ActorType.ChalkCanvas))
                 {
                     ChalkCanvas canvas = (ChalkCanvas)actor.Value;
                     Dictionary<int, object> chalkPkt = canvas.GetPacket();
@@ -62,12 +62,11 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
 
                     for (int index = 0; index < chunks.Count; index++)
                     {
-                        Dictionary<string, object> chalkPacket = new() {
-                            ["type"] = "chalk_packet",
+                        server.SendPacket(new("chalk_packet")
+                        {
                             ["canvas_id"] = actor.Key,
                             ["data"] = chunks[index],
-                        };
-                        server.SendPacket(chalkPacket, steamId);
+                        }, steamId);
                         await Task.Delay(10);
                     }
                 }

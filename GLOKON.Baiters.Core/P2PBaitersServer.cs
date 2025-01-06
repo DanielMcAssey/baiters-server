@@ -6,7 +6,9 @@ using Steamworks;
 
 namespace GLOKON.Baiters.Core
 {
-    public sealed class P2PBaitersServer(PacketManager packetManager, IOptions<WebFishingOptions> options) : BaitersServer(packetManager, options)
+    public sealed class P2PBaitersServer(
+        IOptions<WebFishingOptions> options,
+        PacketManager packetManager) : BaitersServer(options, packetManager)
     {
         private const int p2pChannelCount = 6; // The amount of P2P channels used
 
@@ -33,7 +35,7 @@ namespace GLOKON.Baiters.Core
             };
         }
 
-        public override void LeavePlayer(SteamId steamId)
+        internal override void LeavePlayer(SteamId steamId)
         {
             base.LeavePlayer(steamId);
 
