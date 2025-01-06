@@ -16,6 +16,8 @@ namespace GLOKON.Baiters.Core.Configuration
 
         public int MaxPlayers { get; set; } = 50;
 
+        public string CommandPrefix { get; set; } = "/";
+
         public JoinType JoinType { get; set; } = JoinType.Public;
 
         public string? JoinMessage { get; set; } = null;

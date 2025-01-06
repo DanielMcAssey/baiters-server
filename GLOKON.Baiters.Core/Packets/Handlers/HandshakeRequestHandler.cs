@@ -1,15 +1,14 @@
 ﻿using GLOKON.Baiters.Core.Models.Networking;
-using Steamworks;
 
 namespace GLOKON.Baiters.Core.Packets.Handlers
 {
     internal class HandshakeRequestHandler(BaitersServer server) : IPacketHandler
     {
-        public void Handle(SteamId sender, Packet data)
+        public void Handle(ulong sender, Packet data)
         {
             server.SendPacket(new("handshake")
             {
-                ["user_id"] = SteamClient.SteamId.ToString(),
+                ["user_id"] = server.ServerId.ToString(),
             }, sender);
         }
     }

@@ -3,7 +3,6 @@ using GLOKON.Baiters.Core.Models.Networking;
 using GLOKON.Baiters.Core.Packets.Handlers;
 using Microsoft.Extensions.Options;
 using Serilog;
-using Steamworks;
 
 namespace GLOKON.Baiters.Core.Packets
 {
@@ -23,7 +22,7 @@ namespace GLOKON.Baiters.Core.Packets
             handlers.Add("chalk_packet", new ChalkPacketHandler(server));
         }
 
-        public void Handle(SteamId sender, Packet packet)
+        public void Handle(ulong sender, Packet packet)
         {
             string type = packet.Type;
             Log.Debug("Handling packet {type} for {sender}", type, sender);

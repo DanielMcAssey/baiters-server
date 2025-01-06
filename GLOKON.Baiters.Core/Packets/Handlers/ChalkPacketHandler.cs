@@ -1,13 +1,12 @@
 ﻿using GLOKON.Baiters.Core.Models.Actor;
 using GLOKON.Baiters.Core.Models.Networking;
 using Serilog;
-using Steamworks;
 
 namespace GLOKON.Baiters.Core.Packets.Handlers
 {
     internal class ChalkPacketHandler(BaitersServer server) : IPacketHandler
     {
-        public void Handle(SteamId sender, Packet data)
+        public void Handle(ulong sender, Packet data)
         {
             long canvasId = (long)data["canvas_id"];
             ChalkCanvas canvas;

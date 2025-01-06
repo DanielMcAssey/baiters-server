@@ -2,13 +2,12 @@
 using GLOKON.Baiters.Core.Models.Actor;
 using GLOKON.Baiters.Core.Models.Networking;
 using Serilog;
-using Steamworks;
 
 namespace GLOKON.Baiters.Core.Packets.Handlers
 {
     internal class NewPlayerJoinHandler(BaitersServer server, string? joinMessage) : IPacketHandler
     {
-        public void Handle(SteamId sender, Packet data)
+        public void Handle(ulong sender, Packet data)
         {
             if (!string.IsNullOrEmpty(joinMessage))
             {
@@ -17,7 +16,7 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
 
             server.SendPacket(new("recieve_host")
             {
-                ["host_id"] = SteamClient.SteamId.ToString(),
+                ["host_id"] = server.ServerId.ToString(),
             });
 
             if (server.IsAdmin(sender))
@@ -31,7 +30,7 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
             });
         }
 
-        private async Task SendChalkPacketsAsync(SteamId steamId)
+        private async Task SendChalkPacketsAsync(ulong steamId)
         {
             try
             {

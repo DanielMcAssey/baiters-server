@@ -2,13 +2,12 @@
 using GLOKON.Baiters.Core.Models.Actor;
 using GLOKON.Baiters.Core.Models.Networking;
 using Serilog;
-using Steamworks;
 
 namespace GLOKON.Baiters.Core.Packets.Handlers
 {
     internal class InstanceActorHandler(BaitersServer server) : IPacketHandler
     {
-        public void Handle(SteamId sender, Packet data)
+        public void Handle(ulong sender, Packet data)
         {
             var pktParams = (Dictionary<string, object>)data["params"];
             string type = (string)pktParams["actor_type"];

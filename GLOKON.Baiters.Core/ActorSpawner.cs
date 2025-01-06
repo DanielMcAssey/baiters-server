@@ -17,6 +17,8 @@ namespace GLOKON.Baiters.Core
         private readonly TextScene mainZone = LoadScene("main_zone");
         private readonly WeightedList<string> spawnProbabilities = [];
 
+        public static IReadOnlyCollection<string> Spawnable => [ActorType.Fish, ActorType.RainCloud, ActorType.Meteor, ActorType.VoidPortal, ActorType.Metal];
+
         public void Setup()
         {
             spawnProbabilities.Add("none", (long)(options.Value.Modifiers.FishChance * 1000));
@@ -34,30 +36,10 @@ namespace GLOKON.Baiters.Core
                 {
                     try
                     {
-                        switch (spawnProbabilities.Next())
-                        {
-                            case ActorType.Fish:
-                                if (server.GetActorsByType(ActorType.Fish).Count() < options.Value.Modifiers.MaxFish)
-                                {
-                                    SpawnFish();
-                                }
+                        Spawn(spawnProbabilities.Next());
 
-                                break;
-                            case ActorType.RainCloud:
-                                SpawnRainCloud();
-                                break;
-                            case ActorType.Meteor:
-                                SpawnFish(ActorType.Meteor);
-                                break;
-                            case ActorType.VoidPortal:
-                                SpawnVoidPortal();
-                                break;
-                        }
-
-                        if (server.GetActorsByType(ActorType.Metal).Count() < options.Value.Modifiers.MaxMetal)
-                        {
-                            SpawnMetal(); // Always spawn metal every iteration, if needed
-                        }
+                        // Always spawn metal every iteration, if needed
+                        Spawn(ActorType.Metal);
                     }
                     catch (Exception ex)
                     {
@@ -67,6 +49,39 @@ namespace GLOKON.Baiters.Core
 
                 await Task.Delay(8_000, cancellationToken);
             }
+        }
+
+        public bool Spawn(string type)
+        {
+            switch (type)
+            {
+                case ActorType.Fish:
+                    if (server.GetActorsByType(ActorType.Fish).Count() < options.Value.Modifiers.MaxFish)
+                    {
+                        SpawnFish();
+                    }
+
+                    break;
+                case ActorType.RainCloud:
+                    SpawnRainCloud();
+                    break;
+                case ActorType.Meteor:
+                    SpawnFish(ActorType.Meteor);
+                    break;
+                case ActorType.VoidPortal:
+                    SpawnVoidPortal();
+                    break;
+                case ActorType.Metal:
+                    if (server.GetActorsByType(ActorType.Metal).Count() < options.Value.Modifiers.MaxMetal)
+                    {
+                        SpawnMetal();
+                    }
+                    break;
+                default:
+                    return false;
+            }
+
+            return true;
         }
 
         public void SpawnRainCloud()

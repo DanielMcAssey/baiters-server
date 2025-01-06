@@ -8,6 +8,7 @@ using GLOKON.Baiters.Core.Configuration;
 using GLOKON.Baiters.Core;
 using GLOKON.Baiters.Server.HostedServices;
 using GLOKON.Baiters.Core.Packets;
+using GLOKON.Baiters.Core.Chat;
 
 namespace GLOKON.Baiters.Server
 {
@@ -35,6 +36,7 @@ namespace GLOKON.Baiters.Server
             });
 
             services.AddSingleton<PacketManager>();
+            services.AddSingleton<ChatManager>();
             //services.AddSingleton<BaitersServer, SocketBaitersServer>(); // TODO: When GameServer supports SteamNetworkingSockets
             services.AddSingleton<BaitersServer, P2PBaitersServer>();
             services.AddSingleton<ActorSpawner>();

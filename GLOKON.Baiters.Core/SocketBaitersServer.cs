@@ -1,7 +1,6 @@
 ﻿using GLOKON.Baiters.Core.Configuration;
 using GLOKON.Baiters.Core.Packets;
 using Microsoft.Extensions.Options;
-using Steamworks;
 using Steamworks.Data;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
@@ -12,7 +11,7 @@ namespace GLOKON.Baiters.Core
         IOptions<WebFishingOptions> options,
         PacketManager packetManager) : BaitersServer(options, packetManager)
     {
-        private readonly ConcurrentDictionary<SteamId, Connection> _connections = new();
+        private readonly ConcurrentDictionary<ulong, Connection> _connections = new();
 
         public override void OnConnecting(Connection connection, ConnectionInfo data)
         {
@@ -47,9 +46,9 @@ namespace GLOKON.Baiters.Core
             _socketManager?.Receive();
         }
 
-        protected override void SendPacketTo(SteamId steamId, byte[] data)
+        protected override void SendPacketTo(ulong steamId, byte[] data)
         {
-            if (_connections.TryGetValue(steamId.Value, out var connection))
+            if (_connections.TryGetValue(steamId, out var connection))
             {
                 connection.SendMessage(data, laneIndex: 2);
             }

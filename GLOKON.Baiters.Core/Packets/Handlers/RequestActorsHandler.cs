@@ -1,11 +1,10 @@
 ﻿using GLOKON.Baiters.Core.Models.Networking;
-using Steamworks;
 
 namespace GLOKON.Baiters.Core.Packets.Handlers
 {
     internal class RequestActorsHandler(BaitersServer server) : IPacketHandler
     {
-        public void Handle(SteamId sender, Packet data)
+        public void Handle(ulong sender, Packet data)
         {
             foreach (var actor in server.Actors)
             {

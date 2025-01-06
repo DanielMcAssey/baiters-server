@@ -35,7 +35,7 @@ namespace GLOKON.Baiters.Core
             };
         }
 
-        internal override void LeavePlayer(SteamId steamId)
+        internal override void LeavePlayer(ulong steamId)
         {
             base.LeavePlayer(steamId);
 
@@ -57,9 +57,9 @@ namespace GLOKON.Baiters.Core
             }
         }
 
-        protected override void SendPacketTo(SteamId steamId, byte[] data)
+        protected override void SendPacketTo(ulong steamId, byte[] data)
         {
-            SteamNetworking.SendP2PPacket(steamId.Value, data, nChannel: 2);
+            SteamNetworking.SendP2PPacket(steamId, data, nChannel: 2);
         }
     }
 }

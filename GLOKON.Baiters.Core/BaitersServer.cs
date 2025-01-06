@@ -1,4 +1,5 @@
-﻿using GLOKON.Baiters.Core.Configuration;
+﻿using GLOKON.Baiters.Core.Chat;
+using GLOKON.Baiters.Core.Configuration;
 using GLOKON.Baiters.Core.Constants;
 using GLOKON.Baiters.Core.Enums.Configuration;
 using GLOKON.Baiters.Core.Models.Actor;
@@ -17,15 +18,16 @@ namespace GLOKON.Baiters.Core
 {
     public abstract class BaitersServer(
         IOptions<WebFishingOptions> _options,
-        PacketManager packetManager
+        PacketManager packetManager,
+        ChatManager chatManager
         ) : ISocketManager
     {
         private readonly WebFishingOptions options = _options.Value;
         private readonly Random random = new();
-        private readonly ConcurrentDictionary<SteamId, Player> _players = new();
+        private readonly ConcurrentDictionary<ulong, Player> _players = new();
         private readonly ConcurrentDictionary<long, Actor> _actors = new();
 
-        protected static bool CanSteamIdJoin(SteamId steamId)
+        protected static bool CanSteamIdJoin(ulong steamId)
         {
             bool canJoin = true;
 
@@ -44,9 +46,15 @@ namespace GLOKON.Baiters.Core
         protected SocketManager? _socketManager;
         private Lobby _lobby;
 
-        public IEnumerable<KeyValuePair<long, Actor>> Actors { get { return _actors; } }
+        public IEnumerable<KeyValuePair<long, Actor>> Actors => _actors;
+        public IEnumerable<KeyValuePair<ulong, Player>> Players => _players;
 
         public int NpcActorCount { get { return _actors.Where((kv) => kv.Value.Type != ActorType.Player).Count(); } }
+
+        /// <summary>
+        /// Only available after the server Setup has been called
+        /// </summary>
+        public ulong ServerId { get { return SteamClient.SteamId.Value; } }
 
         public virtual void Setup()
         {
@@ -152,16 +160,16 @@ namespace GLOKON.Baiters.Core
             return _actors.Where((kv) => kv.Value.Type == type);
         }
 
-        public bool TryGetPlayer(SteamId steamId, out Player? player)
+        public bool TryGetPlayer(ulong steamId, out Player? player)
         {
             return _players.TryGetValue(steamId, out player);
         }
 
-        public void KickPlayer(SteamId steamId)
+        public void KickPlayer(ulong steamId)
         {
             SendPacket(new("peer_was_kicked")
             {
-                ["user_id"] = (long)steamId.Value,
+                ["user_id"] = (long)steamId,
             });
             SendPacket(new("client_was_kicked"), steamId);
 
@@ -172,11 +180,11 @@ namespace GLOKON.Baiters.Core
             }
         }
 
-        public void BanPlayer(SteamId steamId)
+        public void BanPlayer(ulong steamId)
         {
             SendPacket(new("peer_was_banned")
             {
-                ["user_id"] = (long)steamId.Value,
+                ["user_id"] = (long)steamId,
             });
             SendPacket(new("client_was_banned"), steamId);
         }
@@ -198,7 +206,7 @@ namespace GLOKON.Baiters.Core
             SendActor(actorId, actor);
         }
 
-        internal void JoinPlayerLobby(SteamId steamId, string playerName)
+        internal void JoinPlayerLobby(ulong steamId, string playerName)
         {
             if (_players.ContainsKey(steamId))
             {
@@ -217,12 +225,12 @@ namespace GLOKON.Baiters.Core
 
             SendPacket(new("user_joined_weblobby")
             {
-                ["user_id"] = (long)steamId.Value,
+                ["user_id"] = (long)steamId,
             });
             SendWebLobbyPacket();
         }
 
-        internal virtual void JoinPlayer(SteamId steamId, long actorId, Player player)
+        internal virtual void JoinPlayer(ulong steamId, long actorId, Player player)
         {
             AddActor(actorId, player);
 
@@ -238,7 +246,7 @@ namespace GLOKON.Baiters.Core
             }
         }
 
-        internal virtual void LeavePlayer(SteamId steamId)
+        internal virtual void LeavePlayer(ulong steamId)
         {
             // TODO: Do we need to remove actor here?
 
@@ -268,7 +276,7 @@ namespace GLOKON.Baiters.Core
             _actors.TryRemove(actorId, out _);
         }
 
-        public void SendMessage(string message, string color = "ffffff", SteamId? steamId = null)
+        public void SendMessage(string message, string color = "ffffff", ulong? steamId = null)
         {
             SendPacket(new("message")
             {
@@ -281,7 +289,7 @@ namespace GLOKON.Baiters.Core
             }, steamId);
         }
 
-        public void SendLetter(SteamId to, SteamId from, string header, string body, string closing, string user)
+        public void SendLetter(ulong to, ulong from, string header, string body, string closing, string user)
         {
             SendPacket(new("letter_received")
             {
@@ -300,7 +308,7 @@ namespace GLOKON.Baiters.Core
             }, to);
         }
 
-        public void SendActor(long actorId, Actor actor, SteamId? steamId = null)
+        public void SendActor(long actorId, Actor actor, ulong? steamId = null)
         {
             Dictionary<string, object> instanceActorPrams = [];
             instanceActorPrams["actor_type"] = actor.Type;
@@ -319,7 +327,7 @@ namespace GLOKON.Baiters.Core
             instanceActorPrams["zone"] = "main_zone";
             instanceActorPrams["zone_owner"] = -1;
             instanceActorPrams["actor_id"] = actorId;
-            instanceActorPrams["creator_id"] = (long)SteamClient.SteamId.Value;
+            instanceActorPrams["creator_id"] = (long)ServerId;
 
             SendPacket(new("instance_actor")
             {
@@ -327,7 +335,7 @@ namespace GLOKON.Baiters.Core
             }, steamId);
         }
 
-        public void SendPacket(Packet packet, SteamId? steamId = null)
+        public void SendPacket(Packet packet, ulong? steamId = null)
         {
             byte[] data = packet.Serialize();
 
@@ -344,9 +352,11 @@ namespace GLOKON.Baiters.Core
             }
         }
 
-        public void OnPlayerChat(SteamId sender, string message)
+        public void OnPlayerChat(ulong sender, string message)
         {
             string fisherName = "UNKNOWN";
+            chatManager.OnChatMessage(sender, message);
+
             if (_players.TryGetValue(sender, out var player) && player != null)
             {
                 fisherName = player.FisherName;
@@ -360,16 +370,16 @@ namespace GLOKON.Baiters.Core
             Log.Information("[{sender}] {fisherName}: {message}", sender, fisherName, message);
         }
 
-        public bool IsAdmin(SteamId steamId)
+        public bool IsAdmin(ulong steamId)
         {
             return options.Admins.Contains(steamId);
         }
 
         protected abstract void ReceivePackets();
 
-        protected abstract void SendPacketTo(SteamId steamId, byte[] data);
+        protected abstract void SendPacketTo(ulong steamId, byte[] data);
 
-        protected void HandleNetworkPacket(SteamId sender, byte[] data)
+        protected void HandleNetworkPacket(ulong sender, byte[] data)
         {
             var packet = Packet.Parse(data);
 
@@ -384,18 +394,18 @@ namespace GLOKON.Baiters.Core
             }
         }
 
-        protected void SendWebLobbyPacket(SteamId? steamId = null)
+        protected void SendWebLobbyPacket(ulong? steamId = null)
         {
             Dictionary<int, object> usersInServer = new()
             {
-                [0] = (long)SteamClient.SteamId.Value
+                [0] = (long)ServerId,
             };
 
-            int userIndex = 1; // Start at 1 as server user is 0
+            int userIndex = usersInServer.Count; // Start at 1 as server user is 0
 
             foreach (var player in _players)
             {
-                usersInServer[userIndex] = (long)player.Key.Value;
+                usersInServer[userIndex] = (long)player.Key;
                 userIndex++;
             }
 
@@ -405,11 +415,11 @@ namespace GLOKON.Baiters.Core
             }, steamId);
         }
 
-        protected void SendWebLobbyLeftPacket(SteamId steamId)
+        protected void SendWebLobbyLeftPacket(ulong steamId)
         {
             SendPacket(new("user_left_weblobby")
             {
-                ["user_id"] = (long)steamId.Value,
+                ["user_id"] = (long)steamId,
                 ["reason"] = 0
             });
         }
@@ -497,8 +507,8 @@ namespace GLOKON.Baiters.Core
         private void UpdatePlayerCount()
         {
             int totalPlayerCount = (_players.Count + 1);
-            Console.Title = string.Format("[{0}] {1} - {2}/{3}", options.JoinType, options.ServerName, totalPlayerCount, options.MaxPlayers);
             _lobby.SetData("count", totalPlayerCount.ToString());
+            Console.Title = string.Format("[{0}] {1} - {2}/{3}", options.JoinType, options.ServerName, totalPlayerCount, options.MaxPlayers);
         }
     }
 }
