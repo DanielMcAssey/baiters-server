@@ -71,7 +71,10 @@ namespace GLOKON.Baiters.Core
 
         protected override void SendPacketTo(ulong steamId, byte[] data)
         {
-            SteamNetworking.SendP2PPacket(steamId, data, nChannel: 2);
+            if (!SteamNetworking.SendP2PPacket(steamId, data, nChannel: 2))
+            {
+                Log.Error("Failed to send P2P packet to {0}", steamId);
+            }
         }
     }
 }

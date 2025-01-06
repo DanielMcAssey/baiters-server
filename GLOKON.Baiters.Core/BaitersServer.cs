@@ -216,11 +216,11 @@ namespace GLOKON.Baiters.Core
 
             if (!CanSteamIdJoin(steamId))
             {
-                _lobby.SendChatBytes(Encoding.UTF8.GetBytes($"$weblobby_request_denied_deny-{steamId}"));
+                _lobby.SendChatString($"$weblobby_request_denied_deny-{steamId}");
                 return;
             }
 
-            _lobby.SendChatBytes(Encoding.UTF8.GetBytes($"$weblobby_request_accepted-{steamId}"));
+            _lobby.SendChatString($"$weblobby_request_accepted-{steamId}");
             _players.TryAdd(steamId, new Player(steamId, playerName, IsAdmin(steamId)));
 
             SendPacket(new("user_joined_weblobby")
@@ -486,7 +486,7 @@ namespace GLOKON.Baiters.Core
             if (message.Length <= 0) return;
 
             var fromId = from.Id;
-            Log.Debug("We got lobby chat message from {fromId}, it says {message}!", fromId, message);
+            Log.Debug("Lobby[{fromId}]: {message}", fromId, message);
 
             if (string.Compare(message, "$weblobby_join_request", true) == 0)
             {
