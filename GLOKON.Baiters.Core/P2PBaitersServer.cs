@@ -1,4 +1,5 @@
-﻿using GLOKON.Baiters.Core.Configuration;
+﻿using GLOKON.Baiters.Core.Chat;
+using GLOKON.Baiters.Core.Configuration;
 using GLOKON.Baiters.Core.Packets;
 using Microsoft.Extensions.Options;
 using Serilog;
@@ -8,7 +9,9 @@ namespace GLOKON.Baiters.Core
 {
     public sealed class P2PBaitersServer(
         IOptions<WebFishingOptions> options,
-        PacketManager packetManager) : BaitersServer(options, packetManager)
+        PacketManager packetManager,
+        ChatManager chatManager
+        ) : BaitersServer(options, packetManager, chatManager)
     {
         private const int p2pChannelCount = 6; // The amount of P2P channels used
 
@@ -16,12 +19,21 @@ namespace GLOKON.Baiters.Core
         {
             base.Setup();
 
+            SteamNetworking.AllowP2PPacketRelay(true);
             SteamNetworking.OnP2PSessionRequest = (steamId) =>
             {
+                Log.Debug("New P2P session request from {0}", steamId);
+
                 if (CanSteamIdJoin(steamId))
                 {
-                    SteamNetworking.AcceptP2PSessionWithUser(steamId);
-                    SendWebLobbyPacket(steamId);
+                    if (SteamNetworking.AcceptP2PSessionWithUser(steamId))
+                    {
+                        SendWebLobbyPacket(steamId);
+                    }
+                    else
+                    {
+                        Log.Error("Failed to accept P2P session request from {0}", steamId);
+                    }
                 }
                 else
                 {

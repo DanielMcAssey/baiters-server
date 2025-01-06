@@ -1,4 +1,5 @@
-﻿using GLOKON.Baiters.Core.Configuration;
+﻿using GLOKON.Baiters.Core.Chat;
+using GLOKON.Baiters.Core.Configuration;
 using GLOKON.Baiters.Core.Packets;
 using Microsoft.Extensions.Options;
 using Steamworks.Data;
@@ -9,7 +10,9 @@ namespace GLOKON.Baiters.Core
 {
     public sealed class SocketBaitersServer(
         IOptions<WebFishingOptions> options,
-        PacketManager packetManager) : BaitersServer(options, packetManager)
+        PacketManager packetManager,
+        ChatManager chatManager
+        ) : BaitersServer(options, packetManager, chatManager)
     {
         private readonly ConcurrentDictionary<ulong, Connection> _connections = new();
 
