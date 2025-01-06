@@ -84,6 +84,8 @@ namespace GLOKON.Baiters.Plugins.BanManager
         {
             base.OnDestroy();
 
+            GM.Chat.StopListening("ban");
+            GM.Chat.StopListening("ban.list");
             File.WriteAllText(_bansFilePath, JsonConvert.SerializeObject(_playerBans));
         }
 

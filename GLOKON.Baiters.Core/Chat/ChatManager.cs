@@ -16,6 +16,11 @@ namespace GLOKON.Baiters.Core.Chat
             _commands.TryAdd(command, new() { HelpText = helpText, OnCommand = onCommand });
         }
 
+        public void StopListening(string command)
+        {
+            _commands.TryRemove(command, out _);
+        }
+
         public void OnChatMessage(ulong sender,  string message)
         {
             if (message.Length <= 0 || !message.StartsWith(options.CommandPrefix))

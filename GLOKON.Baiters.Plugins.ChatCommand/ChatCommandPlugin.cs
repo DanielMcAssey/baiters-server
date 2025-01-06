@@ -161,5 +161,19 @@ namespace GLOKON.Baiters.Plugins.ChatCommand
                 GM.Server.SendMessage("----", "0f0f0f", sender);
             });
         }
+
+        public override void OnDestroy()
+        {
+            base.OnDestroy();
+
+            GM.Chat.StopListening("help");
+            GM.Chat.StopListening("users.list");
+            GM.Chat.StopListening("spawn");
+            GM.Chat.StopListening("spawn.list");
+            GM.Chat.StopListening("kick");
+            GM.Chat.StopListening("say");
+            GM.Chat.StopListening("say.all");
+            GM.Chat.StopListening("plugins");
+        }
     }
 }
