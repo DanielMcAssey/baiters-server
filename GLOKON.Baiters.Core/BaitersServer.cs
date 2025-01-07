@@ -108,6 +108,13 @@ namespace GLOKON.Baiters.Core
 
             while (!cancellationToken.IsCancellationRequested)
             {
+                if (!_lobby.IsOwnedBy(ServerId))
+                {
+                    Log.Error("You are no longer the host, stopping the server, host changed to: {0}", _lobby.Owner.Id);
+                    Stop();
+                    break;
+                }
+
                 SteamClient.RunCallbacks();
                 ReceivePackets();
 
