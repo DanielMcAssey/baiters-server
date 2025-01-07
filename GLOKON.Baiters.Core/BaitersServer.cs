@@ -123,7 +123,7 @@ namespace GLOKON.Baiters.Core
 
                 foreach (var actorIdToRemove in actorsToRemove)
                 {
-                    _actors.TryRemove(actorIdToRemove, out _);
+                    RemoveActor(actorIdToRemove);
                 }
 
                 actorsToRemove.Clear();
