@@ -1,6 +1,6 @@
 ﻿using GLOKON.Baiters.Core.Models.Actor;
 using GLOKON.Baiters.Core.Models.Networking;
-using GLOKON.Baiters.GodotInterop.Models;
+using System.Numerics;
 
 namespace GLOKON.Baiters.Core.Packets.Handlers
 {

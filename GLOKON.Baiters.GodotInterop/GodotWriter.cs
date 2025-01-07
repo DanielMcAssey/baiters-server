@@ -17,8 +17,8 @@
   Source: https://github.com/DrMeepso/WebFishingCove/blob/main/Cove/GodotFormat/GDWriter.cs
 */
 
-using GLOKON.Baiters.GodotInterop.Models;
 using System.Text;
+using System.Numerics;
 
 namespace GLOKON.Baiters.GodotInterop
 {
@@ -56,11 +56,11 @@ namespace GLOKON.Baiters.GodotInterop
             {
                 WriteLong(pktLong, writer);
             }
-            else if (packet is Single pktSingle)
+            else if (packet is float pktSingle)
             {
                 WriteSingle(pktSingle, writer);
             }
-            else if (packet is Double pktDouble)
+            else if (packet is double pktDouble)
             {
                 WriteDouble(pktDouble, writer);
             }
@@ -89,16 +89,16 @@ namespace GLOKON.Baiters.GodotInterop
         private static void WriteVector2(Vector2 packet, BinaryWriter writer)
         {
             writer.Write((int)5); // write v2 header
-            writer.Write((Single)packet.x);
-            writer.Write((Single)packet.y);
+            writer.Write(packet.X);
+            writer.Write(packet.Y);
         }
 
         private static void WriteVector3(Vector3 packet, BinaryWriter writer)
         {
             writer.Write((int)7); // write v3 header
-            writer.Write((Single)packet.x);
-            writer.Write((Single)packet.y);
-            writer.Write((Single)packet.z);
+            writer.Write(packet.X);
+            writer.Write(packet.Y);
+            writer.Write(packet.Z);
         }
 
         private static void WriteBool(bool packet, BinaryWriter writer)
@@ -110,25 +110,25 @@ namespace GLOKON.Baiters.GodotInterop
         private static void WriteInt(int packet, BinaryWriter writer)
         {
             writer.Write((int)GodotTypes.intValue); // write the int value header!
-            writer.Write((int)packet);
+            writer.Write(packet);
         }
 
         private static void WriteLong(long packet, BinaryWriter writer)
         {
             writer.Write(65538); // write the int value header! this is the same as above but with the 64 bit header!
-            writer.Write((long)packet);
+            writer.Write(packet);
         }
 
-        private static void WriteSingle(Single packet, BinaryWriter writer)
+        private static void WriteSingle(float packet, BinaryWriter writer)
         {
             writer.Write((int)3);
-            writer.Write((Single)packet);
+            writer.Write((float)packet);
         }
 
-        private static void WriteDouble(Double packet, BinaryWriter writer)
+        private static void WriteDouble(double packet, BinaryWriter writer)
         {
             writer.Write((int)65539);// write the float value header! this is the same as above but with the 64 bit header!
-            writer.Write((Double)packet);
+            writer.Write((double)packet);
         }
 
         private static void WriteString(string packet, BinaryWriter writer)

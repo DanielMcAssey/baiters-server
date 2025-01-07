@@ -4,6 +4,7 @@ using GLOKON.Baiters.Core.Models.Actor;
 using GLOKON.Baiters.Core.Utils;
 using GLOKON.Baiters.GodotInterop;
 using GLOKON.Baiters.GodotInterop.Models;
+using System.Numerics;
 using Microsoft.Extensions.Options;
 using Serilog;
 

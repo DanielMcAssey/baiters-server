@@ -1,5 +1,6 @@
 ﻿using GLOKON.Baiters.Core.Constants;
-using GLOKON.Baiters.GodotInterop.Models;
+using System.Numerics;
+
 
 namespace GLOKON.Baiters.Core.Models.Actor
 {
@@ -11,8 +12,8 @@ namespace GLOKON.Baiters.Core.Models.Actor
 
         public RainCloud(Vector3 position): base(ActorType.RainCloud, position)
         {
-            Vector3 toCenter = (position - new Vector3(30, 40, -50)).Normalized();
-            _wanderDirection = new Vector2(toCenter.x, toCenter.z).Angle();
+            Vector3 toCenter = Vector3.Normalize(position - new Vector3(30, 40, -50));
+            _wanderDirection = (float)Math.Atan2(toCenter.Z, toCenter.X);
             DespawnTime = 540;
         }
 
@@ -26,8 +27,8 @@ namespace GLOKON.Baiters.Core.Models.Actor
                 return;
             }
 
-            Vector2 dir = new Vector2(-1, 0).Rotate(_wanderDirection) * (0.17f / 6f);
-            Position += new Vector3(dir.x, 0, dir.y);
+            Vector2 dir = Vector2.Transform(new Vector2(-1, 0), Matrix3x2.CreateRotation(_wanderDirection)) * (0.17f / 6f);
+            Position += new Vector3(dir.X, 0, dir.Y);
         }
     }
 }

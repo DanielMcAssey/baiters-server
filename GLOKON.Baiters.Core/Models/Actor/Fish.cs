@@ -1,5 +1,5 @@
 ﻿using GLOKON.Baiters.Core.Constants;
-using GLOKON.Baiters.GodotInterop.Models;
+using System.Numerics;
 
 namespace GLOKON.Baiters.Core.Models.Actor
 {
@@ -7,7 +7,7 @@ namespace GLOKON.Baiters.Core.Models.Actor
     {
         public Fish(string type, Vector3 position): base(type, position)
         {
-            DespawnTime = type == ActorType.Fish ? 80 : 120;
+            DespawnTime = (uint)(type == ActorType.Fish ? 80 : 120);
         }
     }
 }

@@ -4,7 +4,7 @@ using GLOKON.Baiters.Core.Enums.Configuration;
 using GLOKON.Baiters.Core.Models.Actor;
 using GLOKON.Baiters.Core.Models.Networking;
 using GLOKON.Baiters.Core.Plugins;
-using GLOKON.Baiters.GodotInterop.Models;
+using System.Numerics;
 using Microsoft.Extensions.Options;
 using Serilog;
 using Steamworks;

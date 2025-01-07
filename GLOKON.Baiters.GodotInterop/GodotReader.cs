@@ -17,6 +17,7 @@
   Source: https://github.com/DrMeepso/WebFishingCove/blob/main/Cove/GodotFormat/GDReader.cs
 */
 using GLOKON.Baiters.GodotInterop.Models;
+using System.Numerics;
 using System.Text;
 
 namespace GLOKON.Baiters.GodotInterop

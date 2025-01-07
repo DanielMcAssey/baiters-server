@@ -1,6 +1,7 @@
 ﻿using GLOKON.Baiters.GodotInterop.Models;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using System.Numerics;
 
 namespace GLOKON.Baiters.GodotInterop
 {
@@ -8,7 +9,7 @@ namespace GLOKON.Baiters.GodotInterop
     {
         public static TextScene ReadTextScene(string file, string[] pointTypes)
         {
-            IDictionary<string, Vector3[]> pointLocations = new Dictionary<string, Vector3[]>();
+            Dictionary<string, Vector3[]> pointLocations = [];
 
             string fileContents = File.ReadAllText(file);
             var fileLines = fileContents.Split('\n');
@@ -22,8 +23,7 @@ namespace GLOKON.Baiters.GodotInterop
                     Match isPointGroup = PointGroup().Match(fileLines[i]);
                     if (isPointGroup.Success && isPointGroup.Groups[1].Value == $"\"{pointType}\"")
                     {
-                        string transformPattern = @"Transform\(.*?,\s*(-?\d+\.?\d*),\s*(-?\d+\.?\d*),\s*(-?\d+\.?\d*)\s*\)";
-                        Match match = Regex.Match(fileLines[i + 1], transformPattern);
+                        Match match = PointTransform().Match(fileLines[i + 1]);
 
                         float x = float.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
                         float y = float.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);
@@ -44,5 +44,7 @@ namespace GLOKON.Baiters.GodotInterop
 
         [GeneratedRegex(@"groups=\[([^\]]*)\]")]
         private static partial Regex PointGroup();
+        [GeneratedRegex(@"Transform\(.*?,\s*(-?\d+\.?\d*),\s*(-?\d+\.?\d*),\s*(-?\d+\.?\d*)\s*\)")]
+        private static partial Regex PointTransform();
     }
 }

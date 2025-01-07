@@ -1,5 +1,5 @@
 ﻿using GLOKON.Baiters.Core.Constants;
-using GLOKON.Baiters.GodotInterop.Models;
+using System.Numerics;
 
 namespace GLOKON.Baiters.Core.Models.Actor
 {
