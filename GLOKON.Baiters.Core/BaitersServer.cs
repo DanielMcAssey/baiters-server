@@ -231,11 +231,77 @@ namespace GLOKON.Baiters.Core
             _actors.TryAdd(actorId, actor);
         }
 
+        public void RemoveActor(long actorId)
+        {
+            SendPacket(new("actor_action")
+            {
+                ["actor_id"] = actorId,
+                ["action"] = "queue_free",
+                ["params"] = new Dictionary<int, object>(),
+            });
+
+            _actors.TryRemove(actorId, out _);
+        }
+
         public void SpawnActor(Actor actor)
         {
             long actorId = random.NextInt64();
             AddActor(actorId, actor);
             SendActor(actorId, actor);
+        }
+
+        public void SendMessage(string message, string color = "ffffff", ulong? steamId = null)
+        {
+            SendPacket(new("message")
+            {
+                ["message"] = message,
+                ["color"] = color,
+                ["local"] = false,
+                ["position"] = Vector3.Zero,
+                ["zone"] = "main_zone",
+                ["zone_owner"] = 1
+            }, steamId);
+        }
+
+        public void SendLetter(ulong to, ulong from, string header, string body, string closing, string user)
+        {
+            SendPacket(new("letter_received")
+            {
+                ["to"] = to.ToString(),
+                ["data"] = new Dictionary<string, object>()
+                {
+                    ["to"] = to.ToString(),
+                    ["from"] = from.ToString(),
+                    ["header"] = header,
+                    ["body"] = body,
+                    ["closing"] = closing,
+                    ["user"] = user,
+                    ["letter_id"] = new Random().Next(),
+                    ["items"] = new Dictionary<int, object>(),
+                },
+            }, to);
+        }
+
+        public void SendPacket(Packet packet, ulong? steamId = null)
+        {
+            byte[] data = packet.Serialize();
+
+            if (steamId.HasValue)
+            {
+                SendPacketTo(steamId.Value, data);
+            }
+            else
+            {
+                foreach (var player in _players)
+                {
+                    SendPacketTo(player.Key, data);
+                }
+            }
+        }
+
+        public bool IsAdmin(ulong steamId)
+        {
+            return options.Admins.Contains(steamId);
         }
 
         internal void JoinPlayerLobby(ulong steamId, string playerName)
@@ -278,7 +344,13 @@ namespace GLOKON.Baiters.Core
             {
                 var fisherName = player.FisherName;
                 Log.Information("[{steamId}] {fisherName} left the server", steamId, fisherName);
-                SendWebLobbyLeftPacket(steamId);
+
+                SendPacket(new("user_left_weblobby")
+                {
+                    ["user_id"] = (long)steamId,
+                    ["reason"] = 0
+                });
+
                 UpdatePlayerCount();
 
                 if (player.ActorId.HasValue)
@@ -290,51 +362,7 @@ namespace GLOKON.Baiters.Core
             }
         }
 
-        public void RemoveActor(long actorId)
-        {
-            SendPacket(new("actor_action")
-            {
-                ["actor_id"] = actorId,
-                ["action"] = "queue_free",
-                ["params"] = new Dictionary<int, object>(),
-            });
-
-            _actors.TryRemove(actorId, out _);
-        }
-
-        public void SendMessage(string message, string color = "ffffff", ulong? steamId = null)
-        {
-            SendPacket(new("message")
-            {
-                ["message"] = message,
-                ["color"] = color,
-                ["local"] = false,
-                ["position"] = Vector3.Zero,
-                ["zone"] = "main_zone",
-                ["zone_owner"] = 1
-            }, steamId);
-        }
-
-        public void SendLetter(ulong to, ulong from, string header, string body, string closing, string user)
-        {
-            SendPacket(new("letter_received")
-            {
-                ["to"] = to.ToString(),
-                ["data"] = new Dictionary<string, object>()
-                {
-                    ["to"] = to.ToString(),
-                    ["from"] = from.ToString(),
-                    ["header"] = header,
-                    ["body"] = body,
-                    ["closing"] = closing,
-                    ["user"] = user,
-                    ["letter_id"] = new Random().Next(),
-                    ["items"] = new Dictionary<int, object>(),
-                },
-            }, to);
-        }
-
-        public void SendActor(long actorId, Actor actor, ulong? steamId = null)
+        internal void SendActor(long actorId, Actor actor, ulong? steamId = null)
         {
             Dictionary<string, object> instanceActorPrams = [];
             instanceActorPrams["actor_type"] = actor.Type;
@@ -361,24 +389,7 @@ namespace GLOKON.Baiters.Core
             }, steamId);
         }
 
-        public void SendPacket(Packet packet, ulong? steamId = null)
-        {
-            byte[] data = packet.Serialize();
-
-            if (steamId.HasValue)
-            {
-                SendPacketTo(steamId.Value, data);
-            }
-            else
-            {
-                foreach (var player in _players)
-                {
-                    SendPacketTo(player.Key, data);
-                }
-            }
-        }
-
-        public void OnPlayerChat(ulong sender, string message)
+        internal void OnPlayerChat(ulong sender, string message)
         {
             string fisherName = "UNKNOWN";
 
@@ -389,11 +400,6 @@ namespace GLOKON.Baiters.Core
             }
 
             Log.Information("[{sender}] {fisherName}: {message}", sender, fisherName, message);
-        }
-
-        public bool IsAdmin(ulong steamId)
-        {
-            return options.Admins.Contains(steamId);
         }
 
         protected abstract void ReceivePackets();
@@ -424,15 +430,6 @@ namespace GLOKON.Baiters.Core
             {
                 ["weblobby"] = usersInServer
             }, steamId);
-        }
-
-        protected void SendWebLobbyLeftPacket(ulong steamId)
-        {
-            SendPacket(new("user_left_weblobby")
-            {
-                ["user_id"] = (long)steamId,
-                ["reason"] = 0
-            });
         }
 
         private async Task<Lobby> SetupLobbyAsync(string lobbyCode)
@@ -476,6 +473,7 @@ namespace GLOKON.Baiters.Core
             newLobby.SetData("lobby_name", options.ServerName);
             newLobby.SetData("name", options.ServerName);
             newLobby.SetData("server_browser_value", "0");
+            newLobby.SetData("timestamp", DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString());
 
             string[] validTags = ["talkative", "quiet", "grinding", "chill", "silly", "hardcore", "mature", "modded"];
 
@@ -483,9 +481,6 @@ namespace GLOKON.Baiters.Core
             {
                 newLobby.SetData($"tag_{tag}", options.Tags.Contains(tag) ? "1" : "0");
             }
-
-            ulong epoch = (ulong)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds;
-            newLobby.SetData("timestamp", epoch.ToString());
 
             Log.Information("{0} {1} lobby created, max players {2}, invite code: {3}", options.ServerName, options.JoinType, options.MaxPlayers, lobbyCode);
 
@@ -496,22 +491,23 @@ namespace GLOKON.Baiters.Core
         {
             if (message.Length <= 0) return;
 
-            var fromId = from.Id;
-            Log.Debug("Lobby[{fromId}]: {message}", fromId, message);
+            Log.Debug("Lobby[{0}]: {1}", from.Id, message);
 
             if (string.Compare(message, "$weblobby_join_request", true) == 0)
             {
-                JoinPlayerLobby(fromId, from.Name ?? "Unknown");
+                JoinPlayerLobby(from.Id, from.Name ?? "Unknown");
             }
         }
 
         private void SteamMatchmaking_OnLobbyMemberLeave(Lobby lobby, Friend from)
         {
+            Log.Debug("Lobby[{0}]: Member Left", from.Id);
             LeavePlayer(from.Id);
         }
 
         private void SteamMatchmaking_OnLobbyMemberDisconnected(Lobby lobby, Friend from)
         {
+            Log.Debug("Lobby[{0}]: Member Disconnected", from.Id);
             LeavePlayer(from.Id);
         }
 

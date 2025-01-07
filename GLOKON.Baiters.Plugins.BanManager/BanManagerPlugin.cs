@@ -3,6 +3,7 @@ using GLOKON.Baiters.Core.Plugins;
 using Newtonsoft.Json;
 using Serilog;
 using System.Collections.Concurrent;
+using System.Reflection;
 
 namespace GLOKON.Baiters.Plugins.BanManager
 {
@@ -11,7 +12,7 @@ namespace GLOKON.Baiters.Plugins.BanManager
         "Ban Manager",
         "A plugin to handle players bans",
         "Daniel McAssey <dan@glokon.me>",
-        "1.0.0")
+        Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0.0.0")
     {
         private readonly string _bansFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bans.json");
         private ConcurrentDictionary<ulong, PlayerBan> _playerBans = new();

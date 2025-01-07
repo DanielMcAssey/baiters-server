@@ -1,5 +1,6 @@
 ﻿using GLOKON.Baiters.Core;
 using GLOKON.Baiters.Core.Plugins;
+using System.Reflection;
 
 namespace GLOKON.Baiters.Plugins.ChatCommand
 {
@@ -8,7 +9,7 @@ namespace GLOKON.Baiters.Plugins.ChatCommand
         "Chat Command",
         "A plugin to handle players chat commands",
         "Daniel McAssey <dan@glokon.me>",
-        "1.0.0")
+        Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0.0.0")
     {
         public override void OnInit()
         {
