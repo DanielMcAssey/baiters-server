@@ -1,17 +1,11 @@
-﻿using GLOKON.Baiters.Core.Chat;
-using GLOKON.Baiters.Core.Configuration;
-using GLOKON.Baiters.Core.Packets;
+﻿using GLOKON.Baiters.Core.Configuration;
 using Microsoft.Extensions.Options;
 using Serilog;
 using Steamworks;
 
 namespace GLOKON.Baiters.Core
 {
-    public sealed class P2PBaitersServer(
-        IOptions<WebFishingOptions> options,
-        PacketManager packetManager,
-        ChatManager chatManager
-        ) : BaitersServer(options, packetManager, chatManager)
+    public sealed class P2PBaitersServer(IOptions<WebFishingOptions> options) : BaitersServer(options)
     {
         private const int p2pChannelCount = 6; // The amount of P2P channels used
 

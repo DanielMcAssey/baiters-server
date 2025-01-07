@@ -6,11 +6,11 @@ using Serilog;
 
 namespace GLOKON.Baiters.Core.Packets
 {
-    public sealed class PacketManager(IOptions<WebFishingOptions> options) : IPacketHandler
+    public sealed class PacketManager
     {
         private readonly Dictionary<string, IPacketHandler> handlers = [];
 
-        public void Setup(BaitersServer server)
+        public PacketManager(IOptions<WebFishingOptions> options, BaitersServer server)
         {
             handlers.Add("handshake_request", new HandshakeRequestHandler(server));
             handlers.Add("new_player_join", new NewPlayerJoinHandler(server, options.Value.JoinMessage));
@@ -20,9 +20,10 @@ namespace GLOKON.Baiters.Core.Packets
             handlers.Add("actor_action", new ActorActionHandler(server));
             handlers.Add("request_actors", new RequestActorsHandler(server));
             handlers.Add("chalk_packet", new ChalkPacketHandler(server));
+            server.OnPacket += Server_OnPacket;
         }
 
-        public void Handle(ulong sender, Packet packet)
+        private void Server_OnPacket(ulong sender, Packet packet)
         {
             string type = packet.Type;
             Log.Debug("Handling packet {type} for {sender}", type, sender);

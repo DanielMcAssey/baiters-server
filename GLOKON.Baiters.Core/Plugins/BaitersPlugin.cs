@@ -1,4 +1,4 @@
-﻿using GLOKON.Baiters.Core.Models.Networking;
+﻿using Serilog;
 
 namespace GLOKON.Baiters.Core.Plugins
 {
@@ -19,24 +19,18 @@ namespace GLOKON.Baiters.Core.Plugins
         /// <summary>
         /// Called when plugin is initialized
         /// </summary>
-        public virtual void OnInit() { }
+        public virtual void OnInit()
+        {
+            Log.Debug("[{Name}] Plugin Initialized ({Version})", Name, Version);
+        }
 
         /// <summary>
         /// Called when plugin is cleaned up
         /// </summary>
-        public virtual void OnDestroy() { }
-
-        /// <summary>
-        /// Called every time the server ticks
-        /// </summary>
-        public virtual void OnUpdate() { }
-
-        /// <summary>
-        /// Called when a message is received from a player
-        /// </summary>
-        /// <param name="sender">The SteamID of the player who sent the message</param>
-        /// <param name="message">The raw message</param>
-        public virtual void OnChatMessage(ulong sender, string message) { }
+        public virtual void OnDestroy()
+        {
+            Log.Debug("[{Name}] Plugin Unloaded ({Version})", Name, Version);
+        }
 
         /// <summary>
         /// Called when a player is trying to join
@@ -47,24 +41,5 @@ namespace GLOKON.Baiters.Core.Plugins
         {
             return true;
         }
-
-        /// <summary>
-        /// Called when a player joins the server
-        /// </summary>
-        /// <param name="steamId">The SteamID of the player who joined the server</param>
-        public virtual void OnPlayerJoin(ulong steamId) { }
-
-        /// <summary>
-        /// Called when a player leaves the server
-        /// </summary>
-        /// <param name="steamid">The SteamID of the player who left the server</param>
-        public virtual void OnPlayerLeft(ulong steamId) { }
-
-        /// <summary>
-        /// Called when a packet is received to the server
-        /// </summary>
-        /// <param name="sender">The SteamID of the player the packet is from</param>
-        /// <param name="packet">The packet contents</param>
-        public virtual void OnPlayerPacket(ulong sender, Packet packet) { }
     }
 }

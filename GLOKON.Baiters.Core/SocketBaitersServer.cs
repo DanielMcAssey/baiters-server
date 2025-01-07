@@ -1,28 +1,30 @@
-﻿using GLOKON.Baiters.Core.Chat;
-using GLOKON.Baiters.Core.Configuration;
-using GLOKON.Baiters.Core.Packets;
+﻿using GLOKON.Baiters.Core.Configuration;
 using Microsoft.Extensions.Options;
+using Serilog;
+using Steamworks;
 using Steamworks.Data;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 
 namespace GLOKON.Baiters.Core
 {
-    public sealed class SocketBaitersServer(
-        IOptions<WebFishingOptions> options,
-        PacketManager packetManager,
-        ChatManager chatManager
-        ) : BaitersServer(options, packetManager, chatManager)
+    public sealed class SocketBaitersServer(IOptions<WebFishingOptions> options) : BaitersServer(options)
     {
         private readonly ConcurrentDictionary<ulong, Connection> _connections = new();
 
         public override void OnConnecting(Connection connection, ConnectionInfo data)
         {
             _connections.TryRemove(data.Identity.SteamId, out _);
-            if (CanSteamIdJoin(data.Identity.SteamId) && _connections.TryAdd(data.Identity.SteamId, connection))
+            if (CanSteamIdJoin(data.Identity.SteamId))
             {
-                connection.Accept();
-                SendWebLobbyPacket(data.Identity.SteamId);
+                if (connection.Accept() == Result.OK && _connections.TryAdd(data.Identity.SteamId, connection))
+                {
+                    SendWebLobbyPacket(data.Identity.SteamId);
+                }
+                else
+                {
+                    Log.Error("Failed to accept connection from {0}", data.Identity.SteamId);
+                }
             }
             else
             {
@@ -33,7 +35,6 @@ namespace GLOKON.Baiters.Core
         public override void OnDisconnected(Connection connection, ConnectionInfo data)
         {
             LeavePlayer(data.Identity.SteamId);
-            _connections.TryRemove(data.Identity.SteamId, out _);
         }
 
         public override void OnMessage(Connection connection, NetIdentity identity, IntPtr data, int size, long messageNum, long recvTime, int channel)
@@ -42,6 +43,13 @@ namespace GLOKON.Baiters.Core
             Marshal.Copy(data, messageData, 0, size);
 
             HandleNetworkPacket(identity.SteamId, messageData);
+        }
+
+        internal override void LeavePlayer(ulong steamId)
+        {
+            base.LeavePlayer(steamId);
+
+            _connections.TryRemove(steamId, out _);
         }
 
         protected override void ReceivePackets()
@@ -53,7 +61,10 @@ namespace GLOKON.Baiters.Core
         {
             if (_connections.TryGetValue(steamId, out var connection))
             {
-                connection.SendMessage(data, laneIndex: 2);
+                if (connection.SendMessage(data, laneIndex: 2) != Result.OK)
+                {
+                    LeavePlayer(steamId);
+                }
             }
         }
     }

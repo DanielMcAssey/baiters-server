@@ -4,12 +4,33 @@ using System.Collections.Concurrent;
 
 namespace GLOKON.Baiters.Core.Chat
 {
-    public class ChatManager(IOptions<WebFishingOptions> _options)
+    public class ChatManager
     {
-        private readonly WebFishingOptions options = _options.Value;
+        private readonly WebFishingOptions options;
         private readonly ConcurrentDictionary<string, ChatCommand> _commands = new();
 
-        public IEnumerable<KeyValuePair<string, ChatCommand>> Commands => _commands;
+        public ChatManager(IOptions<WebFishingOptions> _options, BaitersServer server)
+        {
+            options = _options.Value;
+            server.OnChatMessage += Server_OnChatMessage;
+
+            ListenFor("help", "Show all the commands and their help text", (sender, commandParams) =>
+            {
+                if (!server.IsAdmin(sender))
+                {
+                    return;
+                }
+
+                server.SendMessage("-- Help --", "0f0f0f", sender);
+
+                foreach (var chatCommand in _commands)
+                {
+                    server.SendMessage(string.Format("- {0}: {1}", chatCommand.Key, chatCommand.Value.HelpText), "0f0f0f", sender);
+                }
+
+                server.SendMessage("----", "0f0f0f", sender);
+            });
+        }
 
         public void ListenFor(string command, string helpText, Action<ulong, string[]> onCommand)
         {
@@ -21,7 +42,7 @@ namespace GLOKON.Baiters.Core.Chat
             _commands.TryRemove(command, out _);
         }
 
-        public void OnChatMessage(ulong sender,  string message)
+        private void Server_OnChatMessage(ulong sender,  string message)
         {
             if (message.Length <= 0 || !message.StartsWith(options.CommandPrefix))
             {

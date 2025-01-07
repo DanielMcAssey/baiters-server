@@ -1,6 +1,4 @@
-﻿using GLOKON.Baiters.Core.Chat;
-using GLOKON.Baiters.Core.Configuration;
-using GLOKON.Baiters.Core.Packets;
+﻿using GLOKON.Baiters.Core.Configuration;
 using Microsoft.Extensions.Options;
 using Serilog;
 using Steamworks;
@@ -10,11 +8,7 @@ using System.Runtime.InteropServices;
 
 namespace GLOKON.Baiters.Core
 {
-    public sealed class NetworkMessageBaitersServer(
-        IOptions<WebFishingOptions> options,
-        PacketManager packetManager,
-        ChatManager chatManager
-        ) : BaitersServer(options, packetManager, chatManager)
+    public sealed class NetworkMessageBaitersServer(IOptions<WebFishingOptions> options) : BaitersServer(options)
     {
         private const int p2pChannelCount = 6; // The amount of P2P channels used
 
@@ -38,6 +32,12 @@ namespace GLOKON.Baiters.Core
             SteamNetworkingMessages.OnMessage -= SteamNetworkingMessages_OnMessage;
         }
 
+        internal override void LeavePlayer(ulong steamId)
+        {
+            _connections.TryRemove(steamId, out _);
+            base.LeavePlayer(steamId);
+        }
+
         protected override void ReceivePackets()
         {
             for (int channel = 0; channel < p2pChannelCount; channel++)
@@ -52,7 +52,6 @@ namespace GLOKON.Baiters.Core
             {
                 if (SteamNetworkingMessages.SendMessageToUser(ref connection, data, nRemoteChannel: 2) != Result.OK)
                 {
-                    _connections.TryRemove(steamId, out _);
                     LeavePlayer(steamId);
                     SteamNetworkingMessages.CloseSessionWithUser(ref connection);
                 }
@@ -71,7 +70,6 @@ namespace GLOKON.Baiters.Core
         {
             var steamId = connection.Identity.SteamId;
             Log.Error($"Failed connection for {steamId}");
-            _connections.TryRemove(steamId, out _);
             LeavePlayer(steamId);
         }
 

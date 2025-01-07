@@ -10,5 +10,12 @@ namespace GLOKON.Baiters.Core.Models.Actor
         public ISet<ulong> BlockedPlayers { get; } = new HashSet<ulong>();
 
         public bool IsAdmin { get; } = isAdmin;
+
+        public long? ActorId { get; private set; }
+
+        public void SetActorId(long actorId)
+        {
+            ActorId = actorId;
+        }
     }
 }

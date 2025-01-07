@@ -1,10 +1,8 @@
-﻿using GLOKON.Baiters.Core.Chat;
-using GLOKON.Baiters.Core.Configuration;
+﻿using GLOKON.Baiters.Core.Configuration;
 using GLOKON.Baiters.Core.Constants;
 using GLOKON.Baiters.Core.Enums.Configuration;
 using GLOKON.Baiters.Core.Models.Actor;
 using GLOKON.Baiters.Core.Models.Networking;
-using GLOKON.Baiters.Core.Packets;
 using GLOKON.Baiters.Core.Plugins;
 using GLOKON.Baiters.GodotInterop.Models;
 using Microsoft.Extensions.Options;
@@ -12,15 +10,10 @@ using Serilog;
 using Steamworks;
 using Steamworks.Data;
 using System.Collections.Concurrent;
-using System.Text;
 
 namespace GLOKON.Baiters.Core
 {
-    public abstract class BaitersServer(
-        IOptions<WebFishingOptions> _options,
-        PacketManager packetManager,
-        ChatManager chatManager
-        ) : ISocketManager
+    public abstract class BaitersServer(IOptions<WebFishingOptions> _options) : ISocketManager
     {
         private readonly WebFishingOptions options = _options.Value;
         private readonly Random random = new();
@@ -45,21 +38,56 @@ namespace GLOKON.Baiters.Core
 
         protected SocketManager? _socketManager;
         private Lobby _lobby;
+        private ulong? _serverSteamId;
 
         public IEnumerable<KeyValuePair<long, Actor>> Actors => _actors;
         public IEnumerable<KeyValuePair<ulong, Player>> Players => _players;
+        public int NpcActorCount => _actors.Where((kv) => kv.Value.Type != ActorType.Player).Count();
 
-        public int NpcActorCount { get { return _actors.Where((kv) => kv.Value.Type != ActorType.Player).Count(); } }
+        /// <summary>
+        /// Called every tick of the server
+        /// </summary>
+        public event Action? OnTick;
+
+        /// <summary>
+        /// Called when a chat message is received
+        /// </summary>
+        public event Action<ulong, string>? OnChatMessage;
+
+        /// <summary>
+        /// Called when a player has joined
+        /// </summary>
+        public event Action<ulong>? OnPlayerJoined;
+
+        /// <summary>
+        /// Called when a player leaves
+        /// </summary>
+        public event Action<ulong>? OnPlayerLeft;
+
+        /// <summary>
+        /// Called when a new packet is received
+        /// </summary>
+        public event Action<ulong, Packet>? OnPacket;
 
         /// <summary>
         /// Only available after the server Setup has been called
         /// </summary>
-        public ulong ServerId { get { return SteamClient.SteamId.Value; } }
+        public ulong ServerId
+        {
+            get
+            {
+                if (!_serverSteamId.HasValue)
+                {
+                    // Cache this, as call can be slow
+                    _serverSteamId = SteamClient.SteamId.Value;
+                }
+
+                return _serverSteamId.Value;
+            }
+        }
 
         public virtual void Setup()
         {
-            packetManager.Setup(this);
-
             try
             {
                 SteamClient.Init(options.AppId);
@@ -100,10 +128,7 @@ namespace GLOKON.Baiters.Core
 
                 actorsToRemove.Clear();
 
-                foreach (var plugin in PluginLoader.Plugins)
-                {
-                    plugin.OnUpdate();
-                }
+                OnTick?.Invoke();
 
                 await Task.Delay(1000 / options.Modifiers.TicksPerSecond, CancellationToken.None);
             }
@@ -233,23 +258,15 @@ namespace GLOKON.Baiters.Core
         internal virtual void JoinPlayer(ulong steamId, long actorId, Player player)
         {
             AddActor(actorId, player);
-
-            var fisherName = player.FisherName;
-            Log.Information("[{steamId}] {fisherName} joined the server", steamId, fisherName);
-
+            player.SetActorId(actorId);
+            Log.Information("[{0}] {1} joined the server", steamId, player.FisherName);
             SendWebLobbyPacket(steamId);
             UpdatePlayerCount();
-
-            foreach (var plugin in PluginLoader.Plugins)
-            {
-                plugin.OnPlayerJoin(steamId);
-            }
+            OnPlayerJoined?.Invoke(steamId);
         }
 
         internal virtual void LeavePlayer(ulong steamId)
         {
-            // TODO: Do we need to remove actor here?
-
             if (_players.Remove(steamId, out var player) && player != null)
             {
                 var fisherName = player.FisherName;
@@ -257,10 +274,12 @@ namespace GLOKON.Baiters.Core
                 SendWebLobbyLeftPacket(steamId);
                 UpdatePlayerCount();
 
-                foreach (var plugin in PluginLoader.Plugins)
+                if (player.ActorId.HasValue)
                 {
-                    plugin.OnPlayerLeft(steamId);
+                    RemoveActor(player.ActorId.Value);
                 }
+
+                OnPlayerLeft?.Invoke(steamId);
             }
         }
 
@@ -355,16 +374,11 @@ namespace GLOKON.Baiters.Core
         public void OnPlayerChat(ulong sender, string message)
         {
             string fisherName = "UNKNOWN";
-            chatManager.OnChatMessage(sender, message);
 
             if (_players.TryGetValue(sender, out var player) && player != null)
             {
                 fisherName = player.FisherName;
-
-                foreach (var plugin in PluginLoader.Plugins)
-                {
-                    plugin.OnChatMessage(sender, message);
-                }
+                OnChatMessage?.Invoke(sender, message);
             }
 
             Log.Information("[{sender}] {fisherName}: {message}", sender, fisherName, message);
@@ -381,17 +395,7 @@ namespace GLOKON.Baiters.Core
 
         protected void HandleNetworkPacket(ulong sender, byte[] data)
         {
-            var packet = Packet.Parse(data);
-
-            packetManager.Handle(sender, packet);
-
-            if (_players.ContainsKey(sender))
-            {
-                foreach (var plugin in PluginLoader.Plugins)
-                {
-                    plugin.OnPlayerPacket(sender, packet);
-                }
-            }
+            OnPacket?.Invoke(sender, Packet.Parse(data));
         }
 
         protected void SendWebLobbyPacket(ulong? steamId = null)

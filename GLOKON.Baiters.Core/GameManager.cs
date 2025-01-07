@@ -8,12 +8,14 @@ using Steamworks;
 namespace GLOKON.Baiters.Core
 {
     public sealed class GameManager(
-        IOptions<WebFishingOptions> options,
+        IOptions<WebFishingOptions> _options,
         ChatManager chat,
         BaitersServer server,
         ActorSpawner spawner)
     {
-        public WebFishingOptions Options => options.Value;
+        private readonly WebFishingOptions options = _options.Value;
+
+        public WebFishingOptions Options => options;
 
         public BaitersServer Server => server;
 
@@ -27,12 +29,11 @@ namespace GLOKON.Baiters.Core
             Dispatch.OnException = (e) => Log.Error(e.InnerException, e.Message);
 
             Server.Setup();
-            Spawner.Setup();
         }
 
         public void Start(CancellationToken cancellationToken)
         {
-            if (options.Value.PluginsEnabled)
+            if (options.PluginsEnabled)
             {
                 PluginLoader.LoadPlugins(this);
             }

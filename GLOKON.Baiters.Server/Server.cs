@@ -37,9 +37,9 @@ namespace GLOKON.Baiters.Server
 
             services.AddSingleton<PacketManager>();
             services.AddSingleton<ChatManager>();
-            //services.AddSingleton<BaitersServer, SocketBaitersServer>(); // TODO: When GameServer supports SteamNetworkingSockets
-            //services.AddSingleton<BaitersServer, P2PBaitersServer>();
-            services.AddSingleton<BaitersServer, NetworkMessageBaitersServer>();
+            //services.AddSingleton<BaitersServer, P2PBaitersServer>(); // SteamNetworking Server
+            //services.AddSingleton<BaitersServer, SocketBaitersServer>(); // SteamNetworkingSockets Server
+            services.AddSingleton<BaitersServer, NetworkMessageBaitersServer>(); // SteamNetworkingMessages Server
             services.AddSingleton<ActorSpawner>();
             services.AddSingleton<GameManager>();
             services.AddHostedService<GameManagerService>();

@@ -14,23 +14,6 @@ namespace GLOKON.Baiters.Plugins.ChatCommand
         {
             base.OnInit();
 
-            GM.Chat.ListenFor("help", "Show all the commands and their help text", (sender, commandParams) =>
-            {
-                if (!GM.Server.IsAdmin(sender))
-                {
-                    return;
-                }
-
-                GM.Server.SendMessage("-- Help --", "0f0f0f", sender);
-
-                foreach (var chatCommand in GM.Chat.Commands)
-                {
-                    GM.Server.SendMessage(string.Format("- {0}: {1}", chatCommand.Key, chatCommand.Value.HelpText), "0f0f0f", sender);
-                }
-
-                GM.Server.SendMessage("----", "0f0f0f", sender);
-            });
-
             GM.Chat.ListenFor("users.list", "Show all the users in the server", (sender, commandParams) =>
             {
                 if (!GM.Server.IsAdmin(sender))

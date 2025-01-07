@@ -1,9 +1,9 @@
 ﻿namespace GLOKON.Baiters.Core.Chat
 {
-    public class ChatCommand
+    internal class ChatCommand
     {
-        public required string HelpText { get; set; }
+        internal required string HelpText { get; set; }
 
-        public required Action<ulong, string[]> OnCommand { get; set; }
+        internal required Action<ulong, string[]> OnCommand { get; set; }
     }
 }

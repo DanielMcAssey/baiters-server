@@ -9,30 +9,32 @@ using Serilog;
 
 namespace GLOKON.Baiters.Core
 {
-    public sealed class ActorSpawner(
-        IOptions<WebFishingOptions> options,
-        BaitersServer server)
+    public sealed class ActorSpawner
     {
+        private readonly WebFishingOptions options;
+        private readonly BaitersServer server;
         private readonly Random random = new();
         private readonly TextScene mainZone = LoadScene("main_zone");
         private readonly WeightedList<string> spawnProbabilities = [];
 
         public static IReadOnlyCollection<string> Spawnable => [ActorType.Fish, ActorType.RainCloud, ActorType.Meteor, ActorType.VoidPortal, ActorType.Metal];
 
-        public void Setup()
+        public ActorSpawner(IOptions<WebFishingOptions> _options, BaitersServer server)
         {
-            spawnProbabilities.Add("none", (long)(options.Value.Modifiers.FishChance * 1000));
-            spawnProbabilities.Add(ActorType.Fish, (long)(options.Value.Modifiers.FishChance * 1000)); // Fish and None share the same probability, as one or the other is more likely
-            spawnProbabilities.Add(ActorType.RainCloud, (long)(options.Value.Modifiers.RainChance * 1000));
-            spawnProbabilities.Add(ActorType.Meteor, (long)(options.Value.Modifiers.MeteorChance * 1000));
-            spawnProbabilities.Add(ActorType.VoidPortal, (long)(options.Value.Modifiers.VoidPortalChance * 1000));
+            options = _options.Value;
+            this.server = server;
+            spawnProbabilities.Add("none", (long)(options.Modifiers.FishChance * 1000));
+            spawnProbabilities.Add(ActorType.Fish, (long)(options.Modifiers.FishChance * 1000)); // Fish and None share the same probability, as one or the other is more likely
+            spawnProbabilities.Add(ActorType.RainCloud, (long)(options.Modifiers.RainChance * 1000));
+            spawnProbabilities.Add(ActorType.Meteor, (long)(options.Modifiers.MeteorChance * 1000));
+            spawnProbabilities.Add(ActorType.VoidPortal, (long)(options.Modifiers.VoidPortalChance * 1000));
         }
 
         public async Task RunAsync(CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                if (server.NpcActorCount < options.Value.Modifiers.MaxNpcActors)
+                if (server.NpcActorCount < options.Modifiers.MaxNpcActors)
                 {
                     try
                     {
@@ -56,7 +58,7 @@ namespace GLOKON.Baiters.Core
             switch (type)
             {
                 case ActorType.Fish:
-                    if (server.GetActorsByType(ActorType.Fish).Count() < options.Value.Modifiers.MaxFish)
+                    if (server.GetActorsByType(ActorType.Fish).Count() < options.Modifiers.MaxFish)
                     {
                         SpawnFish();
                     }
@@ -72,7 +74,7 @@ namespace GLOKON.Baiters.Core
                     SpawnVoidPortal();
                     break;
                 case ActorType.Metal:
-                    if (server.GetActorsByType(ActorType.Metal).Count() < options.Value.Modifiers.MaxMetal)
+                    if (server.GetActorsByType(ActorType.Metal).Count() < options.Modifiers.MaxMetal)
                     {
                         SpawnMetal();
                     }
