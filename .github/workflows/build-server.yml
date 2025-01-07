@@ -15,13 +15,14 @@ on:
       buildRuntime:
         required: true
         type: string
+      tag:
+        required: true
+        type: string
       version:
         required: true
         type: string
     secrets:
       token:
-        required: true
-      nugetApiKey:
         required: true
 
 permissions:
@@ -46,12 +47,6 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 'lts/*'
-          cache: 'npm'
-
       - name: Setup dotnet
         uses: actions/setup-dotnet@v3
         with:
@@ -61,30 +56,22 @@ jobs:
         run: npm ci
 
       - name: Build Server
-        run: dotnet publish GLOKON.Baiters.Server/GLOKON.Baiters.Server.csproj --configuration Release --runtime ${{ inputs.buildRuntime }} --output dist
+        run: dotnet publish GLOKON.Baiters.Server/GLOKON.Baiters.Server.csproj -p:Version="${{ inputs.version }}.0" --configuration Release --runtime ${{ inputs.buildRuntime }} --output dist
 
       - name: Build Plugin (BanManager)
-        run: dotnet publish GLOKON.Baiters.Plugins.BanManager/GLOKON.Baiters.Plugins.BanManager.csproj --configuration Release --runtime ${{ inputs.buildRuntime }} --output dist/plugins
+        run: dotnet publish GLOKON.Baiters.Plugins.BanManager/GLOKON.Baiters.Plugins.BanManager.csproj -p:Version="${{ inputs.version }}.0" --configuration Release --runtime ${{ inputs.buildRuntime }} --output dist/plugins
 
       - name: Build Plugin (ChatCommand)
-        run: dotnet publish GLOKON.Baiters.Plugins.ChatCommand/GLOKON.Baiters.Plugins.ChatCommand.csproj --configuration Release --runtime ${{ inputs.buildRuntime }} --output dist/plugins
+        run: dotnet publish GLOKON.Baiters.Plugins.ChatCommand/GLOKON.Baiters.Plugins.ChatCommand.csproj -p:Version="${{ inputs.version }}.0" --configuration Release --runtime ${{ inputs.buildRuntime }} --output dist/plugins
 
       - uses: vimtor/action-zip@v1.2
         if: inputs.publish == true
         with:
           files: dist/
-          dest: baiters-server-${{ inputs.buildRuntime }}.zip
+          dest: baiters-server-${{ inputs.buildRuntime }}-${{ inputs.version }}.zip
 
       - name: (GitHub) Upload Asset
         if: inputs.publish == true
         env:
             GITHUB_TOKEN: ${{ secrets.token }}
-        run: gh release upload ${{ inputs.version }} ./baiters-server-${{ inputs.buildRuntime }}.zip
-
-      - name: (NuGet) Pack Core Library
-        if: inputs.publish == true
-        run: dotnet pack GLOKON.Baiters.Core/GLOKON.Baiters.Core.csproj --configuration Release --output nupkgs
-
-      - name: (NuGet) Publish Core Library
-        if: inputs.publish == true
-        run: dotnet nuget push "nupkgs/*.nupkg" -k ${{ secrets.nugetApiKey }} -s https://api.nuget.org/v3/index.json
+        run: gh release upload ${{ inputs.tag }} ./baiters-server-${{ inputs.buildRuntime }}-${{ inputs.version }}.zip

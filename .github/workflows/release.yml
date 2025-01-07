@@ -28,6 +28,11 @@ jobs:
           node-version: 'lts/*'
           cache: 'npm'
 
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
       - name: Install dependencies
         run: npm ci
 
@@ -36,6 +41,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
+
+      - name: (NuGet) Pack Core Library
+        run: dotnet pack GLOKON.Baiters.Core/GLOKON.Baiters.Core.csproj --configuration Release --output nupkgs
+
+      - name: (NuGet) Publish Core Library
+        run: dotnet nuget push "nupkgs/*.nupkg" -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
 
       - name: Show Version
         run: echo "Next version is ${{ steps.release-next-version.outputs.new-release-version }} (${{ github.ref_name }})"
@@ -62,7 +73,9 @@ jobs:
       operatingSystem: ${{ matrix.os }}
       buildRuntime: ${{ matrix.rid }}
       publish: ${{ contains(fromJSON('["main", "beta", "alpha"]'), github.ref_name) }}
-      version: ${{ needs.build_and_release.outputs.tag }}
+      tag: ${{ needs.build_and_release.outputs.tag }}
+      version: ${{ needs.build_and_release.outputs.version }}
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}
-      nugetApiKey: ${{ secrets.NUGET_API_KEY }}
+
+    
