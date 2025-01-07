@@ -1,0 +1,21 @@
+plugins:
+  - "@semantic-release/commit-analyzer"
+  - "semantic-release-export-data"
+  - "@semantic-release/release-notes-generator"
+  - - "@google/semantic-release-replace-plugin"
+    - replacements:
+        - files:
+            - "GLOKON.Baiters.Core/GLOKON.Baiters.Core.csproj"
+            - "GLOKON.Baiters.Plugins.BanManager/GLOKON.Baiters.Plugins.BanManager.csproj"
+            - "GLOKON.Baiters.Plugins.ChatCommand/GLOKON.Baiters.Plugins.ChatCommand.csproj"
+            - "GLOKON.Baiters.Server/GLOKON.Baiters.Server.csproj"
+          from: "<AssemblyVersion>.*</AssemblyVersion>"
+          to: "<AssemblyVersion>${nextRelease.version}.0</AssemblyVersion>"
+  - "@semantic-release/github"
+branches:
+  - "main"
+  - "+([0-9])?(.{+([0-9]),x}).x"
+  - name: "alpha"
+    prerelease: "alpha"
+  - name: "beta"
+    prerelease: "beta"

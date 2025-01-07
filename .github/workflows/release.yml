@@ -1,0 +1,68 @@
+name: Build and Release
+on:
+  push:
+    branches:
+      - main
+      - beta
+      - alpha
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  id-token: write
+  issues: write
+  contents: write
+  pull-requests: write
+jobs:
+  build_and_release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Release
+        id: release-next-version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
+
+      - name: Show Version
+        run: echo "Next version is ${{ steps.release-next-version.outputs.new-release-version }} (${{ github.ref_name }})"
+
+    outputs:
+      published: ${{ steps.release-next-version.outputs.new-release-published }}
+      version: ${{ steps.release-next-version.outputs.new-release-version }}
+      tag: ${{ steps.release-next-version.outputs.new-release-git-tag }}
+
+  build-server:
+    name: Build Server
+    uses: ./.github/workflows/build-server.yml
+    needs:
+      - build_and_release
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            rid: linux-x64
+          - os: windows-latest
+            rid: win-x64
+    with:
+      branch: ${{ github.ref_name }}
+      operatingSystem: ${{ matrix.os }}
+      buildRuntime: ${{ matrix.rid }}
+      publish: ${{ contains(fromJSON('["main", "beta", "alpha"]'), github.ref_name) }}
+      version: ${{ needs.build_and_release.outputs.tag }}
+    secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}
+      nugetApiKey: ${{ secrets.NUGET_API_KEY }}

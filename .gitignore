@@ -400,3 +400,6 @@ FodyWeavers.xsd
 *.sln.iml
 *.tscn
 !NativeLib/**
+dist/
+nupkgs/
+*.zip

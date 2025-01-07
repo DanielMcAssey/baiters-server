@@ -1,0 +1,30 @@
+name: Build and Package
+on:
+  push:
+    branches-ignore:
+      - main
+      - alpha
+      - beta
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build-server:
+    name: Build Server
+    uses: ./.github/workflows/build-server.yml
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            rid: linux-x64
+          - os: windows-latest
+            rid: win-x64
+    with:
+      branch: ${{ github.ref_name }}
+      operatingSystem: ${{ matrix.os }}
+      buildRuntime: ${{ matrix.rid }}
+      version: "0.0.0"
+      publish: false
+    secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}
+      nugetApiKey: ${{ secrets.NUGET_API_KEY }}
