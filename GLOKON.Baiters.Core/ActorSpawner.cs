@@ -89,9 +89,7 @@ namespace GLOKON.Baiters.Core
         public void SpawnRainCloud()
         {
             Vector3 position = new(random.Next(-100, 150), 42f, random.Next(-150, 100));
-            var rainCloud = new RainCloud(position);
-            server.SpawnActor(rainCloud);
-            rainCloud.Despawn();
+            server.SpawnActor(new RainCloud(position));
         }
 
         public void SpawnFish(string type = ActorType.Fish)
@@ -99,9 +97,7 @@ namespace GLOKON.Baiters.Core
             if (mainZone.SceneLocations.TryGetValue(MainZoneGroup.FishSpawns, out var fishPoints))
             {
                 Vector3 position = fishPoints[random.Next(fishPoints.Length)] + new Vector3(0, .08f, 0);
-                var fish = new Fish(type, position);
-                server.SpawnActor(fish);
-                fish.Despawn();
+                server.SpawnActor(new Fish(type, position));
             }
         }
 
@@ -110,9 +106,7 @@ namespace GLOKON.Baiters.Core
             if (mainZone.SceneLocations.TryGetValue(MainZoneGroup.HiddenSpots, out var hiddenPoints))
             {
                 Vector3 position = hiddenPoints[random.Next(hiddenPoints.Length)];
-                var voidPortal = new VoidPortal(position);
-                server.SpawnActor(voidPortal);
-                voidPortal.Despawn();
+                server.SpawnActor(new VoidPortal(position));
             }
         }
 

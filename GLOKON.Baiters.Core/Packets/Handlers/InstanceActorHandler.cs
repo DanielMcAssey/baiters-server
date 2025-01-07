@@ -38,7 +38,7 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
                         }
                         break;
                     default:
-                        // TODO: Do we need to instantiate all the different types or just use the actor?
+                        // TODO: Do we need to instantiate all the different types or just use the generic actor?
                         server.AddActor(actorId, new GenericActor(type, sender));
                         break;
                 }
