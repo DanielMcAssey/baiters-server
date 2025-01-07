@@ -59,10 +59,10 @@ jobs:
         run: dotnet publish GLOKON.Baiters.Server/GLOKON.Baiters.Server.csproj -p:Version="${{ inputs.version }}.0" --configuration Release --runtime ${{ inputs.buildRuntime }} --output dist
 
       - name: Build Plugin (BanManager)
-        run: dotnet publish GLOKON.Baiters.Plugins.BanManager/GLOKON.Baiters.Plugins.BanManager.csproj -p:Version="${{ inputs.version }}.0" --configuration Release --runtime ${{ inputs.buildRuntime }} --output dist/plugins
+        run: dotnet build GLOKON.Baiters.Plugins.BanManager/GLOKON.Baiters.Plugins.BanManager.csproj -p:Version="${{ inputs.version }}.0" --configuration Release --runtime ${{ inputs.buildRuntime }} --no-dependencies --output dist/plugins
 
       - name: Build Plugin (ChatCommand)
-        run: dotnet publish GLOKON.Baiters.Plugins.ChatCommand/GLOKON.Baiters.Plugins.ChatCommand.csproj -p:Version="${{ inputs.version }}.0" --configuration Release --runtime ${{ inputs.buildRuntime }} --output dist/plugins
+        run: dotnet build GLOKON.Baiters.Plugins.ChatCommand/GLOKON.Baiters.Plugins.ChatCommand.csproj -p:Version="${{ inputs.version }}.0" --configuration Release --runtime ${{ inputs.buildRuntime }} --no-dependencies --output dist/plugins
 
       - uses: vimtor/action-zip@v1.2
         if: inputs.publish == true
