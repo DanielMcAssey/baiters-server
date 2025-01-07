@@ -14,7 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\GLOKON.Baiters.GodotInterop\GLOKON.Baiters.GodotInterop.csproj" />
 
-    <Reference Include="Facepunch.Steamworks.Posix" Condition="'$(OS)' != 'WINDOWS_NT'">
+    <Reference Include="Facepunch.Steamworks.Posix" Condition="$([MSBuild]::IsOSPlatform('Linux'))">
       <HintPath>..\NativeLib\Facepunch.Steamworks\Facepunch.Steamworks.Posix.dll</HintPath>
     </Reference>
     <Reference Include="Facepunch.Steamworks.Win32" Condition="$([MSBuild]::IsOSPlatform('Windows')) AND '$(Platform)' == 'x86'">
