@@ -34,7 +34,11 @@ namespace GLOKON.Baiters.Core
 
         internal override void LeavePlayer(ulong steamId)
         {
-            _connections.TryRemove(steamId, out _);
+            if (_connections.TryRemove(steamId, out var connection))
+            {
+                SteamNetworkingMessages.CloseSessionWithUser(ref connection);
+            }
+
             base.LeavePlayer(steamId);
         }
 
@@ -52,8 +56,8 @@ namespace GLOKON.Baiters.Core
             {
                 if (SteamNetworkingMessages.SendMessageToUser(ref connection, data, nRemoteChannel: 2) != Result.OK)
                 {
+                    Log.Error("Failed to send packet to {0}", steamId);
                     LeavePlayer(steamId);
-                    SteamNetworkingMessages.CloseSessionWithUser(ref connection);
                 }
             }
         }
@@ -79,8 +83,10 @@ namespace GLOKON.Baiters.Core
 
             if (CanSteamIdJoin(identity.SteamId))
             {
+                Log.Debug("Session {0} can join, accepting session", identity.SteamId);
                 if (SteamNetworkingMessages.AcceptSessionWithUser(ref identity) && _connections.TryAdd(identity.SteamId, identity))
                 {
+                    Log.Debug("Session {0} is accepted", identity.SteamId);
                     SendWebLobbyPacket(identity.SteamId);
                 }
                 else
@@ -90,6 +96,7 @@ namespace GLOKON.Baiters.Core
             }
             else
             {
+                Log.Debug("Session {0} is blocked from joining", identity.SteamId);
                 SteamNetworkingMessages.CloseSessionWithUser(ref identity);
             }
         }

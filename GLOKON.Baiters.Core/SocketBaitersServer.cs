@@ -14,11 +14,15 @@ namespace GLOKON.Baiters.Core
 
         public override void OnConnecting(Connection connection, ConnectionInfo data)
         {
+            Log.Debug("New connection request from {0}", data.Identity.SteamId);
+
             _connections.TryRemove(data.Identity.SteamId, out _);
             if (CanSteamIdJoin(data.Identity.SteamId))
             {
+                Log.Debug("Connection {0} can join, accepting session", data.Identity.SteamId);
                 if (connection.Accept() == Result.OK && _connections.TryAdd(data.Identity.SteamId, connection))
                 {
+                    Log.Debug("Connection {0} is accepted", data.Identity.SteamId);
                     SendWebLobbyPacket(data.Identity.SteamId);
                 }
                 else
@@ -28,6 +32,7 @@ namespace GLOKON.Baiters.Core
             }
             else
             {
+                Log.Debug("Connection {0} is blocked from joining", data.Identity.SteamId);
                 connection.Close();
             }
         }
@@ -63,6 +68,7 @@ namespace GLOKON.Baiters.Core
             {
                 if (connection.SendMessage(data, laneIndex: 2) != Result.OK)
                 {
+                    Log.Error("Failed to send packet to {0}", steamId);
                     LeavePlayer(steamId);
                 }
             }

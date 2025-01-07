@@ -20,8 +20,10 @@ namespace GLOKON.Baiters.Core
 
                 if (CanSteamIdJoin(steamId))
                 {
+                    Log.Debug("P2P session {0} can join, accepting session", steamId);
                     if (SteamNetworking.AcceptP2PSessionWithUser(steamId))
                     {
+                        Log.Debug("P2P session {0} is accepted", steamId);
                         SendWebLobbyPacket(steamId);
                     }
                     else
@@ -31,12 +33,13 @@ namespace GLOKON.Baiters.Core
                 }
                 else
                 {
+                    Log.Debug("P2P session {0} is blocked from joining", steamId);
                     SteamNetworking.CloseP2PSessionWithUser(steamId);
                 }
             };
             SteamNetworking.OnP2PConnectionFailed = (steamId, error) =>
             {
-                Log.Error($"Failed to create P2P connection for {steamId}, caused by {error}");
+                Log.Error("Failed to create P2P connection for {steamId}, caused by {error}", steamId, error);
                 LeavePlayer(steamId);
             };
         }
@@ -44,7 +47,6 @@ namespace GLOKON.Baiters.Core
         internal override void LeavePlayer(ulong steamId)
         {
             base.LeavePlayer(steamId);
-
             SteamNetworking.CloseP2PSessionWithUser(steamId);
         }
 
@@ -68,6 +70,7 @@ namespace GLOKON.Baiters.Core
             if (!SteamNetworking.SendP2PPacket(steamId, data, nChannel: 2))
             {
                 Log.Error("Failed to send P2P packet to {0}", steamId);
+                LeavePlayer(steamId);
             }
         }
     }
