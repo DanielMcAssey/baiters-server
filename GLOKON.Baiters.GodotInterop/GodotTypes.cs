@@ -19,25 +19,25 @@ namespace GLOKON.Baiters.GodotInterop
 {
     internal enum GodotTypes
     {
-        nullValue = 0,
-        boolValue = 1,
-        intValue = 2,
-        floatValue = 3,
-        stringValue = 4,
-        vector2Value = 5,
-        rect2Value = 6,
-        vector3Value = 7,
-        transform2DValue = 8,
-        planeValue = 9,
-        quatValue = 10,
-        aabbValue = 11,
-        basisValue = 12,
-        transformValue = 13,
-        colorValue = 14,
-        nodePathValue = 15,
-        ridValue = 16, // ns
-        objectValue = 17, //ns
-        dictionaryValue = 18,
-        arrayValue = 19
+        Null = 0,
+        Bool = 1,
+        Int = 2,
+        Float = 3,
+        String = 4,
+        Vector2 = 5,
+        Rect2 = 6,
+        Vector3 = 7,
+        Transform2D = 8,
+        Plane = 9,
+        Quaternion = 10,
+        AA_BB = 11,
+        Basis = 12,
+        Transform = 13,
+        Color = 14,
+        NodePath = 15,
+        RID = 16, // ns
+        Object = 17, //ns
+        Dictionary = 18,
+        Array = 19
     }
 }

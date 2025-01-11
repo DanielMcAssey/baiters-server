@@ -1,5 +1,6 @@
 ﻿using GLOKON.Baiters.Core.Chat;
 using GLOKON.Baiters.Core.Configuration;
+using GLOKON.Baiters.Core.Packets;
 using GLOKON.Baiters.Core.Plugins;
 using Microsoft.Extensions.Options;
 using Serilog;
@@ -9,6 +10,7 @@ namespace GLOKON.Baiters.Core
 {
     public sealed class GameManager(
         IOptions<WebFishingOptions> _options,
+        PacketManager packet,
         ChatManager chat,
         BaitersServer server,
         ActorSpawner spawner)
@@ -25,9 +27,14 @@ namespace GLOKON.Baiters.Core
 
         public void Setup()
         {
-            Dispatch.OnDebugCallback = (type, str, server) => Log.Debug("\n[Callback {0} {1}]\n{2}", type, (server ? "server" : "client"), str);
+            if (Options.SteamDebug)
+            {
+                Dispatch.OnDebugCallback = (type, str, server) => Log.Debug("\n[Callback {0} {1}]\n{2}", type, (server ? "server" : "client"), str);
+            }
+
             Dispatch.OnException = (e) => Log.Error(e.InnerException, e.Message);
 
+            packet.Setup();
             Server.Setup();
         }
 

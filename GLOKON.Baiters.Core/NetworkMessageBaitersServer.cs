@@ -54,7 +54,7 @@ namespace GLOKON.Baiters.Core
         {
             if (_connections.TryGetValue(steamId, out var connection))
             {
-                if (SteamNetworkingMessages.SendMessageToUser(ref connection, data, nRemoteChannel: 2) != Result.OK)
+                if (SteamNetworkingMessages.SendMessageToUser(ref connection, data, data.Length, 2) != Result.OK)
                 {
                     Log.Error("Failed to send packet to {0}", steamId);
                     LeavePlayer(steamId);
@@ -72,9 +72,8 @@ namespace GLOKON.Baiters.Core
 
         private void SteamNetworkingMessages_OnSessionFailed(ConnectionInfo connection)
         {
-            var steamId = connection.Identity.SteamId;
-            Log.Error($"Failed connection for {steamId}");
-            LeavePlayer(steamId);
+            Log.Error("Failed connection for {0}", connection.Identity.SteamId);
+            LeavePlayer(connection.Identity.SteamId);
         }
 
         private void SteamNetworkingMessages_OnSessionRequest(NetIdentity identity)

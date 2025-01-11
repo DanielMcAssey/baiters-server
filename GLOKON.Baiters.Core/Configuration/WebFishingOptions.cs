@@ -24,6 +24,8 @@ namespace GLOKON.Baiters.Core.Configuration
 
         public IList<string> Tags { get; set; } = [];
 
+        public bool SteamDebug { get; set; } = false;
+
         public WebFishingModifiers Modifiers { get; set; } = new WebFishingModifiers();
     }
 }

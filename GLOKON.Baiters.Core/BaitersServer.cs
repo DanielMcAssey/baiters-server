@@ -411,7 +411,9 @@ namespace GLOKON.Baiters.Core
 
         protected void HandleNetworkPacket(ulong sender, byte[] data)
         {
-            OnPacket?.Invoke(sender, Packet.Parse(data));
+            var parsedPacket = Packet.Parse(data);
+            Log.Debug("Received packet {0} from {1}", parsedPacket.Type, sender);
+            OnPacket?.Invoke(sender, parsedPacket);
         }
 
         protected void SendWebLobbyPacket(ulong? steamId = null)

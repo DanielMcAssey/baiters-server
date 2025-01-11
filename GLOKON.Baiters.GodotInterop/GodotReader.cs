@@ -18,7 +18,6 @@
 */
 using GLOKON.Baiters.GodotInterop.Models;
 using System.Numerics;
-using System.Text;
 
 namespace GLOKON.Baiters.GodotInterop
 {
@@ -27,11 +26,12 @@ namespace GLOKON.Baiters.GodotInterop
         public static Dictionary<string, object> ReadPacket(byte[] data)
         {
             using var stream = new MemoryStream(data);
-            using var reader = new BinaryReader(stream, Encoding.UTF8);
+            using var reader = new BinaryReader(stream);
 
+            // Read header
             var type = (GodotTypes)reader.ReadInt32();
 
-            if (type != GodotTypes.dictionaryValue)
+            if (type != GodotTypes.Dictionary)
             {
                 throw new Exception("Unable to decode a non-dictionary godot packet!");
             }
@@ -41,25 +41,25 @@ namespace GLOKON.Baiters.GodotInterop
 
         private static object ReadNext(BinaryReader reader)
         {
-            int v = reader.ReadInt32();
+            int typeHeader = reader.ReadInt32();
 
-            GodotTypes type = (GodotTypes)(v & 0xFFFF);
-            int flags = v >> 16;
+            GodotTypes type = (GodotTypes)(typeHeader & 0xFFFF);
+            int flags = typeHeader >> 16;
 
             // TODO: Do we need to add missing types?
             return type switch
             {
-                GodotTypes.nullValue => null,
-                GodotTypes.dictionaryValue => ReadDictionary(reader),
-                GodotTypes.arrayValue => ReadArray(reader),
-                GodotTypes.stringValue => ReadString(reader),
-                GodotTypes.intValue => ReadInt(reader, flags),
-                GodotTypes.vector3Value => ReadVector3(reader),
-                GodotTypes.quatValue => ReadQuaternion(reader),
-                GodotTypes.boolValue => ReadBool(reader),
-                GodotTypes.floatValue => ReadFloat(reader, flags),
-                GodotTypes.planeValue => ReadPlane(reader),
-                GodotTypes.vector2Value => ReadVector2(reader),
+                GodotTypes.Null => null,
+                GodotTypes.Dictionary => ReadDictionary(reader),
+                GodotTypes.Array => ReadArray(reader),
+                GodotTypes.String => ReadString(reader),
+                GodotTypes.Int => ReadInt(reader, flags),
+                GodotTypes.Vector3 => ReadVector3(reader),
+                GodotTypes.Quaternion => ReadQuaternion(reader),
+                GodotTypes.Bool => ReadBool(reader),
+                GodotTypes.Float => ReadFloat(reader, flags),
+                GodotTypes.Plane => ReadPlane(reader),
+                GodotTypes.Vector2 => ReadVector2(reader),
                 _ => new ReadError($"Unable to handel object of type: {type}"),
             };
         }
@@ -123,8 +123,7 @@ namespace GLOKON.Baiters.GodotInterop
             }
             else
             {
-                int v = reader.ReadInt32();
-                return v;
+                return reader.ReadInt32();
             }
         }
 
@@ -150,8 +149,7 @@ namespace GLOKON.Baiters.GodotInterop
 
             for (int i = 0; i < elementCount; i++)
             {
-                object ins = ReadNext(reader); // read the next thing
-                array[i] = ins;
+                array[i] = ReadNext(reader);
             }
 
             return array;

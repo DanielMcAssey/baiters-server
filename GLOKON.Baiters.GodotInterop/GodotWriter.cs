@@ -27,9 +27,11 @@ namespace GLOKON.Baiters.GodotInterop
         public static byte[] WritePacket(Dictionary<string, object> packet)
         {
             using var stream = new MemoryStream();
-            using var writer = new BinaryWriter(stream, Encoding.UTF8);
 
-            WriteDictionary(packet, writer);
+            using (var writer = new BinaryWriter(stream, Encoding.UTF8))
+            {
+                WriteDictionary(packet, writer);
+            }
 
             return stream.ToArray();
         }
@@ -88,14 +90,14 @@ namespace GLOKON.Baiters.GodotInterop
 
         private static void WriteVector2(Vector2 packet, BinaryWriter writer)
         {
-            writer.Write((int)5); // write v2 header
+            writer.Write((int)GodotTypes.Vector2);
             writer.Write(packet.X);
             writer.Write(packet.Y);
         }
 
         private static void WriteVector3(Vector3 packet, BinaryWriter writer)
         {
-            writer.Write((int)7); // write v3 header
+            writer.Write((int)GodotTypes.Vector3);
             writer.Write(packet.X);
             writer.Write(packet.Y);
             writer.Write(packet.Z);
@@ -103,25 +105,25 @@ namespace GLOKON.Baiters.GodotInterop
 
         private static void WriteBool(bool packet, BinaryWriter writer)
         {
-            writer.Write((int)1);
+            writer.Write((int)GodotTypes.Bool);
             writer.Write(packet ? 1 : 0);
         }
 
         private static void WriteInt(int packet, BinaryWriter writer)
         {
-            writer.Write((int)GodotTypes.intValue); // write the int value header!
+            writer.Write((int)GodotTypes.Int);
             writer.Write(packet);
         }
 
         private static void WriteLong(long packet, BinaryWriter writer)
         {
-            writer.Write(65538); // write the int value header! this is the same as above but with the 64 bit header!
+            writer.Write((int)65538); // write the int value header! this is the same as above but with the 64 bit header!
             writer.Write(packet);
         }
 
         private static void WriteSingle(float packet, BinaryWriter writer)
         {
-            writer.Write((int)3);
+            writer.Write((int)GodotTypes.Float);
             writer.Write((float)packet);
         }
 
@@ -133,7 +135,7 @@ namespace GLOKON.Baiters.GodotInterop
 
         private static void WriteString(string packet, BinaryWriter writer)
         {
-            writer.Write((int)4); // remeber to write the string header!
+            writer.Write((int)GodotTypes.String);
 
             byte[] bytes = Encoding.UTF8.GetBytes(packet);
 
@@ -156,7 +158,7 @@ namespace GLOKON.Baiters.GodotInterop
         private static void WriteArray(Dictionary<int, object> packet, BinaryWriter writer)
         {
             // because we have a dic we need to write the correct byte info!
-            writer.Write((int)19); // make sure these are 4 bits as that is what godot is exspecting!
+            writer.Write((int)GodotTypes.Array);
             writer.Write((int)packet.Count);
 
             for (int i = 0; i < packet.Count; i++)
@@ -167,11 +169,10 @@ namespace GLOKON.Baiters.GodotInterop
 
         private static void WriteDictionary(Dictionary<string, object> packet, BinaryWriter writer)
         {
-            // because we have a dic we need to write the correct byte info!
-            writer.Write((int)18); // make sure these are 4 bits as that is what godot is exspecting!
+            writer.Write((int)GodotTypes.Dictionary);
             writer.Write((int)packet.Count);
 
-            foreach (KeyValuePair<string, object> pair in packet)
+            foreach (var pair in packet)
             {
                 WriteAny(pair.Key, writer);
                 WriteAny(pair.Value, writer);
