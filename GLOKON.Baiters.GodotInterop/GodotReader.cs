@@ -18,6 +18,7 @@
 */
 using GLOKON.Baiters.GodotInterop.Models;
 using System.Numerics;
+using System.Text;
 
 namespace GLOKON.Baiters.GodotInterop
 {
@@ -88,7 +89,7 @@ namespace GLOKON.Baiters.GodotInterop
 
         private static bool ReadBool(BinaryReader reader)
         {
-            return reader.ReadInt32() != 0;
+            return reader.ReadUInt32() != 0;
         }
 
         private static Quaternion ReadQuaternion(BinaryReader reader)
@@ -119,18 +120,18 @@ namespace GLOKON.Baiters.GodotInterop
         {
             if ((flags & 1) == 1)
             {
-                return reader.ReadInt64();
+                return (long)reader.ReadUInt64();
             }
             else
             {
-                return reader.ReadInt32();
+                return (int)reader.ReadUInt32();
             }
         }
 
         private static string ReadString(BinaryReader reader)
         {
-            int stringLength = reader.ReadInt32();
-            char[] stringValue = reader.ReadChars(stringLength);
+            int stringLength = (int)reader.ReadUInt32();
+            string stringValue = Encoding.UTF8.GetString(reader.ReadBytes(stringLength));
 
             // this field is padded to 4 bytes
             if (4 - ((int)reader.BaseStream.Position % 4) != 4)
@@ -138,14 +139,15 @@ namespace GLOKON.Baiters.GodotInterop
                 reader.ReadBytes(4 - ((int)reader.BaseStream.Position % 4));
             }
 
-            return new string(stringValue);
+            return stringValue;
         }
 
         private static Dictionary<int, object> ReadArray(BinaryReader reader)
         {
             Dictionary<int, object> array = [];
 
-            int elementCount = reader.ReadInt32() & 0x7FFFFFFF;
+            int elementCount = (int)reader.ReadUInt32();
+            elementCount &= 0x7FFFFFFF;
 
             for (int i = 0; i < elementCount; i++)
             {
@@ -159,7 +161,8 @@ namespace GLOKON.Baiters.GodotInterop
         {
             Dictionary<string, object> dic = [];
 
-            int elementCount = reader.ReadInt32() & 0x7FFFFFFF;
+            int elementCount = (int)reader.ReadUInt32();
+            elementCount &= 0x7FFFFFFF;
 
             for (int i = 0; i < elementCount; i++)
             {

@@ -38,6 +38,8 @@ namespace GLOKON.Baiters.GodotInterop
         RID = 16, // ns
         Object = 17, //ns
         Dictionary = 18,
-        Array = 19
+        Array = 19,
+        Long = 65538,
+        Double = 65539,
     }
 }

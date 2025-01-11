@@ -30,13 +30,13 @@ namespace GLOKON.Baiters.GodotInterop
 
             using (var writer = new BinaryWriter(stream, Encoding.UTF8))
             {
-                WriteDictionary(packet, writer);
+                Write(packet, writer);
             }
 
             return stream.ToArray();
         }
 
-        private static void WriteAny(object packet, BinaryWriter writer)
+        private static void WriteVariant(object packet, BinaryWriter writer)
         {
             if (packet == null)
             {
@@ -44,43 +44,43 @@ namespace GLOKON.Baiters.GodotInterop
             }
             else if (packet is Dictionary<string, object> pktStrDict)
             {
-                WriteDictionary(pktStrDict, writer);
+                Write(pktStrDict, writer);
             }
             else if (packet is string pktString)
             {
-                WriteString(pktString, writer);
+                Write(pktString, writer);
             }
             else if (packet is int pktInt)
             {
-                WriteInt(pktInt, writer);
+                Write(pktInt, writer);
             }
             else if (packet is long pktLong)
             {
-                WriteLong(pktLong, writer);
+                Write(pktLong, writer);
             }
             else if (packet is float pktSingle)
             {
-                WriteSingle(pktSingle, writer);
+                Write(pktSingle, writer);
             }
             else if (packet is double pktDouble)
             {
-                WriteDouble(pktDouble, writer);
+                Write(pktDouble, writer);
             }
             else if (packet is bool pktBool)
             {
-                WriteBool(pktBool, writer);
+                Write(pktBool, writer);
             }
             else if (packet is Dictionary<int, object> pktIntDict)
             {
-                WriteArray(pktIntDict, writer);
+                Write(pktIntDict, writer);
             }
             else if (packet is Vector3 pktVect3)
             {
-                WriteVector3(pktVect3, writer);
+                Write(pktVect3, writer);
             }
             else if (packet is Vector2 pktVect2)
             {
-                WriteVector2(pktVect2, writer);
+                Write(pktVect2, writer);
             }
             else
             {
@@ -88,65 +88,64 @@ namespace GLOKON.Baiters.GodotInterop
             }
         }
 
-        private static void WriteVector2(Vector2 packet, BinaryWriter writer)
+        private static void Write(GodotTypes type, BinaryWriter writer)
         {
-            writer.Write((int)GodotTypes.Vector2);
-            writer.Write(packet.X);
-            writer.Write(packet.Y);
+            writer.Write(BitConverter.GetBytes((uint)type));
         }
 
-        private static void WriteVector3(Vector3 packet, BinaryWriter writer)
+        private static void Write(Vector2 packet, BinaryWriter writer)
         {
-            writer.Write((int)GodotTypes.Vector3);
-            writer.Write(packet.X);
-            writer.Write(packet.Y);
-            writer.Write(packet.Z);
+            Write(GodotTypes.Vector2, writer);
+            writer.Write(BitConverter.GetBytes(packet.X));
+            writer.Write(BitConverter.GetBytes(packet.Y));
         }
 
-        private static void WriteBool(bool packet, BinaryWriter writer)
+        private static void Write(Vector3 packet, BinaryWriter writer)
         {
-            writer.Write((int)GodotTypes.Bool);
-            writer.Write(packet ? 1 : 0);
+            Write(GodotTypes.Vector3, writer);
+            writer.Write(BitConverter.GetBytes(packet.X));
+            writer.Write(BitConverter.GetBytes(packet.Y));
+            writer.Write(BitConverter.GetBytes(packet.Z));
         }
 
-        private static void WriteInt(int packet, BinaryWriter writer)
+        private static void Write(bool packet, BinaryWriter writer)
         {
-            writer.Write((int)GodotTypes.Int);
-            writer.Write(packet);
+            Write(GodotTypes.Bool, writer);
+            writer.Write(BitConverter.GetBytes((uint)(packet ? 1 : 0)));
         }
 
-        private static void WriteLong(long packet, BinaryWriter writer)
+        private static void Write(int packet, BinaryWriter writer)
         {
-            writer.Write((int)65538); // write the int value header! this is the same as above but with the 64 bit header!
-            writer.Write(packet);
+            Write(GodotTypes.Int, writer);
+            writer.Write(BitConverter.GetBytes((uint)packet));
         }
 
-        private static void WriteSingle(float packet, BinaryWriter writer)
+        private static void Write(long packet, BinaryWriter writer)
         {
-            writer.Write((int)GodotTypes.Float);
-            writer.Write((float)packet);
+            Write(GodotTypes.Long, writer);
+            writer.Write(BitConverter.GetBytes((ulong)packet));
         }
 
-        private static void WriteDouble(double packet, BinaryWriter writer)
+        private static void Write(float packet, BinaryWriter writer)
         {
-            writer.Write((int)65539);// write the float value header! this is the same as above but with the 64 bit header!
-            writer.Write((double)packet);
+            Write(GodotTypes.Float, writer);
+            writer.Write(BitConverter.GetBytes(packet));
         }
 
-        private static void WriteString(string packet, BinaryWriter writer)
+        private static void Write(double packet, BinaryWriter writer)
         {
-            writer.Write((int)GodotTypes.String);
+            Write(GodotTypes.Double, writer);
+            writer.Write(BitConverter.GetBytes(packet));
+        }
 
-            byte[] bytes = Encoding.UTF8.GetBytes(packet);
-
-            writer.Write((int)bytes.Length);
-            // get the ammount to pad by!
-
-            // Step 3: Write the actual bytes of the string
-            writer.Write(bytes);
+        private static void Write(string packet, BinaryWriter writer)
+        {
+            Write(GodotTypes.String, writer);
+            writer.Write(BitConverter.GetBytes((uint)packet.Length)); // Length
+            writer.Write(Encoding.UTF8.GetBytes(packet)); // String Content
 
             // Step 4: Calculate padding needed to make the total length a multiple of 4
-            int padding = (4 - (bytes.Length % 4)) % 4; // Calculate padding
+            int padding = (4 - (packet.Length % 4)) % 4;
 
             // Step 5: Write padding bytes (if needed)
             for (int i = 0; i < padding; i++)
@@ -155,27 +154,26 @@ namespace GLOKON.Baiters.GodotInterop
             }
         }
 
-        private static void WriteArray(Dictionary<int, object> packet, BinaryWriter writer)
+        private static void Write(Dictionary<int, object> packet, BinaryWriter writer)
         {
-            // because we have a dic we need to write the correct byte info!
-            writer.Write((int)GodotTypes.Array);
-            writer.Write((int)packet.Count);
+            Write(GodotTypes.Array, writer);
+            writer.Write(BitConverter.GetBytes((uint)packet.Count));
 
             for (int i = 0; i < packet.Count; i++)
             {
-                WriteAny(packet[i], writer);
+                WriteVariant(packet[i], writer);
             }
         }
 
-        private static void WriteDictionary(Dictionary<string, object> packet, BinaryWriter writer)
+        private static void Write(Dictionary<string, object> packet, BinaryWriter writer)
         {
-            writer.Write((int)GodotTypes.Dictionary);
-            writer.Write((int)packet.Count);
+            Write(GodotTypes.Dictionary, writer);
+            writer.Write(BitConverter.GetBytes((uint)packet.Count));
 
             foreach (var pair in packet)
             {
-                WriteAny(pair.Key, writer);
-                WriteAny(pair.Value, writer);
+                WriteVariant(pair.Key, writer);
+                WriteVariant(pair.Value, writer);
             }
         }
     }

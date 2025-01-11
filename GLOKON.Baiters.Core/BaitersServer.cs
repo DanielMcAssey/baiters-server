@@ -113,7 +113,6 @@ namespace GLOKON.Baiters.Core
                     break;
                 }
 
-                SteamClient.RunCallbacks();
                 ReceivePackets();
 
                 foreach (var actor in _actors)
