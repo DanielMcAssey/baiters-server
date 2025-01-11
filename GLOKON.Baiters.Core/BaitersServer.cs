@@ -13,7 +13,7 @@ using System.Collections.Concurrent;
 
 namespace GLOKON.Baiters.Core
 {
-    public abstract class BaitersServer(IOptions<WebFishingOptions> _options) : ISocketManager
+    public abstract class BaitersServer(IOptions<WebFishingOptions> _options)
     {
         private readonly WebFishingOptions options = _options.Value;
         private readonly Random random = new();
@@ -36,7 +36,6 @@ namespace GLOKON.Baiters.Core
             return canJoin;
         }
 
-        protected SocketManager? _socketManager;
         private Lobby _lobby;
         private ulong? _serverSteamId;
 
@@ -101,12 +100,9 @@ namespace GLOKON.Baiters.Core
 
         public virtual async Task RunAsync(CancellationToken cancellationToken)
         {
-            _socketManager = SteamNetworkingSockets.CreateRelaySocket(0, this);
             _lobby = await SetupLobbyAsync(new(Enumerable.Range(0, 5).Select(_ => "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[new Random().Next(36)]).ToArray()));
-
-            IList<long> actorsToRemove = [];
-
             var ticksPerSecond = 1000 / options.Modifiers.TicksPerSecond;
+            IList<long> actorsToRemove = [];
 
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -153,44 +149,7 @@ namespace GLOKON.Baiters.Core
             SteamMatchmaking.OnLobbyMemberDisconnected -= SteamMatchmaking_OnLobbyMemberDisconnected;
             SteamMatchmaking.OnLobbyMemberLeave -= SteamMatchmaking_OnLobbyMemberLeave;
             _lobby.Leave();
-
-            if (_socketManager != null)
-            {
-                try
-                {
-                    _socketManager.Close();
-                }
-                catch (Exception ex)
-                {
-                    Log.Warning(ex, "Failed to cleanup Steam socket manager");
-                }
-                finally
-                {
-                    _socketManager = null;
-                }
-            }
-
             SteamClient.Shutdown();
-        }
-
-        public virtual void OnConnecting(Connection connection, ConnectionInfo data)
-        {
-            Log.Debug($"{data.Identity} is connecting");
-        }
-
-        public virtual void OnConnected(Connection connection, ConnectionInfo data)
-        {
-            Log.Information($"{data.Identity} has joined the game");
-        }
-
-        public virtual void OnDisconnected(Connection connection, ConnectionInfo data)
-        {
-            Log.Information($"{data.Identity} is out of here");
-        }
-
-        public virtual void OnMessage(Connection connection, NetIdentity identity, IntPtr data, int size, long messageNum, long recvTime, int channel)
-        {
-            Log.Debug($"We got a message from {identity}!");
         }
 
         public IEnumerable<KeyValuePair<long, Actor>> GetActorsByType(string type)

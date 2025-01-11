@@ -8,13 +8,42 @@ using System.Runtime.InteropServices;
 
 namespace GLOKON.Baiters.Core
 {
-    public sealed class SocketBaitersServer(IOptions<WebFishingOptions> options) : BaitersServer(options)
+    public sealed class SocketBaitersServer(IOptions<WebFishingOptions> options) : BaitersServer(options), ISocketManager
     {
         private readonly ConcurrentDictionary<ulong, Connection> _connections = new();
 
-        public override void OnConnecting(Connection connection, ConnectionInfo data)
+        private SocketManager? _socketManager;
+
+        public override Task RunAsync(CancellationToken cancellationToken)
         {
-            Log.Debug("New connection request from {0}", data.Identity.SteamId);
+            _socketManager = SteamNetworkingSockets.CreateRelaySocket(0, this);
+            return base.RunAsync(cancellationToken);
+        }
+
+        public override void Stop()
+        {
+            if (_socketManager != null)
+            {
+                try
+                {
+                    _socketManager.Close();
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex, "Failed to cleanup Steam socket manager");
+                }
+                finally
+                {
+                    _socketManager = null;
+                }
+            }
+
+            base.Stop();
+        }
+
+        public void OnConnecting(Connection connection, ConnectionInfo data)
+        {
+            Log.Debug("{0} is connecting", data.Identity);
 
             _connections.TryRemove(data.Identity.SteamId, out _);
             if (CanSteamIdJoin(data.Identity.SteamId))
@@ -37,13 +66,21 @@ namespace GLOKON.Baiters.Core
             }
         }
 
-        public override void OnDisconnected(Connection connection, ConnectionInfo data)
+        public void OnConnected(Connection connection, ConnectionInfo data)
         {
+            Log.Information("{0} has joined the game", data.Identity);
+        }
+
+        public void OnDisconnected(Connection connection, ConnectionInfo data)
+        {
+            Log.Information("{0} is out of here", data.Identity);
             LeavePlayer(data.Identity.SteamId);
         }
 
-        public override void OnMessage(Connection connection, NetIdentity identity, IntPtr data, int size, long messageNum, long recvTime, int channel)
+        public void OnMessage(Connection connection, NetIdentity identity, IntPtr data, int size, long messageNum, long recvTime, int channel)
         {
+            Log.Debug("We got a message from {0}!", identity);
+
             byte[] messageData = new byte[size];
             Marshal.Copy(data, messageData, 0, size);
 
