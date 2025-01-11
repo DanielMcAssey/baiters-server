@@ -27,7 +27,7 @@ namespace GLOKON.Baiters.Core.Utils
         /// <summary>
         /// Create a WeightedList with the provided items and an optional System.Random.
         /// </summary>
-        public WeightedList(ICollection<WeightedListItem<T>> listItems, Random rand = null)
+        public WeightedList(ICollection<WeightedListItem<T>> listItems, Random? rand = null)
         {
             _rand = rand ?? new Random();
             foreach (WeightedListItem<T> item in listItems)
@@ -169,18 +169,18 @@ namespace GLOKON.Baiters.Core.Utils
             for (int i = 0; i < _list.Count; i++)
             {
                 sb.Append(_list[i].ToString());
-                sb.Append(":");
-                sb.Append(_weights[i].ToString());
+                sb.Append(':');
+                sb.Append(_weights[i]);
                 if (i < _list.Count - 1) sb.Append(", ");
             }
-            sb.Append("}");
+            sb.Append('}');
             return sb.ToString();
         }
 
-        private readonly List<T> _list = new();
-        private readonly List<long> _weights = new();
-        private readonly List<long> _probabilities = new();
-        private readonly List<int> _alias = new();
+        private readonly List<T> _list = [];
+        private readonly List<long> _weights = [];
+        private readonly List<long> _probabilities = [];
+        private readonly List<int> _alias = [];
         private readonly Random _rand;
         private long _totalWeight;
         private bool _areAllProbabilitiesIdentical = false;
@@ -285,16 +285,10 @@ namespace GLOKON.Baiters.Core.Utils
     /// and Add() to the WeightedList for a single calculation pass.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public readonly struct WeightedListItem<T>
+    public readonly struct WeightedListItem<T>(T item, long weight)
     {
-        internal readonly T _item;
-        internal readonly long _weight;
-
-        public WeightedListItem(T item, long weight)
-        {
-            _item = item;
-            _weight = weight;
-        }
+        internal readonly T _item = item;
+        internal readonly long _weight = weight;
     }
 
     public enum WeightErrorHandlingType

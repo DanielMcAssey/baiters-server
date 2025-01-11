@@ -38,53 +38,43 @@ namespace GLOKON.Baiters.GodotInterop
 
         private static void WriteVariant(object packet, BinaryWriter writer)
         {
-            if (packet == null)
+            switch (packet)
             {
-                writer.Write(0);
-            }
-            else if (packet is Dictionary<string, object> pktStrDict)
-            {
-                Write(pktStrDict, writer);
-            }
-            else if (packet is string pktString)
-            {
-                Write(pktString, writer);
-            }
-            else if (packet is int pktInt)
-            {
-                Write(pktInt, writer);
-            }
-            else if (packet is long pktLong)
-            {
-                Write(pktLong, writer);
-            }
-            else if (packet is float pktSingle)
-            {
-                Write(pktSingle, writer);
-            }
-            else if (packet is double pktDouble)
-            {
-                Write(pktDouble, writer);
-            }
-            else if (packet is bool pktBool)
-            {
-                Write(pktBool, writer);
-            }
-            else if (packet is Dictionary<int, object> pktIntDict)
-            {
-                Write(pktIntDict, writer);
-            }
-            else if (packet is Vector3 pktVect3)
-            {
-                Write(pktVect3, writer);
-            }
-            else if (packet is Vector2 pktVect2)
-            {
-                Write(pktVect2, writer);
-            }
-            else
-            {
-                throw new Exception("Unknown type: " + packet.GetType());
+                case null:
+                    writer.Write(BitConverter.GetBytes(0));
+                    break;
+                case Dictionary<string, object> pktStrDict:
+                    Write(pktStrDict, writer);
+                    break;
+                case string pktString:
+                    Write(pktString, writer);
+                    break;
+                case int pktInt:
+                    Write(pktInt, writer);
+                    break;
+                case long pktLong:
+                    Write(pktLong, writer);
+                    break;
+                case float pktSingle:
+                    Write(pktSingle, writer);
+                    break;
+                case double pktDouble:
+                    Write(pktDouble, writer);
+                    break;
+                case bool pktBool:
+                    Write(pktBool, writer);
+                    break;
+                case Dictionary<int, object> pktIntDict:
+                    Write(pktIntDict, writer);
+                    break;
+                case Vector3 pktVect3:
+                    Write(pktVect3, writer);
+                    break;
+                case Vector2 pktVect2:
+                    Write(pktVect2, writer);
+                    break;
+                default:
+                    throw new Exception($"Unknown type: {packet.GetType()}");
             }
         }
 

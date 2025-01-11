@@ -1,4 +1,5 @@
 ﻿using GLOKON.Baiters.Core.Configuration;
+using GLOKON.Baiters.Core.Enums.Networking;
 using Microsoft.Extensions.Options;
 using Serilog;
 using Steamworks;
@@ -84,7 +85,7 @@ namespace GLOKON.Baiters.Core
             byte[] messageData = new byte[size];
             Marshal.Copy(data, messageData, 0, size);
 
-            HandleNetworkPacket(identity.SteamId, messageData);
+            HandleNetworkPacket(identity.SteamId, messageData, (DataChannel)channel);
         }
 
         internal override void LeavePlayer(ulong steamId)
@@ -99,11 +100,11 @@ namespace GLOKON.Baiters.Core
             _socketManager?.Receive();
         }
 
-        protected override void SendPacketTo(ulong steamId, byte[] data)
+        protected override void SendPacketTo(ulong steamId, byte[] data, DataChannel channel)
         {
             if (_connections.TryGetValue(steamId, out var connection))
             {
-                if (connection.SendMessage(data, laneIndex: 2) != Result.OK)
+                if (connection.SendMessage(data, laneIndex: (ushort)channel) != Result.OK)
                 {
                     Log.Error("Failed to send packet to {0}", steamId);
                     LeavePlayer(steamId);

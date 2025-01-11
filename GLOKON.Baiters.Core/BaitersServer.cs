@@ -10,11 +10,13 @@ using Serilog;
 using Steamworks;
 using Steamworks.Data;
 using System.Collections.Concurrent;
+using GLOKON.Baiters.Core.Enums.Networking;
 
 namespace GLOKON.Baiters.Core
 {
     public abstract class BaitersServer(IOptions<WebFishingOptions> _options)
     {
+        protected readonly int dataChannelCount = Enum.GetNames(typeof(DataChannel)).Length;
         private readonly WebFishingOptions options = _options.Value;
         private readonly Random random = new();
         private readonly ConcurrentDictionary<ulong, Player> _players = new();
@@ -166,8 +168,8 @@ namespace GLOKON.Baiters.Core
             SendPacket(new("peer_was_kicked")
             {
                 ["user_id"] = (long)steamId,
-            });
-            SendPacket(new("client_was_kicked"), steamId);
+            }, DataChannel.GameState);
+            SendPacket(new("client_was_kicked"), DataChannel.GameState, steamId);
 
             if (_players.TryGetValue(steamId, out var player) && player != null)
             {
@@ -181,8 +183,8 @@ namespace GLOKON.Baiters.Core
             SendPacket(new("peer_was_banned")
             {
                 ["user_id"] = (long)steamId,
-            });
-            SendPacket(new("client_was_banned"), steamId);
+            }, DataChannel.GameState);
+            SendPacket(new("client_was_banned"), DataChannel.GameState, steamId);
         }
 
         public bool TryGetActor(long actorId, out Actor? actor)
@@ -202,7 +204,7 @@ namespace GLOKON.Baiters.Core
                 ["actor_id"] = actorId,
                 ["action"] = "queue_free",
                 ["params"] = new Dictionary<int, object>(),
-            });
+            }, DataChannel.GameState);
 
             _actors.TryRemove(actorId, out _);
         }
@@ -224,7 +226,7 @@ namespace GLOKON.Baiters.Core
                 ["position"] = Vector3.Zero,
                 ["zone"] = "main_zone",
                 ["zone_owner"] = 1
-            }, steamId);
+            }, DataChannel.GameState, steamId);
         }
 
         public void SendLetter(ulong to, ulong from, string header, string body, string closing, string user)
@@ -243,24 +245,24 @@ namespace GLOKON.Baiters.Core
                     ["letter_id"] = new Random().Next(),
                     ["items"] = new Dictionary<int, object>(),
                 },
-            }, to);
+            }, DataChannel.GameState, to);
         }
 
-        public void SendPacket(Packet packet, ulong? steamId = null)
+        public void SendPacket(Packet packet, DataChannel channel, ulong? steamId = null)
         {
             byte[] data = packet.Serialize();
 
             if (steamId.HasValue)
             {
                 Log.Debug("Sending {0} packet to single player {1}", packet.Type, steamId.Value);
-                SendPacketTo(steamId.Value, data);
+                SendPacketTo(steamId.Value, data, channel);
             }
             else
             {
                 Log.Debug("Sending {0} packet to all players", packet.Type);
                 foreach (var player in _players)
                 {
-                    SendPacketTo(player.Key, data);
+                    SendPacketTo(player.Key, data, channel);
                 }
             }
         }
@@ -291,7 +293,7 @@ namespace GLOKON.Baiters.Core
             SendPacket(new("user_joined_weblobby")
             {
                 ["user_id"] = (long)steamId,
-            });
+            }, DataChannel.GameState);
             SendWebLobbyPacket();
         }
 
@@ -316,7 +318,7 @@ namespace GLOKON.Baiters.Core
                 {
                     ["user_id"] = (long)steamId,
                     ["reason"] = 0
-                });
+                }, DataChannel.GameState);
 
                 UpdatePlayerCount();
 
@@ -353,7 +355,7 @@ namespace GLOKON.Baiters.Core
             SendPacket(new("instance_actor")
             {
                 ["params"] = instanceActorParams,
-            }, steamId);
+            }, DataChannel.GameState, steamId);
         }
 
         internal void SendActorUpdate(long actorId, Actor actor)
@@ -371,7 +373,7 @@ namespace GLOKON.Baiters.Core
                 ["actor_id"] = actorId,
                 ["pos"] = position,
                 ["rot"] = rotation,
-            });
+            }, channel: DataChannel.ActorUpdate);
         }
 
         internal void OnPlayerChat(ulong sender, string message)
@@ -389,12 +391,12 @@ namespace GLOKON.Baiters.Core
 
         protected abstract void ReceivePackets();
 
-        protected abstract void SendPacketTo(ulong steamId, byte[] data);
+        protected abstract void SendPacketTo(ulong steamId, byte[] data, DataChannel channel);
 
-        protected void HandleNetworkPacket(ulong sender, byte[] data)
+        protected void HandleNetworkPacket(ulong sender, byte[] data, DataChannel channel)
         {
             var parsedPacket = Packet.Parse(data);
-            Log.Debug("Received packet {0} from {1}", parsedPacket.Type, sender);
+            Log.Debug("Received packet {0} on channel {1} from {2}", parsedPacket.Type, channel, sender);
             OnPacket?.Invoke(sender, parsedPacket);
         }
 
@@ -416,7 +418,7 @@ namespace GLOKON.Baiters.Core
             SendPacket(new("receive_weblobby")
             {
                 ["weblobby"] = usersInServer
-            }, steamId);
+            }, DataChannel.GameState, steamId);
         }
 
         private async Task<Lobby> SetupLobbyAsync(string lobbyCode)

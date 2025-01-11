@@ -1,14 +1,14 @@
 ﻿using GLOKON.Baiters.Core.Configuration;
+using GLOKON.Baiters.Core.Enums.Networking;
 using Microsoft.Extensions.Options;
 using Serilog;
 using Steamworks;
+using System;
 
 namespace GLOKON.Baiters.Core
 {
     public sealed class P2PBaitersServer(IOptions<WebFishingOptions> options) : BaitersServer(options)
     {
-        private const int p2pChannelCount = 6; // The amount of P2P channels used
-
         public override void Setup()
         {
             base.Setup();
@@ -52,22 +52,22 @@ namespace GLOKON.Baiters.Core
 
         protected override void ReceivePackets()
         {
-            for (int channel = 0; channel < p2pChannelCount; channel++)
+            for (int channel = 0; channel < dataChannelCount; channel++)
             {
                 while (SteamNetworking.IsP2PPacketAvailable(channel))
                 {
                     var packet = SteamNetworking.ReadP2PPacket(channel);
                     if (packet.HasValue)
                     {
-                        HandleNetworkPacket(packet.Value.SteamId, packet.Value.Data);
+                        HandleNetworkPacket(packet.Value.SteamId, packet.Value.Data, (DataChannel)channel);
                     }
                 }
             }
         }
 
-        protected override void SendPacketTo(ulong steamId, byte[] data)
+        protected override void SendPacketTo(ulong steamId, byte[] data, DataChannel channel)
         {
-            if (!SteamNetworking.SendP2PPacket(steamId, data, nChannel: 2))
+            if (!SteamNetworking.SendP2PPacket(steamId, data, data.Length, (int)channel))
             {
                 Log.Error("Failed to send P2P packet to {0}", steamId);
                 LeavePlayer(steamId);

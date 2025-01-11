@@ -1,4 +1,5 @@
 ﻿using GLOKON.Baiters.Core.Configuration;
+using GLOKON.Baiters.Core.Enums.Networking;
 using Microsoft.Extensions.Options;
 using Serilog;
 using Steamworks;
@@ -10,8 +11,6 @@ namespace GLOKON.Baiters.Core
 {
     public sealed class NetworkMessageBaitersServer(IOptions<WebFishingOptions> options) : BaitersServer(options)
     {
-        private const int p2pChannelCount = 6; // The amount of P2P channels used
-
         private readonly ConcurrentDictionary<ulong, NetIdentity> _connections = new();
 
         public override void Setup()
@@ -44,17 +43,17 @@ namespace GLOKON.Baiters.Core
 
         protected override void ReceivePackets()
         {
-            for (int channel = 0; channel < p2pChannelCount; channel++)
+            for (int channel = 0; channel < dataChannelCount; channel++)
             {
                 SteamNetworkingMessages.Receive(channel);
             }
         }
 
-        protected override void SendPacketTo(ulong steamId, byte[] data)
+        protected override void SendPacketTo(ulong steamId, byte[] data, DataChannel channel)
         {
             if (_connections.TryGetValue(steamId, out var connection))
             {
-                if (SteamNetworkingMessages.SendMessageToUser(ref connection, data, data.Length, 2) != Result.OK)
+                if (SteamNetworkingMessages.SendMessageToUser(ref connection, data, data.Length, (int)channel) != Result.OK)
                 {
                     Log.Error("Failed to send packet to {0}", steamId);
                     LeavePlayer(steamId);
@@ -67,7 +66,7 @@ namespace GLOKON.Baiters.Core
             byte[] messageData = new byte[size];
             Marshal.Copy(data, messageData, 0, size);
 
-            HandleNetworkPacket(identity.SteamId, messageData);
+            HandleNetworkPacket(identity.SteamId, messageData, (DataChannel)channel);
         }
 
         private void SteamNetworkingMessages_OnSessionFailed(ConnectionInfo connection)

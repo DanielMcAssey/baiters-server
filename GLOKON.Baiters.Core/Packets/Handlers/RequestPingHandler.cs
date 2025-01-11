@@ -1,4 +1,5 @@
-﻿using GLOKON.Baiters.Core.Models.Networking;
+﻿using GLOKON.Baiters.Core.Enums.Networking;
+using GLOKON.Baiters.Core.Models.Networking;
 
 namespace GLOKON.Baiters.Core.Packets.Handlers
 {
@@ -10,7 +11,7 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
             {
                 ["time"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(),
                 ["from"] = server.ServerId.ToString(),
-            }, sender);
+            }, DataChannel.ActorAction, sender);
         }
     }
 }

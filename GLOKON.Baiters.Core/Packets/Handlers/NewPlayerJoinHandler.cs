@@ -1,4 +1,5 @@
 ﻿using GLOKON.Baiters.Core.Constants;
+using GLOKON.Baiters.Core.Enums.Networking;
 using GLOKON.Baiters.Core.Models.Actor;
 using GLOKON.Baiters.Core.Models.Networking;
 using Serilog;
@@ -17,7 +18,7 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
             server.SendPacket(new("recieve_host")
             {
                 ["host_id"] = server.ServerId.ToString(),
-            });
+            }, DataChannel.GameState);
 
             if (server.IsAdmin(sender))
             {
@@ -65,7 +66,7 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
                         {
                             ["canvas_id"] = actor.Key,
                             ["data"] = chunks[index],
-                        }, steamId);
+                        }, DataChannel.Chalk, steamId);
                         await Task.Delay(10);
                     }
                 }

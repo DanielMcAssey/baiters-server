@@ -1,4 +1,5 @@
-﻿using GLOKON.Baiters.Core.Models.Networking;
+﻿using GLOKON.Baiters.Core.Enums.Networking;
+using GLOKON.Baiters.Core.Models.Networking;
 
 namespace GLOKON.Baiters.Core.Packets.Handlers
 {
@@ -12,7 +13,7 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
                 server.SendPacket(new("actor_request_send")
                 {
                     ["list"] = new Dictionary<int, object>(),
-                }, sender);
+                }, DataChannel.GameState, sender);
             }
         }
     }

@@ -21,7 +21,7 @@ namespace GLOKON.Baiters.Core.Packets
 
         public void Setup()
         {
-            handlers.Add("handshake_request", new HandshakeRequestHandler(server));
+            handlers.Add("handshake", new HandshakeHandler(server));
             handlers.Add("new_player_join", new NewPlayerJoinHandler(server, options.JoinMessage));
             handlers.Add("instance_actor", new InstanceActorHandler(server));
             handlers.Add("actor_update", new ActorUpdateHandler(server));
