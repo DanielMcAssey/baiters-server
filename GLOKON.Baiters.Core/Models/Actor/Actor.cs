@@ -4,6 +4,7 @@
     {
         private DateTimeOffset? _despawnAt = null;
         private uint? _despawnTime = null;
+        private bool _syncRequired = false;
 
         public DateTimeOffset SpawnTime { get; } = DateTimeOffset.UtcNow;
 
@@ -30,6 +31,21 @@
         }
 
         public bool IsDespawned { get; private set; } = false;
+
+        public bool IsSyncRequired
+        {
+            get
+            {
+                // Works as a single call fuse, resets sync required state after property is viewed
+                var currentSyncRequired = _syncRequired;
+                _syncRequired = false;
+                return currentSyncRequired;
+            }
+            protected set
+            {
+                _syncRequired = value;
+            }
+        }
 
         public virtual void OnUpdate()
         {

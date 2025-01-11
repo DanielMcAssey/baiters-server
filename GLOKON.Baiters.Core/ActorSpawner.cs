@@ -101,7 +101,7 @@ namespace GLOKON.Baiters.Core
         {
             if (mainZone.SceneLocations.TryGetValue(MainZoneGroup.TrashPoints, out var trashPoints))
             {
-                Vector3 position = trashPoints[random.Next(trashPoints.Length)] + new Vector3(0, .08f, 0);
+                Vector3 position = trashPoints[random.Next(trashPoints.Length)] + new Vector3(random.Next(-3, 3), 0, random.Next(-3, 3));
                 server.SpawnActor(new Bird(position));
             }
         }

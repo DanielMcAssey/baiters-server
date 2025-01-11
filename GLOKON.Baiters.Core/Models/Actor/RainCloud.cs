@@ -29,6 +29,7 @@ namespace GLOKON.Baiters.Core.Models.Actor
 
             Vector2 dir = Vector2.Transform(new Vector2(-1, 0), Matrix3x2.CreateRotation(_wanderDirection)) * (0.17f / 6f);
             Position += new Vector3(dir.X, 0, dir.Y);
+            IsSyncRequired = true;
         }
     }
 }

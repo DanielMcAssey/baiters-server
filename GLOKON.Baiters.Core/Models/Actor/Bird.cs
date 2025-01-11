@@ -3,7 +3,11 @@ using System.Numerics;
 
 namespace GLOKON.Baiters.Core.Models.Actor
 {
-    public sealed class Bird(Vector3 position) : MovableActor(ActorType.Bird, position)
+    public sealed class Bird : MovableActor
     {
+        public Bird(Vector3 position) : base(ActorType.Bird, position)
+        {
+            DespawnTime = 60;
+        }
     }
 }

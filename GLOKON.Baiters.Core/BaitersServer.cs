@@ -106,6 +106,8 @@ namespace GLOKON.Baiters.Core
 
             IList<long> actorsToRemove = [];
 
+            var ticksPerSecond = 1000 / options.Modifiers.TicksPerSecond;
+
             while (!cancellationToken.IsCancellationRequested)
             {
                 if (!_lobby.IsOwnedBy(ServerId))
@@ -126,6 +128,10 @@ namespace GLOKON.Baiters.Core
                     {
                         actorsToRemove.Add(actor.Key);
                     }
+                    else if (actor.Value.IsSyncRequired)
+                    {
+                        SendActorUpdate(actor.Key, actor.Value);
+                    }
                 }
 
                 foreach (var actorIdToRemove in actorsToRemove)
@@ -137,7 +143,7 @@ namespace GLOKON.Baiters.Core
 
                 OnTick?.Invoke();
 
-                await Task.Delay(1000 / options.Modifiers.TicksPerSecond, CancellationToken.None);
+                await Task.Delay(ticksPerSecond, CancellationToken.None);
             }
         }
 
@@ -154,7 +160,7 @@ namespace GLOKON.Baiters.Core
                 {
                     _socketManager.Close();
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Log.Warning(ex, "Failed to cleanup Steam socket manager");
                 }
@@ -367,29 +373,47 @@ namespace GLOKON.Baiters.Core
 
         internal void SendActor(long actorId, Actor actor, ulong? steamId = null)
         {
-            Dictionary<string, object> instanceActorPrams = [];
-            instanceActorPrams["actor_type"] = actor.Type;
+            Dictionary<string, object> instanceActorParams = [];
+            instanceActorParams["actor_type"] = actor.Type;
 
             if (actor is MovableActor movableActor)
             {
-                instanceActorPrams["at"] = movableActor.Position;
-                instanceActorPrams["rot"] = movableActor.Rotation;
+                instanceActorParams["at"] = movableActor.Position;
+                instanceActorParams["rot"] = movableActor.Rotation;
             }
             else
             {
-                instanceActorPrams["at"] = Vector3.Zero;
-                instanceActorPrams["rot"] = Vector3.Zero;
+                instanceActorParams["at"] = Vector3.Zero;
+                instanceActorParams["rot"] = Vector3.Zero;
             }
 
-            instanceActorPrams["zone"] = "main_zone";
-            instanceActorPrams["zone_owner"] = -1;
-            instanceActorPrams["actor_id"] = actorId;
-            instanceActorPrams["creator_id"] = (long)ServerId;
+            instanceActorParams["zone"] = "main_zone";
+            instanceActorParams["zone_owner"] = -1;
+            instanceActorParams["actor_id"] = actorId;
+            instanceActorParams["creator_id"] = (long)ServerId;
 
             SendPacket(new("instance_actor")
             {
-                ["params"] = instanceActorPrams,
+                ["params"] = instanceActorParams,
             }, steamId);
+        }
+
+        internal void SendActorUpdate(long actorId, Actor actor)
+        {
+            var position = Vector3.Zero;
+            var rotation = Vector3.Zero;
+            if (actor is MovableActor movableActor)
+            {
+                position = movableActor.Position;
+                rotation = movableActor.Rotation;
+            }
+
+            SendPacket(new("actor_update")
+            {
+                ["actor_id"] = actorId,
+                ["pos"] = position,
+                ["rot"] = rotation,
+            });
         }
 
         internal void OnPlayerChat(ulong sender, string message)
