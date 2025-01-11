@@ -288,10 +288,12 @@ namespace GLOKON.Baiters.Core
 
             if (steamId.HasValue)
             {
+                Log.Debug("Sending {0} packet to single player {1}", packet.Type, steamId.Value);
                 SendPacketTo(steamId.Value, data);
             }
             else
             {
+                Log.Debug("Sending {0} packet to all players", packet.Type);
                 foreach (var player in _players)
                 {
                     SendPacketTo(player.Key, data);
@@ -318,6 +320,7 @@ namespace GLOKON.Baiters.Core
                 return;
             }
 
+            Log.Debug("Joining new player [{steamId}] {playerName}", steamId, playerName);
             _lobby.SendChatString($"$weblobby_request_accepted-{steamId}");
             _players.TryAdd(steamId, new Player(steamId, playerName, IsAdmin(steamId)));
 

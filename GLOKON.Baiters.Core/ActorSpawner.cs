@@ -18,7 +18,7 @@ namespace GLOKON.Baiters.Core
         private readonly TextScene mainZone = LoadScene("main_zone");
         private readonly WeightedList<string> spawnProbabilities = [];
 
-        public static IReadOnlyCollection<string> Spawnable => [ActorType.Fish, ActorType.RainCloud, ActorType.Meteor, ActorType.VoidPortal, ActorType.Metal];
+        public static IReadOnlyCollection<string> Spawnable => [ActorType.Fish, ActorType.RainCloud, ActorType.Meteor, ActorType.VoidPortal, ActorType.Metal, ActorType.Bird];
 
         public ActorSpawner(IOptions<WebFishingOptions> _options, BaitersServer server)
         {
@@ -26,6 +26,7 @@ namespace GLOKON.Baiters.Core
             this.server = server;
             spawnProbabilities.Add("none", (long)(options.Modifiers.FishChance * 1000));
             spawnProbabilities.Add(ActorType.Fish, (long)(options.Modifiers.FishChance * 1000)); // Fish and None share the same probability, as one or the other is more likely
+            spawnProbabilities.Add(ActorType.Bird, (long)(options.Modifiers.BirdChance * 1000));
             spawnProbabilities.Add(ActorType.RainCloud, (long)(options.Modifiers.RainChance * 1000));
             spawnProbabilities.Add(ActorType.Meteor, (long)(options.Modifiers.MeteorChance * 1000));
             spawnProbabilities.Add(ActorType.VoidPortal, (long)(options.Modifiers.VoidPortalChance * 1000));
@@ -56,12 +57,21 @@ namespace GLOKON.Baiters.Core
 
         public bool Spawn(string type)
         {
+            Log.Debug("Attempting to spawn {type}", type);
+
             switch (type)
             {
                 case ActorType.Fish:
                     if (server.GetActorsByType(ActorType.Fish).Count() < options.Modifiers.MaxFish)
                     {
                         SpawnFish();
+                    }
+
+                    break;
+                case ActorType.Bird:
+                    if (server.GetActorsByType(ActorType.Bird).Count() < options.Modifiers.MaxBird)
+                    {
+                        SpawnBird();
                     }
 
                     break;
@@ -85,6 +95,15 @@ namespace GLOKON.Baiters.Core
             }
 
             return true;
+        }
+
+        public void SpawnBird()
+        {
+            if (mainZone.SceneLocations.TryGetValue(MainZoneGroup.TrashPoints, out var trashPoints))
+            {
+                Vector3 position = trashPoints[random.Next(trashPoints.Length)] + new Vector3(0, .08f, 0);
+                server.SpawnActor(new Bird(position));
+            }
         }
 
         public void SpawnRainCloud()

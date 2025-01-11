@@ -7,7 +7,7 @@
         public const string Meteor = "fish_spawn_alien";
         public const string RainCloud = "raincloud";
         public const string ChalkCanvas = "chalkcanvas";
-        public const string AmbientBird = "ambient_bird";
+        public const string Bird = "ambient_bird";
         public const string VoidPortal = "void_portal";
         public const string Metal = "metal_spawn";
 
@@ -16,7 +16,7 @@
             Meteor,
             RainCloud,
             ChalkCanvas,
-            AmbientBird,
+            Bird,
             VoidPortal,
             Metal,
         ];

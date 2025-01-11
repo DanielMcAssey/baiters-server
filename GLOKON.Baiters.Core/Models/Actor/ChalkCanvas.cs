@@ -5,9 +5,10 @@ namespace GLOKON.Baiters.Core.Models.Actor
 {
     public sealed class ChalkCanvas() : Actor(ActorType.ChalkCanvas)
     {
-        public Dictionary<Vector2, long> ChalkPoints { get; private set; } = [];
+        // No need for concurrent dictionary, as messages are handled sequentially
+        public Dictionary<Vector2, int> ChalkPoints { get; private set; } = [];
 
-        public void Draw(Vector2 position, long color)
+        public void Draw(Vector2 position, int color)
         {
             ChalkPoints[position] = color;
         }
@@ -35,7 +36,9 @@ namespace GLOKON.Baiters.Core.Models.Actor
             foreach (var rawPacketPart in packet.Values)
             {
                 var packetPart = (Dictionary<int, object>)rawPacketPart;
-                ChalkPoints[(Vector2)packetPart[0]] = (long)packetPart[1];
+                var pktPosition = (Vector2)packetPart[0];
+                var position = new Vector2((int)Math.Round(pktPosition.X), (int)Math.Round(pktPosition.Y));
+                ChalkPoints[position] = (int)packetPart[1];
             }
         }
     }
