@@ -146,6 +146,7 @@ namespace GLOKON.Baiters.Core
 
         public virtual void Stop()
         {
+            SendPacket(new("server_close"), DataChannel.GameState);
             SteamMatchmaking.OnChatMessage -= SteamMatchmaking_OnChatMessage;
             SteamMatchmaking.OnLobbyMemberDisconnected -= SteamMatchmaking_OnLobbyMemberDisconnected;
             SteamMatchmaking.OnLobbyMemberLeave -= SteamMatchmaking_OnLobbyMemberLeave;
