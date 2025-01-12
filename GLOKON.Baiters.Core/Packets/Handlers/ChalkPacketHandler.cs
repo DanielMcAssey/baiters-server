@@ -22,7 +22,7 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
                 server.AddActor(canvasId, canvas);
             }
 
-            canvas.UpdateFromPacket((Dictionary<int, object>)data["data"]);
+            canvas.UpdateFromPacket((Array)data["data"]);
         }
     }
 }

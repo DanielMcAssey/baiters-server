@@ -64,8 +64,8 @@ namespace GLOKON.Baiters.GodotInterop
                 case bool pktBool:
                     Write(pktBool, writer);
                     break;
-                case Dictionary<int, object> pktIntDict:
-                    Write(pktIntDict, writer);
+                case Array pktArray:
+                    Write(pktArray, writer);
                     break;
                 case Vector3 pktVect3:
                     Write(pktVect3, writer);
@@ -144,14 +144,15 @@ namespace GLOKON.Baiters.GodotInterop
             }
         }
 
-        private static void Write(Dictionary<int, object> packet, BinaryWriter writer)
+        private static void Write(Array packet, BinaryWriter writer)
         {
+            
             Write(GodotTypes.Array, writer);
-            writer.Write(BitConverter.GetBytes((uint)packet.Count));
+            writer.Write(BitConverter.GetBytes((uint)packet.Length));
 
-            for (int i = 0; i < packet.Count; i++)
+            foreach (var item in packet)
             {
-                WriteVariant(packet[i], writer);
+                WriteVariant(item, writer);
             }
         }
 

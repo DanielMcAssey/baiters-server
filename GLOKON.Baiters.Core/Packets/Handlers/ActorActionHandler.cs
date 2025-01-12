@@ -11,11 +11,11 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
             switch ((string)data["action"])
             {
                 case "_sync_create_bubble":
-                    string chatMssage = (string)((Dictionary<int, object>)data["params"])[0];
+                    string chatMssage = (string)(((Array)data["params"]).GetValue(0) ?? -1);
                     server.OnPlayerChat(sender, chatMssage);
                     break;
                 case "_wipe_actor":
-                    long wipeActorId = (long)((Dictionary<int, object>)data["params"])[0];
+                    long wipeActorId = (long)(((Array)data["params"]).GetValue(0) ?? -1);
                     if (server.TryGetActor(wipeActorId, out var actor) && actor != null)
                     {
                         if (ActorType.ServerOnly.Contains(actor.Type))

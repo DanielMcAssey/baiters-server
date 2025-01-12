@@ -13,32 +13,28 @@ namespace GLOKON.Baiters.Core.Models.Actor
             ChalkPoints[position] = color;
         }
 
-        public Dictionary<int, object> GetPacket()
+        public Array GetPacket()
         {
-            Dictionary<int, object> packet = [];
-            ulong imageIndex = 0;
+            Array packet = Array.CreateInstance(typeof(object), ChalkPoints.Count);
+            int imageIndex = 0;
 
             foreach (var position in ChalkPoints.Keys)
             {
-                Dictionary<int, object> packetPart = [];
-
-                packetPart[0] = position;
-                packetPart[1] = ChalkPoints[position];
-                packet[(int)imageIndex] = packetPart; // Potential integer overflow here, does it matter?
+                packet.SetValue(new object[] { position, ChalkPoints[position] }, imageIndex);
                 imageIndex++;
             }
 
             return packet;
         }
 
-        public void UpdateFromPacket(Dictionary<int, object> packet)
+        public void UpdateFromPacket(Array packet)
         {
-            foreach (var rawPacketPart in packet.Values)
+            foreach (var rawPacketPart in packet)
             {
-                var packetPart = (Dictionary<int, object>)rawPacketPart;
-                var pktPosition = (Vector2)packetPart[0];
+                var packetPart = (Array)rawPacketPart;
+                var pktPosition = (Vector2)(packetPart.GetValue(0) ?? Vector2.Zero);
                 var position = new Vector2((int)Math.Round(pktPosition.X), (int)Math.Round(pktPosition.Y));
-                ChalkPoints[position] = (int)packetPart[1];
+                ChalkPoints[position] = (int)(packetPart.GetValue(1) ?? 0);
             }
         }
     }

@@ -12,7 +12,7 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
                 server.SendActor(actor.Key, actor.Value, sender);
                 server.SendPacket(new("actor_request_send")
                 {
-                    ["list"] = new Dictionary<int, object>(),
+                    ["list"] = Array.Empty<object>(),
                 }, DataChannel.GameState, sender);
             }
         }

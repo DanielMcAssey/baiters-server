@@ -38,34 +38,33 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
                 foreach (KeyValuePair<long, Actor> actor in server.GetActorsByType(ActorType.ChalkCanvas))
                 {
                     ChalkCanvas canvas = (ChalkCanvas)actor.Value;
-                    Dictionary<int, object> chalkPkt = canvas.GetPacket();
 
                     // split the dictionary into chunks of 100
-                    List<Dictionary<int, object>> chunks = [];
-                    Dictionary<int, object> chunk = [];
+                    List<object[]> chunks = [];
+                    List<object> chunk = [];
 
-                    int i = 0;
-                    foreach (var kvp in chalkPkt)
+                    int chunkIndex = 0;
+                    foreach (var chalkData in canvas.GetPacket())
                     {
-                        if (i >= 1000)
+                        if (chunkIndex >= 1000)
                         {
-                            chunks.Add(chunk);
-                            chunk = [];
-                            i = 0;
+                            chunks.Add(chunk.ToArray());
+                            chunk.Clear();
+                            chunkIndex = 0;
                         }
 
-                        chunk.Add(i, kvp.Value);
-                        i++;
+                        chunk.Add(chalkData);
+                        chunkIndex++;
                     }
 
-                    chunks.Add(chunk);
+                    chunks.Add(chunk.ToArray());
 
-                    for (int index = 0; index < chunks.Count; index++)
+                    foreach (var chunkToSend in chunks)
                     {
                         server.SendPacket(new("chalk_packet")
                         {
                             ["canvas_id"] = actor.Key,
-                            ["data"] = chunks[index],
+                            ["data"] = chunkToSend,
                         }, DataChannel.Chalk, steamId);
                         await Task.Delay(10);
                     }

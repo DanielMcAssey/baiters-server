@@ -203,7 +203,7 @@ namespace GLOKON.Baiters.Core
             {
                 ["actor_id"] = actorId,
                 ["action"] = "queue_free",
-                ["params"] = new Dictionary<int, object>(),
+                ["params"] = Array.Empty<object>(),
             }, DataChannel.GameState);
 
             _actors.TryRemove(actorId, out _);
@@ -243,7 +243,7 @@ namespace GLOKON.Baiters.Core
                     ["closing"] = closing,
                     ["user"] = user,
                     ["letter_id"] = new Random().Next(),
-                    ["items"] = new Dictionary<int, object>(),
+                    ["items"] = Array.Empty<object>(),
                 },
             }, DataChannel.GameState, toSteamId);
         }
@@ -401,22 +401,16 @@ namespace GLOKON.Baiters.Core
 
         protected void SendWebLobbyPacket(ulong? steamId = null)
         {
-            Dictionary<int, object> usersInServer = new()
-            {
-                [0] = (long)ServerId,
-            };
-
-            int userIndex = usersInServer.Count; // Start at 1 as server user is 0
+            List<long> usersInServer = [(long)ServerId];
 
             foreach (var player in _players)
             {
-                usersInServer[userIndex] = (long)player.Key;
-                userIndex++;
+                usersInServer.Add((long)player.Key);
             }
 
             SendPacket(new("receive_weblobby")
             {
-                ["weblobby"] = usersInServer
+                ["weblobby"] = usersInServer.ToArray(),
             }, DataChannel.GameState, steamId);
         }
 

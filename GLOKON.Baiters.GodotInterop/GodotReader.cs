@@ -142,16 +142,16 @@ namespace GLOKON.Baiters.GodotInterop
             return stringValue;
         }
 
-        private static Dictionary<int, object> ReadArray(BinaryReader reader)
+        private static Array ReadArray(BinaryReader reader)
         {
-            Dictionary<int, object> array = [];
-
             int elementCount = (int)reader.ReadUInt32();
             elementCount &= 0x7FFFFFFF;
 
+            Array array = Array.CreateInstance(typeof(object), elementCount);
+
             for (int i = 0; i < elementCount; i++)
             {
-                array[i] = ReadNext(reader);
+                array.SetValue(ReadNext(reader), i);
             }
 
             return array;
