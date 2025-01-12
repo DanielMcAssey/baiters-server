@@ -77,8 +77,6 @@ namespace GLOKON.Baiters.Plugins.BanManager
                 {
                     GM.Server.SendMessage(string.Format("[{0}] {1}: {2}", playerBan.Key, playerBan.Value.FisherName, playerBan.Value.Reason ?? "(No Reason Given)"), MessageColour.Information, sender);
                 }
-
-                GM.Server.SendMessage("----", MessageColour.Information, sender);
             });
         }
 

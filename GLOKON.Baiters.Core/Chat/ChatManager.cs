@@ -28,8 +28,6 @@ namespace GLOKON.Baiters.Core.Chat
                 {
                     server.SendMessage(string.Format("- {0}: {1}", chatCommand.Key, chatCommand.Value.HelpText), MessageColour.Information, sender);
                 }
-
-                server.SendMessage("----", MessageColour.Information, sender);
             });
         }
 

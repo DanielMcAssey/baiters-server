@@ -224,7 +224,7 @@ namespace GLOKON.Baiters.Core
         {
             SendPacket(new("message")
             {
-                ["message"] = message,
+                ["message"] = string.Format("%u: {0}", message),
                 ["color"] = color,
                 ["local"] = false,
                 ["position"] = Vector3.Zero,

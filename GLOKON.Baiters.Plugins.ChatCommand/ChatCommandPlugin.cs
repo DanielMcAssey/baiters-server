@@ -29,8 +29,6 @@ namespace GLOKON.Baiters.Plugins.ChatCommand
                 {
                     GM.Server.SendMessage(string.Format("- [{0}] {1}", player.Key, player.Value.FisherName), MessageColour.Information, sender);
                 }
-
-                GM.Server.SendMessage("----", MessageColour.Information, sender);
             });
 
             GM.Chat.ListenFor("spawn", "Spawn a new element on the server", (sender, commandParams) =>
@@ -110,7 +108,7 @@ namespace GLOKON.Baiters.Plugins.ChatCommand
                     return;
                 }
 
-                GM.Server.SendMessage(string.Format("ADMIN: {0}", string.Join(" ", commandParams.Skip(1).ToArray())), MessageColour.Warning, steamId);
+                GM.Server.SendMessage(string.Join(" ", commandParams.Skip(1).ToArray()), MessageColour.Warning, steamId);
             });
 
             GM.Chat.ListenFor("say.all", "Send all players a message", (sender, commandParams) =>
@@ -126,7 +124,7 @@ namespace GLOKON.Baiters.Plugins.ChatCommand
                     return;
                 }
 
-                GM.Server.SendMessage(string.Format("ADMIN: {0}", string.Join(" ", commandParams)), MessageColour.Warning);
+                GM.Server.SendMessage(string.Join(" ", commandParams), MessageColour.Warning);
             });
 
             GM.Chat.ListenFor("plugins", "Show all the plugins loaded", (sender, commandParams) =>
@@ -142,8 +140,6 @@ namespace GLOKON.Baiters.Plugins.ChatCommand
                 {
                     GM.Server.SendMessage(string.Format("- {0}:{1} by {2}", plugin.Name, plugin.Version, plugin.Author), MessageColour.Information, sender);
                 }
-
-                GM.Server.SendMessage("----", MessageColour.Information, sender);
             });
         }
 
