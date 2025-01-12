@@ -89,6 +89,7 @@ namespace GLOKON.Baiters.Core
 
         public virtual void Setup()
         {
+            Log.Information("Setting up server...");
             try
             {
                 SteamClient.Init(options.AppId);
@@ -146,6 +147,7 @@ namespace GLOKON.Baiters.Core
 
         public virtual void Stop()
         {
+            Log.Information("Stopping server...");
             SendPacket(new("server_close"), DataChannel.GameState);
             SteamMatchmaking.OnChatMessage -= SteamMatchmaking_OnChatMessage;
             SteamMatchmaking.OnLobbyMemberDisconnected -= SteamMatchmaking_OnLobbyMemberDisconnected;

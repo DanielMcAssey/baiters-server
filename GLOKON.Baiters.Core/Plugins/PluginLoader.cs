@@ -18,7 +18,7 @@ namespace GLOKON.Baiters.Core.Plugins
 
             IList<Assembly> pluginAssm = [];
 
-            foreach (var pluginPath in Directory.GetFiles(pluginsDir, "*.BaitersPlugin*"))
+            foreach (var pluginPath in Directory.GetFiles(pluginsDir, "*.BaitersPlugin.dll"))
             {
                 try
                 {
