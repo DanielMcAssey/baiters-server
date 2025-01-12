@@ -229,15 +229,15 @@ namespace GLOKON.Baiters.Core
             }, DataChannel.GameState, steamId);
         }
 
-        public void SendLetter(ulong to, ulong from, string header, string body, string closing, string user)
+        public void SendLetter(ulong toSteamId, string header, string body, string closing, string user)
         {
             SendPacket(new("letter_received")
             {
-                ["to"] = to.ToString(),
+                ["to"] = toSteamId.ToString(),
                 ["data"] = new Dictionary<string, object>()
                 {
-                    ["to"] = to.ToString(),
-                    ["from"] = from.ToString(),
+                    ["to"] = toSteamId.ToString(),
+                    ["from"] = ServerId.ToString(),
                     ["header"] = header,
                     ["body"] = body,
                     ["closing"] = closing,
@@ -245,7 +245,7 @@ namespace GLOKON.Baiters.Core
                     ["letter_id"] = new Random().Next(),
                     ["items"] = new Dictionary<int, object>(),
                 },
-            }, DataChannel.GameState, to);
+            }, DataChannel.GameState, toSteamId);
         }
 
         public void SendPacket(Packet packet, DataChannel channel, ulong? steamId = null)
