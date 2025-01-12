@@ -30,6 +30,7 @@ namespace GLOKON.Baiters.Core.Packets
             handlers.Add("actor_action", new ActorActionHandler(server));
             handlers.Add("request_actors", new RequestActorsHandler(server));
             handlers.Add("chalk_packet", new ChalkPacketHandler(server));
+            handlers.Add("message", new MessageHandler(server));
         }
 
         private void Server_OnPacket(ulong sender, Packet packet)
