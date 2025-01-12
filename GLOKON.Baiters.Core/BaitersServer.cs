@@ -43,6 +43,7 @@ namespace GLOKON.Baiters.Core
 
         public IEnumerable<KeyValuePair<long, Actor>> Actors => _actors;
         public IEnumerable<KeyValuePair<ulong, Player>> Players => _players;
+        public int PlayerCount => _players.Count + 1;
         public int NpcActorCount => _actors.Where((kv) => kv.Value.Type != ActorType.Player).Count();
 
         /// <summary>
@@ -500,9 +501,8 @@ namespace GLOKON.Baiters.Core
 
         private void UpdatePlayerCount()
         {
-            int totalPlayerCount = (_players.Count + 1);
-            _lobby.SetData("count", totalPlayerCount.ToString());
-            Console.Title = string.Format("[{0}] {1} - {2}/{3}", options.JoinType, options.ServerName, totalPlayerCount, options.MaxPlayers);
+            _lobby.SetData("count", PlayerCount.ToString());
+            Console.Title = string.Format("[{0}] {1} - {2}/{3}", options.JoinType, options.ServerName, PlayerCount, options.MaxPlayers);
         }
     }
 }

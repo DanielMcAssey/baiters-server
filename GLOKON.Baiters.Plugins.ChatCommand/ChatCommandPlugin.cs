@@ -23,7 +23,7 @@ namespace GLOKON.Baiters.Plugins.ChatCommand
                     return;
                 }
 
-                GM.Server.SendMessage(string.Format("-- Players ({0}/{1}) --", GM.Server.Players.Count(), GM.Options.MaxPlayers), MessageColour.Information, sender);
+                GM.Server.SendMessage(string.Format("-- Players ({0}/{1}) --", GM.Server.PlayerCount, GM.Options.MaxPlayers), MessageColour.Information, sender);
 
                 foreach (var player in GM.Server.Players)
                 {
