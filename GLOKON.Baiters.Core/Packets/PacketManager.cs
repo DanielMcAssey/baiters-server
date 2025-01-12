@@ -31,7 +31,13 @@ namespace GLOKON.Baiters.Core.Packets
             handlers.Add("request_actors", new RequestActorsHandler(server));
             handlers.Add("chalk_packet", new ChalkPacketHandler(server));
             handlers.Add("message", new MessageHandler(server));
+            handlers.Add("letter_recieved", new LetterReceivedHandler(server));
+            handlers.Add("letter_was_accepted", new LetterWasAcceptedHandler(server));
+            handlers.Add("letter_was_denied", new LetterWasDeniedHandler(server));
+            handlers.Add("player_punch", new PlayerPunchHandler(server));
+            handlers.Add("user_joined_weblobby", new UserJoinedWebLobbyHandler(server));
             handlers.Add("user_left_weblobby", new UserLeftWebLobbyHandler(server));
+            handlers.Add("receive_weblobby", new ReceiveWebLobbyHandler(server));
         }
 
         private void Server_OnPacket(ulong sender, Packet packet)
@@ -40,7 +46,14 @@ namespace GLOKON.Baiters.Core.Packets
 
             if (handlers.TryGetValue(packet.Type, out var handler) && handler != null)
             {
-                handler.Handle(sender, packet);
+                try
+                {
+                    handler.Handle(sender, packet);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Failed to handle packet {0} from {1}", packet.Type, sender);
+                }
             }
             else
             {

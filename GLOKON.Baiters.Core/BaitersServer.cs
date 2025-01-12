@@ -11,6 +11,7 @@ using Steamworks;
 using Steamworks.Data;
 using System.Collections.Concurrent;
 using GLOKON.Baiters.Core.Enums.Networking;
+using GLOKON.Baiters.Core.Models.Game;
 
 namespace GLOKON.Baiters.Core
 {
@@ -169,7 +170,6 @@ namespace GLOKON.Baiters.Core
 
         public void KickPlayer(ulong steamId)
         {
-            SendPacket(new("kick"), DataChannel.GameState, steamId);
             SendPacket(new("peer_was_kicked")
             {
                 ["user_id"] = (long)steamId,
@@ -269,6 +269,65 @@ namespace GLOKON.Baiters.Core
             }
         }
 
+        public void SetPlayerCosmetics(ulong steamId, Cosmetics cosmetics)
+        {
+            if (TryGetPlayer(steamId, out var player) && player != null)
+            {
+                player.Cosmetics = cosmetics;
+                var cosmeticsPkt = new Dictionary<string, object>()
+                {
+                    ["title"] = cosmetics.Title,
+                    ["eye"] = cosmetics.Eye,
+                    ["nose"] = cosmetics.Nose,
+                    ["mouth"] = cosmetics.Mouth,
+                    ["undershirt"] = cosmetics.Undershirt,
+                    ["overshirt"] = cosmetics.Overshirt,
+                    ["legs"] = cosmetics.Legs,
+                    ["hat"] = cosmetics.Hat,
+                    ["species"] = cosmetics.Species,
+                    ["accessory"] = cosmetics.Accessory,
+                    ["pattern"] = cosmetics.Pattern,
+                    ["primary_color"] = cosmetics.PrimaryColor,
+                    ["secondary_color"] = cosmetics.SecondaryColor,
+                    ["tail"] = cosmetics.Tail,
+                };
+
+                if (!string.IsNullOrWhiteSpace(cosmetics.Bobber))
+                {
+                    cosmeticsPkt.Add("bobber", cosmetics.Bobber);
+                }
+
+                SendPacket(new("actor_action")
+                {
+                    ["action"] = "_update_cosmetics",
+                    ["actor_id"] = (long)steamId,
+                    ["params"] = new object[] { cosmeticsPkt, },
+                }, DataChannel.ActorAction);
+            }
+        }
+
+        public void SetPlayerHeldItem(ulong steamId, HeldItem? item = null)
+        {
+            if (TryGetPlayer(steamId, out var player) && player != null)
+            {
+                player.HeldItem = item;
+                var heldItemPkt = new Dictionary<string, object>();
+                if (item != null)
+                {
+                    heldItemPkt.Add("id", item.Id);
+                    heldItemPkt.Add("size", item.Size);
+                    heldItemPkt.Add("quality", item.Quality);
+                }
+
+                SendPacket(new("actor_action")
+                {
+                    ["action"] = "_update_held_item",
+                    ["actor_id"] = (long)steamId,
+                    ["params"] = new object[] { heldItemPkt, },
+                }, DataChannel.ActorAction);
+            }
+        }
+
         public bool IsAdmin(ulong steamId)
         {
             return options.Admins.Contains(steamId);
@@ -302,7 +361,7 @@ namespace GLOKON.Baiters.Core
         internal virtual void JoinPlayer(ulong steamId, long actorId, Player player)
         {
             AddActor(actorId, player);
-            player.SetActorId(actorId);
+            player.ActorId = actorId;
             Log.Information("[{0}] {1} joined the server", steamId, player.FisherName);
             SendWebLobbyPacket(steamId);
             UpdatePlayerCount();
@@ -349,7 +408,7 @@ namespace GLOKON.Baiters.Core
                 instanceActorParams["rot"] = Vector3.Zero;
             }
 
-            instanceActorParams["zone"] = "main_zone";
+            instanceActorParams["zone"] = actor.Zone;
             instanceActorParams["zone_owner"] = -1;
             instanceActorParams["actor_id"] = actorId;
             instanceActorParams["creator_id"] = (long)ServerId;
@@ -388,7 +447,7 @@ namespace GLOKON.Baiters.Core
                 OnChatMessage?.Invoke(sender, message);
             }
 
-            Log.Information("[{sender}] {fisherName}: {message}", sender, fisherName, message);
+            Log.ForContext("Scope", "ChatLog").Information("[{sender}] {fisherName}: {message}", sender, fisherName, message);
         }
 
         protected abstract void ReceivePackets();

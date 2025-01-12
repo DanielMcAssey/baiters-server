@@ -1,4 +1,5 @@
 ﻿using GLOKON.Baiters.Core.Constants;
+using GLOKON.Baiters.Core.Models.Game;
 using System.Numerics;
 
 namespace GLOKON.Baiters.Core.Models.Actor
@@ -11,11 +12,10 @@ namespace GLOKON.Baiters.Core.Models.Actor
 
         public bool IsAdmin { get; } = isAdmin;
 
-        public long? ActorId { get; private set; }
+        public long? ActorId { get; set; }
 
-        public void SetActorId(long actorId)
-        {
-            ActorId = actorId;
-        }
+        public Cosmetics? Cosmetics { get; set; }
+
+        public HeldItem? HeldItem { get; set; }
     }
 }

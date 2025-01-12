@@ -1,36 +1,16 @@
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore;
-using Microsoft.Extensions.Logging.Console;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Text.Json.Serialization;
 using System.Net;
 using GLOKON.Baiters.Server.Configuration;
 using Serilog;
-using Serilog.Events;
-using Serilog.Core;
 
 namespace GLOKON.Baiters.Server
 {
     public class Program
     {
-        public static readonly LoggingLevelSwitch LoggingLevel = new();
-
         public static void Main(string[] args)
         {
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.ControlledBy(LoggingLevel)
-                .MinimumLevel.Override("Microsoft.AspNetCore.Mvc.Internal", LogEventLevel.Warning)
-                .MinimumLevel.Override("Microsoft.AspNetCore.DataProtection", LogEventLevel.Warning)
-                .MinimumLevel.Override("Microsoft.AspNetCore.Authentication", LogEventLevel.Warning)
-                .MinimumLevel.Override("Microsoft.AspNetCore.Hosting", LogEventLevel.Warning)
-                .MinimumLevel.Override("Microsoft.AspNetCore.Mvc", LogEventLevel.Warning)
-                .MinimumLevel.Override("Microsoft.AspNetCore.Routing", LogEventLevel.Warning)
-                .WriteTo.Console()
-                .WriteTo.File("logs/server-.log", rollingInterval: RollingInterval.Day)
-                .CreateLogger();
-
             var builder = WebHost.CreateDefaultBuilder<Server>(args)
                 .SuppressStatusMessages(true)
                 .ConfigureKestrel((context, kestrelOptions) =>

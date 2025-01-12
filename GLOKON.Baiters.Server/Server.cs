@@ -9,21 +9,36 @@ using GLOKON.Baiters.Core;
 using GLOKON.Baiters.Server.HostedServices;
 using GLOKON.Baiters.Core.Packets;
 using GLOKON.Baiters.Core.Chat;
+using Serilog.Events;
 
 namespace GLOKON.Baiters.Server
 {
-    public class Server(IConfiguration configuration)
+    public class Server
     {
-        public IConfiguration Configuration { get; } = configuration;
+        private readonly IConfiguration _configuration;
+
+        public Server(IConfiguration configuration)
+        {
+            _configuration = configuration;
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(_configuration)
+                .MinimumLevel.Override("Microsoft.AspNetCore.Mvc.Internal", LogEventLevel.Warning)
+                .MinimumLevel.Override("Microsoft.AspNetCore.DataProtection", LogEventLevel.Warning)
+                .MinimumLevel.Override("Microsoft.AspNetCore.Authentication", LogEventLevel.Warning)
+                .MinimumLevel.Override("Microsoft.AspNetCore.Hosting", LogEventLevel.Warning)
+                .MinimumLevel.Override("Microsoft.AspNetCore.Mvc", LogEventLevel.Warning)
+                .MinimumLevel.Override("Microsoft.AspNetCore.Routing", LogEventLevel.Warning)
+                .CreateLogger();
+        }
 
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSerilog();
 
-            var serverSection = Configuration.GetRequiredSection("Server");
+            var serverSection = _configuration.GetRequiredSection("Server");
             ServerOptions serverOptions = serverSection.Get<ServerOptions>() ?? new();
             services.Configure<ServerOptions>(serverSection);
-            services.Configure<WebFishingOptions>(Configuration.GetRequiredSection("WebFishing"));
+            services.Configure<WebFishingOptions>(_configuration.GetRequiredSection("WebFishing"));
 
             services.AddCors(options =>
             {
@@ -70,7 +85,6 @@ namespace GLOKON.Baiters.Server
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                Program.LoggingLevel.MinimumLevel = Serilog.Events.LogEventLevel.Debug;
             }
             else
             {

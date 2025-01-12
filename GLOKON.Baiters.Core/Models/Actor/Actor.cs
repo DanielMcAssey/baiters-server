@@ -12,6 +12,8 @@
 
         public ulong OwnerId { get; } = ownerId;
 
+        public string Zone { get; set; } = "main_zone";
+
         public uint? DespawnTime
         {
             get { return _despawnTime; }
