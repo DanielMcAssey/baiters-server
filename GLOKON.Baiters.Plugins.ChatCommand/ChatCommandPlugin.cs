@@ -1,4 +1,5 @@
 ﻿using GLOKON.Baiters.Core;
+using GLOKON.Baiters.Core.Constants;
 using GLOKON.Baiters.Core.Plugins;
 using System.Reflection;
 
@@ -22,14 +23,14 @@ namespace GLOKON.Baiters.Plugins.ChatCommand
                     return;
                 }
 
-                GM.Server.SendMessage(string.Format("-- Players ({0}/{1}) --", GM.Server.Players.Count(), GM.Options.MaxPlayers), "0f0f0f", sender);
+                GM.Server.SendMessage(string.Format("-- Players ({0}/{1}) --", GM.Server.Players.Count(), GM.Options.MaxPlayers), MessageColour.Information, sender);
 
                 foreach (var player in GM.Server.Players)
                 {
-                    GM.Server.SendMessage(string.Format("- [{0}] {1}", player.Key, player.Value.FisherName), "0f0f0f", sender);
+                    GM.Server.SendMessage(string.Format("- [{0}] {1}", player.Key, player.Value.FisherName), MessageColour.Information, sender);
                 }
 
-                GM.Server.SendMessage("----", "0f0f0f", sender);
+                GM.Server.SendMessage("----", MessageColour.Information, sender);
             });
 
             GM.Chat.ListenFor("spawn", "Spawn a new element on the server", (sender, commandParams) =>
@@ -41,18 +42,18 @@ namespace GLOKON.Baiters.Plugins.ChatCommand
 
                 if (commandParams.Length < 1)
                 {
-                    GM.Server.SendMessage("Invalid spawn command, not enough parameters", steamId: sender);
+                    GM.Server.SendMessage("Invalid spawn command, not enough parameters", MessageColour.Error, sender);
                     return;
                 }
 
                 string spawnType = commandParams[0].ToLower();
                 if (GM.Spawner.Spawn(spawnType))
                 {
-                    GM.Server.SendMessage(string.Format("Spawned a {0}", spawnType), "0f0f0f", sender);
+                    GM.Server.SendMessage(string.Format("Spawned a {0}", spawnType), MessageColour.Information, sender);
                 }
                 else
                 {
-                    GM.Server.SendMessage(string.Format("Cannot spawn a {0}", spawnType), "0f0f0f", sender);
+                    GM.Server.SendMessage(string.Format("Cannot spawn a {0}", spawnType), MessageColour.Information, sender);
                 }
             });
 
@@ -63,7 +64,7 @@ namespace GLOKON.Baiters.Plugins.ChatCommand
                     return;
                 }
 
-                GM.Server.SendMessage(string.Format("Spawnable: {0}", string.Join(", ", ActorSpawner.Spawnable)), "0f0f0f", sender);
+                GM.Server.SendMessage(string.Format("Spawnable: {0}", string.Join(", ", ActorSpawner.Spawnable)), MessageColour.Information, sender);
             });
 
             GM.Chat.ListenFor("kick", "Kick a player by providing their SteamID", (sender, commandParams) =>
@@ -75,14 +76,14 @@ namespace GLOKON.Baiters.Plugins.ChatCommand
 
                 if (commandParams.Length < 1)
                 {
-                    GM.Server.SendMessage("Invalid kick command, not enough parameters", steamId: sender);
+                    GM.Server.SendMessage("Invalid kick command, not enough parameters", MessageColour.Error, sender);
                     return;
                 }
 
                 bool didParseSteamId = ulong.TryParse(commandParams[0], out var steamId);
                 if (!didParseSteamId)
                 {
-                    GM.Server.SendMessage("Invalid SteamID, could not be parsed", steamId: sender);
+                    GM.Server.SendMessage("Invalid SteamID, could not be parsed", MessageColour.Error, sender);
                     return;
                 }
 
@@ -98,18 +99,18 @@ namespace GLOKON.Baiters.Plugins.ChatCommand
 
                 if (commandParams.Length < 2)
                 {
-                    GM.Server.SendMessage("Invalid say command, not enough parameters", steamId: sender);
+                    GM.Server.SendMessage("Invalid say command, not enough parameters", MessageColour.Error, sender);
                     return;
                 }
 
                 bool didParseSteamId = ulong.TryParse(commandParams[0], out var steamId);
                 if (!didParseSteamId)
                 {
-                    GM.Server.SendMessage("Invalid SteamID, could not be parsed", steamId: sender);
+                    GM.Server.SendMessage("Invalid SteamID, could not be parsed", MessageColour.Error, sender);
                     return;
                 }
 
-                GM.Server.SendMessage(string.Format("ADMIN: {0}", string.Join(" ", commandParams.Skip(1).ToArray())), "ff0000", steamId);
+                GM.Server.SendMessage(string.Format("ADMIN: {0}", string.Join(" ", commandParams.Skip(1).ToArray())), MessageColour.Warning, steamId);
             });
 
             GM.Chat.ListenFor("say.all", "Send all players a message", (sender, commandParams) =>
@@ -121,11 +122,11 @@ namespace GLOKON.Baiters.Plugins.ChatCommand
 
                 if (commandParams.Length < 1)
                 {
-                    GM.Server.SendMessage("Invalid say.all command, not enough parameters", steamId: sender);
+                    GM.Server.SendMessage("Invalid say.all command, not enough parameters", MessageColour.Error, sender);
                     return;
                 }
 
-                GM.Server.SendMessage(string.Format("ADMIN: {0}", string.Join(" ", commandParams)), "ff0000");
+                GM.Server.SendMessage(string.Format("ADMIN: {0}", string.Join(" ", commandParams)), MessageColour.Warning);
             });
 
             GM.Chat.ListenFor("plugins", "Show all the plugins loaded", (sender, commandParams) =>
@@ -135,14 +136,14 @@ namespace GLOKON.Baiters.Plugins.ChatCommand
                     return;
                 }
 
-                GM.Server.SendMessage("-- Plugins --", "0f0f0f", sender);
+                GM.Server.SendMessage("-- Plugins --", MessageColour.Information, sender);
 
                 foreach (var plugin in PluginLoader.Plugins)
                 {
-                    GM.Server.SendMessage(string.Format("- {0}:{1} by {2}", plugin.Name, plugin.Version, plugin.Author), "0f0f0f", sender);
+                    GM.Server.SendMessage(string.Format("- {0}:{1} by {2}", plugin.Name, plugin.Version, plugin.Author), MessageColour.Information, sender);
                 }
 
-                GM.Server.SendMessage("----", "0f0f0f", sender);
+                GM.Server.SendMessage("----", MessageColour.Information, sender);
             });
         }
 

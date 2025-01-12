@@ -166,6 +166,7 @@ namespace GLOKON.Baiters.Core
 
         public void KickPlayer(ulong steamId)
         {
+            SendPacket(new("kick"), DataChannel.GameState, steamId);
             SendPacket(new("peer_was_kicked")
             {
                 ["user_id"] = (long)steamId,
@@ -174,8 +175,8 @@ namespace GLOKON.Baiters.Core
 
             if (_players.TryGetValue(steamId, out var player) && player != null)
             {
-                SendMessage($"Kicked {player.FisherName}", steamId: steamId);
-                SendMessage($"{player.FisherName} was kicked from the lobby!");
+                SendMessage($"Kicked {player.FisherName}", MessageColour.Error, steamId);
+                SendMessage($"{player.FisherName} was kicked from the lobby!", MessageColour.Error);
             }
         }
 
@@ -217,7 +218,7 @@ namespace GLOKON.Baiters.Core
             SendActor(actorId, actor);
         }
 
-        public void SendMessage(string message, string color = "ffffff", ulong? steamId = null)
+        public void SendMessage(string message, string color = MessageColour.Default, ulong? steamId = null)
         {
             SendPacket(new("message")
             {

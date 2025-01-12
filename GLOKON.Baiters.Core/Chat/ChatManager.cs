@@ -1,4 +1,5 @@
 ﻿using GLOKON.Baiters.Core.Configuration;
+using GLOKON.Baiters.Core.Constants;
 using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
 
@@ -21,14 +22,14 @@ namespace GLOKON.Baiters.Core.Chat
                     return;
                 }
 
-                server.SendMessage("-- Help --", "0f0f0f", sender);
+                server.SendMessage("-- Help --", MessageColour.Information, sender);
 
                 foreach (var chatCommand in _commands)
                 {
-                    server.SendMessage(string.Format("- {0}: {1}", chatCommand.Key, chatCommand.Value.HelpText), "0f0f0f", sender);
+                    server.SendMessage(string.Format("- {0}: {1}", chatCommand.Key, chatCommand.Value.HelpText), MessageColour.Information, sender);
                 }
 
-                server.SendMessage("----", "0f0f0f", sender);
+                server.SendMessage("----", MessageColour.Information, sender);
             });
         }
 

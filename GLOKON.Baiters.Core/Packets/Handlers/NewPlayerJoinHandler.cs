@@ -6,13 +6,13 @@ using Serilog;
 
 namespace GLOKON.Baiters.Core.Packets.Handlers
 {
-    internal class NewPlayerJoinHandler(BaitersServer server, string? joinMessage) : IPacketHandler
+    internal class NewPlayerJoinHandler(BaitersServer server, string commandPrefix, string? joinMessage) : IPacketHandler
     {
         public void Handle(ulong sender, Packet data)
         {
             if (!string.IsNullOrEmpty(joinMessage))
             {
-                server.SendMessage(joinMessage, steamId: sender);
+                server.SendMessage(joinMessage, MessageColour.Information, sender);
             }
 
             server.SendPacket(new("recieve_host")
@@ -22,7 +22,8 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
 
             if (server.IsAdmin(sender))
             {
-                server.SendMessage("!!You are an admin!!", "0f0f0f", sender);
+                server.SendMessage("##You are an admin##", MessageColour.Success, sender);
+                server.SendMessage(string.Format("Use '{0}help' to find out what commands are available", commandPrefix), MessageColour.Success, sender);
             }
 
             Task.Run(async () =>

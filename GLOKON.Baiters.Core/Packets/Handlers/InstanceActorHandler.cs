@@ -18,8 +18,8 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
                 if (server.TryGetPlayer(sender, out var playerToKick) && playerToKick != null)
                 {
                     // Kick the player because the spawned in a actor that only the server should be able to spawn!
-                    server.SendPacket(new("kick"), DataChannel.GameState, sender);
-                    server.SendMessage($"{playerToKick.FisherName} was kicked for trying to spawn fish & items");
+                    server.KickPlayer(sender);
+                    server.SendMessage($"{playerToKick.FisherName} was kicked for trying to spawn fish & items", MessageColour.Error);
                 }
             }
             else
