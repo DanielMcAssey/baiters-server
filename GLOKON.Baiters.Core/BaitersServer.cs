@@ -250,20 +250,17 @@ namespace GLOKON.Baiters.Core
 
         public void SendPacket(Packet packet, DataChannel channel, ulong? steamId = null)
         {
-            byte[] data = packet.Serialize();
+            byte[] data = packet.ToBytes();
 
             if (steamId.HasValue)
             {
-                Log.Debug("Sending {0} packet to single player {1}", packet.Type, steamId.Value);
-                SendPacketTo(steamId.Value, data, channel);
+                Log.Debug("Sending {0} packet on {1} to single player {2}", packet.Type, channel, steamId.Value);
+                SendPacketTo(data, channel, steamId.Value);
             }
             else
             {
-                Log.Debug("Sending {0} packet to all players", packet.Type);
-                foreach (var player in _players)
-                {
-                    SendPacketTo(player.Key, data, channel);
-                }
+                Log.Debug("Sending {0} packet on {1} to all players", packet.Type, channel);
+                SendPacketTo(data, channel);
             }
         }
 
@@ -391,7 +388,9 @@ namespace GLOKON.Baiters.Core
 
         protected abstract void ReceivePackets();
 
-        protected abstract void SendPacketTo(ulong steamId, byte[] data, DataChannel channel);
+        protected abstract void SendPacketTo(byte[] data, DataChannel channel);
+
+        protected abstract void SendPacketTo(byte[] data, DataChannel channel, ulong steamId);
 
         protected void HandleNetworkPacket(ulong sender, byte[] data, DataChannel channel)
         {

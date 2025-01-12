@@ -3,7 +3,6 @@ using GLOKON.Baiters.Core.Enums.Networking;
 using Microsoft.Extensions.Options;
 using Serilog;
 using Steamworks;
-using System;
 
 namespace GLOKON.Baiters.Core
 {
@@ -65,7 +64,21 @@ namespace GLOKON.Baiters.Core
             }
         }
 
-        protected override void SendPacketTo(ulong steamId, byte[] data, DataChannel channel)
+
+        protected override void SendPacketTo(byte[] data, DataChannel channel)
+        {
+            foreach (var player in Players)
+            {
+                InternalSendPacket(player.Key, data, channel);
+            }
+        }
+
+        protected override void SendPacketTo(byte[] data, DataChannel channel, ulong steamId)
+        {
+            InternalSendPacket(steamId, data, channel);
+        }
+
+        private void InternalSendPacket(ulong steamId, byte[] data, DataChannel channel)
         {
             if (!SteamNetworking.SendP2PPacket(steamId, data, data.Length, (int)channel))
             {

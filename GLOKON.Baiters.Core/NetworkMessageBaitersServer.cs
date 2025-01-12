@@ -49,15 +49,28 @@ namespace GLOKON.Baiters.Core
             }
         }
 
-        protected override void SendPacketTo(ulong steamId, byte[] data, DataChannel channel)
+        protected override void SendPacketTo(byte[] data, DataChannel channel)
         {
-            if (_connections.TryGetValue(steamId, out var connection))
+            foreach (var connection in _connections)
             {
-                if (SteamNetworkingMessages.SendMessageToUser(ref connection, data, data.Length, (int)channel) != Result.OK)
-                {
-                    Log.Error("Failed to send packet to {0}", steamId);
-                    LeavePlayer(steamId);
-                }
+                InternalSendPacket(connection.Key, connection.Value, data, channel);
+            }
+        }
+
+        protected override void SendPacketTo(byte[] data, DataChannel channel, ulong steamId)
+        {
+            if (_connections.TryGetValue(steamId, out var netIdentity))
+            {
+                InternalSendPacket(steamId, netIdentity, data, channel);
+            }
+        }
+
+        private void InternalSendPacket(ulong steamId, NetIdentity netIdentity, byte[] data, DataChannel channel)
+        {
+            if (SteamNetworkingMessages.SendMessageToUser(ref netIdentity, data, data.Length, (int)channel) != Result.OK)
+            {
+                Log.Error("Failed to send network message packet to {0}", steamId);
+                LeavePlayer(steamId);
             }
         }
 

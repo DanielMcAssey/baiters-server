@@ -26,7 +26,7 @@ namespace GLOKON.Baiters.Core.Models.Networking
 
         public string Type { get; } = "unknown";
 
-        public byte[] Serialize()
+        public byte[] ToBytes()
         {
             byte[] data = GodotWriter.WritePacket(this);
 
