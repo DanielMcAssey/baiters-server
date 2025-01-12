@@ -12,12 +12,6 @@
           "McMaster.AspNetCore.Kestrel.Certificates": "1.0.0"
         }
       },
-      "Microsoft.DotNet.ILCompiler": {
-        "type": "Direct",
-        "requested": "[8.0.11, )",
-        "resolved": "8.0.11",
-        "contentHash": "9SWRKJzFrE07m77G/9jSR1lqdlPmKCsQX1UflZEFBGYzmOZ53sjLEEcAiWtnWY0QJ750h2ahciOPO8oVjztQ0g=="
-      },
       "Microsoft.NET.ILLink.Tasks": {
         "type": "Direct",
         "requested": "[8.0.11, )",
@@ -277,20 +271,6 @@
       }
     },
     "net8.0/win-x64": {
-      "Microsoft.DotNet.ILCompiler": {
-        "type": "Direct",
-        "requested": "[8.0.11, )",
-        "resolved": "8.0.11",
-        "contentHash": "9SWRKJzFrE07m77G/9jSR1lqdlPmKCsQX1UflZEFBGYzmOZ53sjLEEcAiWtnWY0QJ750h2ahciOPO8oVjztQ0g==",
-        "dependencies": {
-          "runtime.win-x64.Microsoft.DotNet.ILCompiler": "8.0.11"
-        }
-      },
-      "runtime.win-x64.Microsoft.DotNet.ILCompiler": {
-        "type": "Transitive",
-        "resolved": "8.0.11",
-        "contentHash": "rrxOObwOfOZ7IqKpd4rRZqjIWrgCrLv3XzkU5FusWtgwoaUu1/8QJGcbog/RJzgl40Yt6vZpFFbWtFazeseapg=="
-      },
       "System.Text.Encodings.Web": {
         "type": "Transitive",
         "resolved": "9.0.0",
