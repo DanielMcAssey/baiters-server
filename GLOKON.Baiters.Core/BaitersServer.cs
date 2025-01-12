@@ -396,7 +396,7 @@ namespace GLOKON.Baiters.Core
         protected void HandleNetworkPacket(ulong sender, byte[] data, DataChannel channel)
         {
             var parsedPacket = Packet.Parse(data);
-            Log.Debug("Received packet {0} on channel {1} from {2}", parsedPacket.Type, channel, sender);
+            Log.Verbose("Received packet {0} on channel {1} from {2}", parsedPacket.Type, channel, sender);
             OnPacket?.Invoke(sender, parsedPacket);
         }
 
