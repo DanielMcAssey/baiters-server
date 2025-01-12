@@ -40,10 +40,17 @@ namespace GLOKON.Baiters.Core
                 {
                     try
                     {
-                        Spawn(spawnProbabilities.Next());
+                        string nextSpawn = spawnProbabilities.Next();
+                        if (Spawn(nextSpawn))
+                        {
+                            Log.Debug("Spawned {0}", nextSpawn);
+                        }
 
                         // Always spawn metal every iteration, if needed
-                        Spawn(ActorType.Metal);
+                        if (Spawn(ActorType.Metal))
+                        {
+                            Log.Debug("Spawned {0}", ActorType.Metal);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -57,7 +64,7 @@ namespace GLOKON.Baiters.Core
 
         public bool Spawn(string type)
         {
-            Log.Debug("Attempting to spawn {type}", type);
+            Log.Verbose("Attempting to spawn {type}", type);
 
             switch (type)
             {
@@ -65,6 +72,7 @@ namespace GLOKON.Baiters.Core
                     if (server.GetActorsByType(ActorType.Fish).Count() < options.Modifiers.MaxFish)
                     {
                         SpawnFish();
+                        return true;
                     }
 
                     break;
@@ -72,29 +80,30 @@ namespace GLOKON.Baiters.Core
                     if (server.GetActorsByType(ActorType.Bird).Count() < options.Modifiers.MaxBird)
                     {
                         SpawnBird();
+                        return true;
                     }
 
                     break;
                 case ActorType.RainCloud:
                     SpawnRainCloud();
-                    break;
+                    return true;
                 case ActorType.Meteor:
                     SpawnFish(ActorType.Meteor);
-                    break;
+                    return true;
                 case ActorType.VoidPortal:
                     SpawnVoidPortal();
-                    break;
+                    return true;
                 case ActorType.Metal:
                     if (server.GetActorsByType(ActorType.Metal).Count() < options.Modifiers.MaxMetal)
                     {
                         SpawnMetal();
+                        return true;
                     }
+
                     break;
-                default:
-                    return false;
             }
 
-            return true;
+            return false;
         }
 
         public void SpawnBird()
