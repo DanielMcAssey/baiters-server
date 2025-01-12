@@ -466,6 +466,7 @@ namespace GLOKON.Baiters.Core
                 newLobby.SetData($"tag_{tag}", options.Tags.Contains(tag) ? "1" : "0");
             }
 
+            UpdatePlayerCount();
             Log.Information("{0} {1} lobby created, max players {2}, invite code: {3}", options.ServerName, options.JoinType, options.MaxPlayers, lobbyCode);
 
             return newLobby;
