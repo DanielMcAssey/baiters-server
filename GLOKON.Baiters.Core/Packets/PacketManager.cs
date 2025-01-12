@@ -25,6 +25,7 @@ namespace GLOKON.Baiters.Core.Packets
             handlers.Add("new_player_join", new NewPlayerJoinHandler(server, options.JoinMessage));
             handlers.Add("instance_actor", new InstanceActorHandler(server));
             handlers.Add("actor_update", new ActorUpdateHandler(server));
+            handlers.Add("actor_animation_update", new ActorAnimationUpdateHandler(server));
             handlers.Add("request_ping", new RequestPingHandler(server));
             handlers.Add("actor_action", new ActorActionHandler(server));
             handlers.Add("request_actors", new RequestActorsHandler(server));
@@ -33,7 +34,7 @@ namespace GLOKON.Baiters.Core.Packets
 
         private void Server_OnPacket(ulong sender, Packet packet)
         {
-            Log.Debug("Handling packet {0} for {1}", packet.Type, sender);
+            Log.Verbose("Handling packet {0} for {1}", packet.Type, sender);
 
             if (handlers.TryGetValue(packet.Type, out var handler) && handler != null)
             {

@@ -255,12 +255,12 @@ namespace GLOKON.Baiters.Core
 
             if (steamId.HasValue)
             {
-                Log.Debug("Sending {0} packet on {1} to single player {2}", packet.Type, channel, steamId.Value);
+                Log.Verbose("Sending {0} packet on {1} to single player {2}", packet.Type, channel, steamId.Value);
                 SendPacketTo(data, channel, steamId.Value);
             }
             else
             {
-                Log.Debug("Sending {0} packet on {1} to all players", packet.Type, channel);
+                Log.Verbose("Sending {0} packet on {1} to all players", packet.Type, channel);
                 SendPacketTo(data, channel);
             }
         }
