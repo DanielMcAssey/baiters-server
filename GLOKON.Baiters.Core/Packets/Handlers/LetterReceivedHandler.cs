@@ -1,4 +1,5 @@
-﻿using GLOKON.Baiters.Core.Models.Networking;
+﻿using GLOKON.Baiters.Core.Enums.Networking;
+using GLOKON.Baiters.Core.Models.Networking;
 
 namespace GLOKON.Baiters.Core.Packets.Handlers
 {
@@ -6,7 +7,8 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
     {
         public void Handle(ulong sender, Packet packet)
         {
-            // TODO: Do we need to do anything?
+            // Auto decline letter as server cant receive them
+            server.SendPacket(new("letter_was_denied"), DataChannel.GameState, sender);
         }
     }
 }

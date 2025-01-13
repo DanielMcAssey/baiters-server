@@ -14,6 +14,8 @@ namespace GLOKON.Baiters.Core.Models.Actor
 
         public long? ActorId { get; set; }
 
+        public string? LastEmote { get; set; }
+
         public Cosmetics? Cosmetics { get; set; }
 
         public HeldItem? HeldItem { get; set; }

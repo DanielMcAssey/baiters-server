@@ -9,14 +9,13 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
     {
         public void Handle(ulong sender, Packet data)
         {
-            string action = (string)data["action"];
-            long actorId = (long)data["actor_id"];
-            Array actionParams = (Array)data["params"];
+            var action = (string)data["action"];
+            var actorId = (long)data["actor_id"];
+            var actionParams = (Array)data["params"];
 
             switch (action)
             {
                 case "_update_cosmetics":
-                    return; // TODO: Needs testing
                     var cosmeticsPkt = (Dictionary<string, object>)(actionParams.GetValue(0) ?? new Dictionary<string, object>());
 
                     if (server.TryGetPlayer(sender, out var playerCosmetic) && playerCosmetic != null)
@@ -42,31 +41,34 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
                     }
                     break;
                 case "_update_held_item":
-                    return; // TODO: Needs testing
                     var heldItemPkt = (Dictionary<string, object>)(actionParams.GetValue(0) ?? new Dictionary<string, object>());
 
                     if (server.TryGetPlayer(sender, out var playerHeldItem) && playerHeldItem != null)
                     {
-                        playerHeldItem.HeldItem = new() {
+                        playerHeldItem.HeldItem = new()
+                        {
                             Id = (string)heldItemPkt["id"],
-                            Size = (float)heldItemPkt["size"],
-                            Quality = (ItemQuality)heldItemPkt["quality"]
+                            Size = (double)heldItemPkt["size"],
+                            Quality = (ItemQuality)Enum.ToObject(typeof(ItemQuality), heldItemPkt["quality"]),
                         };
                     }
                     break;
-                case "_sync_sound":
-                case "_talk":
+                case "_sync_level_bubble":
+                    if (server.TryGetPlayer(sender, out var playerLevelUp) && playerLevelUp != null)
+                    {
+                        Log.Information("{0} has levelled up", playerLevelUp.FisherName);
+                    }
+                    break;
                 case "_face_emote":
-                case "_play_particle":
-                case "_play_sfx":
-                case "_sync_strum":
-                case "_sync_hammer":
-                case "_sync_punch":
-                case "queue_free":
+                    if (server.TryGetPlayer(sender, out var playerFaceEmote) && playerFaceEmote != null)
+                    {
+                        string emote = (string)(actionParams.GetValue(0) ?? "unknown");
+                        playerFaceEmote.LastEmote = emote;
+                        Log.Information("{0} emoted and is {1}", playerFaceEmote.FisherName, emote);
+                    }
+                    break;
                 case "_change_id":
-                case "_set_state":
-                case "_flush":
-                    // TODO: Shall we do something with this?
+                    // TODO: Change Actor ID
                     break;
                 case "_set_zone":
                     // TODO: Set actor zone
@@ -88,8 +90,20 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
                         server.RemoveActor(wipeActorId);
                     }
                     break;
-
-
+                case "_talk": // Play player speech audio (single character per packet)
+                case "_play_particle": // Play particle
+                case "_play_sfx": // Play audio sfx
+                case "_sync_strum": // Play guitar strum
+                case "_sync_hammer": // Play guitar hammer
+                case "_sync_punch": // Show punch effects for local player
+                case "_flush": // Flush toilet
+                case "_set_state": // Set boombox state
+                case "queue_free":
+                    // Not required for the server
+                    break;
+                case "_sync_sound":
+                    // Unused
+                    break;
                 default:
                     Log.Verbose("Unknown actor action {0}", action);
                     break;

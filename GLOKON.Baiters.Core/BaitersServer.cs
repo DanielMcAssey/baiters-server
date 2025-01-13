@@ -11,7 +11,6 @@ using Steamworks;
 using Steamworks.Data;
 using System.Collections.Concurrent;
 using GLOKON.Baiters.Core.Enums.Networking;
-using GLOKON.Baiters.Core.Models.Game;
 
 namespace GLOKON.Baiters.Core
 {
@@ -234,25 +233,6 @@ namespace GLOKON.Baiters.Core
             }, DataChannel.GameState, steamId);
         }
 
-        public void SendLetter(ulong toSteamId, string header, string body, string closing, string user)
-        {
-            SendPacket(new("letter_received")
-            {
-                ["to"] = toSteamId.ToString(),
-                ["data"] = new Dictionary<string, object>()
-                {
-                    ["to"] = toSteamId.ToString(),
-                    ["from"] = ServerId.ToString(),
-                    ["header"] = header,
-                    ["body"] = body,
-                    ["closing"] = closing,
-                    ["user"] = user,
-                    ["letter_id"] = new Random().Next(),
-                    ["items"] = Array.Empty<object>(),
-                },
-            }, DataChannel.GameState, toSteamId);
-        }
-
         public void SendPacket(Packet packet, DataChannel channel, ulong? steamId = null)
         {
             byte[] data = packet.ToBytes();
@@ -266,65 +246,6 @@ namespace GLOKON.Baiters.Core
             {
                 Log.Verbose("Sending {0} packet on {1} to all players", packet.Type, channel);
                 SendPacketTo(data, channel);
-            }
-        }
-
-        public void SetPlayerCosmetics(ulong steamId, Cosmetics cosmetics)
-        {
-            if (TryGetPlayer(steamId, out var player) && player != null)
-            {
-                player.Cosmetics = cosmetics;
-                var cosmeticsPkt = new Dictionary<string, object>()
-                {
-                    ["title"] = cosmetics.Title,
-                    ["eye"] = cosmetics.Eye,
-                    ["nose"] = cosmetics.Nose,
-                    ["mouth"] = cosmetics.Mouth,
-                    ["undershirt"] = cosmetics.Undershirt,
-                    ["overshirt"] = cosmetics.Overshirt,
-                    ["legs"] = cosmetics.Legs,
-                    ["hat"] = cosmetics.Hat,
-                    ["species"] = cosmetics.Species,
-                    ["accessory"] = cosmetics.Accessory,
-                    ["pattern"] = cosmetics.Pattern,
-                    ["primary_color"] = cosmetics.PrimaryColor,
-                    ["secondary_color"] = cosmetics.SecondaryColor,
-                    ["tail"] = cosmetics.Tail,
-                };
-
-                if (!string.IsNullOrWhiteSpace(cosmetics.Bobber))
-                {
-                    cosmeticsPkt.Add("bobber", cosmetics.Bobber);
-                }
-
-                SendPacket(new("actor_action")
-                {
-                    ["action"] = "_update_cosmetics",
-                    ["actor_id"] = (long)steamId,
-                    ["params"] = new object[] { cosmeticsPkt, },
-                }, DataChannel.ActorAction);
-            }
-        }
-
-        public void SetPlayerHeldItem(ulong steamId, HeldItem? item = null)
-        {
-            if (TryGetPlayer(steamId, out var player) && player != null)
-            {
-                player.HeldItem = item;
-                var heldItemPkt = new Dictionary<string, object>();
-                if (item != null)
-                {
-                    heldItemPkt.Add("id", item.Id);
-                    heldItemPkt.Add("size", item.Size);
-                    heldItemPkt.Add("quality", item.Quality);
-                }
-
-                SendPacket(new("actor_action")
-                {
-                    ["action"] = "_update_held_item",
-                    ["actor_id"] = (long)steamId,
-                    ["params"] = new object[] { heldItemPkt, },
-                }, DataChannel.ActorAction);
             }
         }
 

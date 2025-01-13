@@ -12,6 +12,7 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
             if (server.TryGetActor(actorId, out var actor) && actor is Player player)
             {
                 player.Position = (Vector3)data["pos"];
+                player.Rotation = (Vector3)data["rot"];
             }
         }
     }

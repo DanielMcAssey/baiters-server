@@ -13,7 +13,8 @@ namespace GLOKON.Baiters.Core
         PacketManager packet,
         ChatManager chat,
         BaitersServer server,
-        ActorSpawner spawner)
+        ActorSpawner spawner,
+        ActorActioner actioner)
     {
         private readonly WebFishingOptions options = _options.Value;
 
@@ -22,6 +23,8 @@ namespace GLOKON.Baiters.Core
         public BaitersServer Server => server;
 
         public ActorSpawner Spawner => spawner;
+
+        public ActorActioner Actioner => actioner;
 
         public ChatManager Chat => chat;
 
