@@ -94,6 +94,7 @@ namespace GLOKON.Baiters.Core
             try
             {
                 SteamClient.Init(options.AppId);
+                SteamNetworkingUtils.InitRelayNetworkAccess();
             }
             catch (Exception ex)
             {
