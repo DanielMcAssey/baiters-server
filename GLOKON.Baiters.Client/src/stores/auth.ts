@@ -29,7 +29,7 @@ export const useAuthStore = defineStore('auth', {
   },
   getters: {
     isAuthenticated(): boolean {
-      return !!this.user;
+      return !!this.user && this.user.isAdmin;
     },
     me(): User | undefined {
       return this.user;
