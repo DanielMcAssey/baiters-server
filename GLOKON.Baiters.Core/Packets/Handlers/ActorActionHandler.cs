@@ -9,9 +9,9 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
     {
         public void Handle(ulong sender, Packet data)
         {
-            string action = (string)data["action"];
-            long actorId = (long)data["actor_id"];
-            Array actionParams = (Array)data["params"];
+            var action = (string)data["action"];
+            var actorId = (long)data["actor_id"];
+            var actionParams = (Array)data["params"];
 
             switch (action)
             {

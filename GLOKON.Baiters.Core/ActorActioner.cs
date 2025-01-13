@@ -79,6 +79,21 @@ namespace GLOKON.Baiters.Core
             }, DataChannel.Speech, steamId);
         }
 
+        public void MovePlayer(ulong steamId, Vector3 position, Vector3? rotation = null)
+        {
+            if (server.TryGetPlayer(steamId, out var player) && player != null && player.ActorId.HasValue)
+            {
+                player.Position = position;
+
+                if (rotation.HasValue)
+                {
+                    player.Rotation = rotation.Value;
+                }
+
+                server.SendActorUpdate(player.ActorId.Value, player);
+            }
+        }
+
         public void SendLetter(ulong toSteamId, string header, string body, string closing, string[]? items = null)
         {
             // NOTE: Typo in "received" is in WebFishing not here
