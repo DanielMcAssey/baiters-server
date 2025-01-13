@@ -23,6 +23,9 @@
     <FileVersion>$(AssemblyVersion)</FileVersion>
     <Version>$(AssemblyVersion)</Version>
     <ApplicationIcon>Resources\logo.ico</ApplicationIcon>
+    <SpaRoot>..\GLOKON.Baiters.Client</SpaRoot>
+    <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
+    <SpaProxyServerUrl>https://localhost:60499</SpaProxyServerUrl>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DebugSymbols>False</DebugSymbols>
@@ -35,6 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AspNet.Security.OpenId.Steam" Version="8.0.0" />
     <PackageReference Include="LettuceEncrypt" Version="1.3.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Serilog" Version="4.2.0" />
@@ -43,6 +47,9 @@
     <PackageReference Include="Serilog.Settings.Configuration" Version="9.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaProxy">
+      <Version>8.*-*</Version>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -146,10 +153,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GLOKON.Baiters.Core\GLOKON.Baiters.Core.csproj" />
+    <ProjectReference Include="..\GLOKON.Baiters.Client\GLOKON.Baiters.Client.esproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="wwwroot\index.html">
+    <Content Update="wwwroot\.gitkeep">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

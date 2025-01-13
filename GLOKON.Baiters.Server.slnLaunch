@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "Default Profile",
+    "Projects": [
+      {
+        "Path": "GLOKON.Baiters.Server\\GLOKON.Baiters.Server.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "GLOKON.Baiters.Client\\GLOKON.Baiters.Client.esproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]
