@@ -67,18 +67,8 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
                         Log.Information("{0} emoted and is {1}", playerFaceEmote.FisherName, emote);
                     }
                     break;
-                case "_sync_sound":
-                case "_talk":
-                case "_play_particle":
-                case "_play_sfx":
-                case "_sync_strum":
-                case "_sync_hammer":
-                case "_sync_punch":
-                case "queue_free":
                 case "_change_id":
-                case "_set_state":
-                case "_flush":
-                    // TODO: Shall we do something with this?
+                    // TODO: Change Actor ID
                     break;
                 case "_set_zone":
                     // TODO: Set actor zone
@@ -100,8 +90,20 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
                         server.RemoveActor(wipeActorId);
                     }
                     break;
-
-
+                case "_talk": // Play player speech audio (single character per packet)
+                case "_play_particle": // Play particle
+                case "_play_sfx": // Play audio sfx
+                case "_sync_strum": // Play guitar strum
+                case "_sync_hammer": // Play guitar hammer
+                case "_sync_punch": // Show punch effects for local player
+                case "_flush": // Flush toilet
+                case "_set_state": // Set boombox state
+                case "queue_free":
+                    // Not required for the server
+                    break;
+                case "_sync_sound":
+                    // Unused
+                    break;
                 default:
                     Log.Verbose("Unknown actor action {0}", action);
                     break;
