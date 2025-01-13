@@ -1,4 +1,5 @@
 ﻿using GLOKON.Baiters.Core.Models.Networking;
+using Serilog;
 
 namespace GLOKON.Baiters.Core.Packets.Handlers
 {
@@ -6,7 +7,7 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
     {
         public void Handle(ulong sender, Packet packet)
         {
-            // TODO: Do we need to do anything?
+            Log.Information("Letter sent to {0} was accepted", sender);
         }
     }
 }

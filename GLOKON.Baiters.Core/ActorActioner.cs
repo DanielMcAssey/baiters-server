@@ -79,21 +79,21 @@ namespace GLOKON.Baiters.Core
             }, DataChannel.Speech, steamId);
         }
 
-        public void SendLetter(ulong toSteamId, string header, string body, string closing, string user)
+        public void SendLetter(ulong toSteamId, string header, string body, string closing, string[]? items = null)
         {
-            server.SendPacket(new("letter_received")
+            // NOTE: Typo in "received" is in WebFishing not here
+            server.SendPacket(new("letter_recieved")
             {
                 ["to"] = toSteamId.ToString(),
                 ["data"] = new Dictionary<string, object>()
                 {
+                    ["letter_id"] = new Random().Next(),
                     ["to"] = toSteamId.ToString(),
                     ["from"] = server.ServerId.ToString(),
                     ["header"] = header,
                     ["body"] = body,
                     ["closing"] = closing,
-                    ["user"] = user,
-                    ["letter_id"] = new Random().Next(),
-                    ["items"] = Array.Empty<object>(),
+                    ["items"] = items ?? [],
                 },
             }, DataChannel.GameState, toSteamId);
         }
