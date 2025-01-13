@@ -153,12 +153,15 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GLOKON.Baiters.Core\GLOKON.Baiters.Core.csproj" />
-    <Content Update="wwwroot\index.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <ProjectReference Include="..\GLOKON.Baiters.Client\GLOKON.Baiters.Client.esproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="wwwroot\.gitkeep">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
