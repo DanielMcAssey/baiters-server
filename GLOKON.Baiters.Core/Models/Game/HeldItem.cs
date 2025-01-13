@@ -6,7 +6,7 @@ namespace GLOKON.Baiters.Core.Models.Game
     {
         public required string Id { get; set; }
 
-        public required float Size { get; set; }
+        public required double Size { get; set; }
 
         public ItemQuality Quality { get; set; } = ItemQuality.Normal;
     }

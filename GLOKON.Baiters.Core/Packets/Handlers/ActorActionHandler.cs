@@ -45,10 +45,11 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
 
                     if (server.TryGetPlayer(sender, out var playerHeldItem) && playerHeldItem != null)
                     {
-                        playerHeldItem.HeldItem = new() {
+                        playerHeldItem.HeldItem = new()
+                        {
                             Id = (string)heldItemPkt["id"],
-                            Size = (float)heldItemPkt["size"],
-                            Quality = (ItemQuality)heldItemPkt["quality"]
+                            Size = (double)heldItemPkt["size"],
+                            Quality = (ItemQuality)Enum.ToObject(typeof(ItemQuality), heldItemPkt["quality"]),
                         };
                     }
                     break;
