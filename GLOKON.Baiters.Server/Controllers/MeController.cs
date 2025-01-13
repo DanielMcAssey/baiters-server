@@ -10,7 +10,7 @@ namespace GLOKON.Baiters.Server.Controllers
 {
     [Route("api/me")]
     [ApiController]
-    [Authorize(Policy = "AnySteam")]
+    [Authorize(Policy = "SteamUser")]
     public class MeController(IOptions<WebFishingOptions> options) : Controller
     {
         [HttpGet]

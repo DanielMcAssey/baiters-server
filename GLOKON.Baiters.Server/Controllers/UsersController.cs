@@ -1,12 +1,14 @@
 ﻿using GLOKON.Baiters.Core;
 using GLOKON.Baiters.Core.Models.Game;
 using GLOKON.Baiters.Server.Requests;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GLOKON.Baiters.Server.Controllers
 {
     [Route("api/users")]
     [ApiController]
+    [Authorize(Policy = "SteamAdmin")]
     public class UsersController(GameManager gm) : Controller
     {
         [HttpGet]

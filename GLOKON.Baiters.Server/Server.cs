@@ -86,14 +86,15 @@ namespace GLOKON.Baiters.Server
                 });
             services.AddControllers();
             services.AddAuthorizationBuilder()
-                .AddPolicy("AnySteam", policy =>
+                .AddPolicy("SteamUser", policy =>
                 {
                     policy.RequireAuthenticatedUser();
                 })
-                .SetFallbackPolicy(new AuthorizationPolicyBuilder()
-                    .RequireAuthenticatedUser()
-                    .RequireClaim(ClaimTypes.NameIdentifier, webFishingOptions.Admins.Select(steamId => SteamAuthenticationConstants.Namespaces.Identifier + steamId.ToString()).ToList())
-                    .Build()); // Fallback policy (The default policy) is Admin only
+                .AddDefaultPolicy("SteamAdmin", policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireClaim(ClaimTypes.NameIdentifier, webFishingOptions.Admins.Select(steamId => SteamAuthenticationConstants.Namespaces.Identifier + steamId.ToString()).ToList());
+                });
             services.AddAuthentication(options =>
             {
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
