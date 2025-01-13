@@ -76,7 +76,8 @@ function banPlayer(event: Event, steamId: string) {
             detail: 'There was a problem banning the player',
             life: 10000,
           });
-        });
+        })
+        .finally(() => fetchData());
     },
   });
 }
@@ -108,7 +109,8 @@ function kickPlayer(event: Event, steamId: string) {
             detail: 'There was a problem kicking the player',
             life: 10000,
           });
-        });
+        })
+        .finally(() => fetchData());
     },
   });
 }

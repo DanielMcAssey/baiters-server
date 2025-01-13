@@ -52,6 +52,12 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+
       - name: Install Packages
         run: npm ci
 

@@ -76,7 +76,8 @@ function spawnActor(event: Event, type: string): void {
             detail: 'There was a problem spawning the actor',
             life: 10000,
           });
-        });
+        })
+        .finally(() => fetchData());
     },
   });
 }
@@ -108,7 +109,8 @@ function removeActor(event: Event, id: number): void {
             detail: 'There was a problem removing the actor',
             life: 10000,
           });
-        });
+        })
+        .finally(() => fetchData());
     },
   });
 }
