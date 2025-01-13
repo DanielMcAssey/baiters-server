@@ -16,7 +16,6 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
             switch (action)
             {
                 case "_update_cosmetics":
-                    return; // TODO: Needs testing
                     var cosmeticsPkt = (Dictionary<string, object>)(actionParams.GetValue(0) ?? new Dictionary<string, object>());
 
                     if (server.TryGetPlayer(sender, out var playerCosmetic) && playerCosmetic != null)
@@ -42,7 +41,6 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
                     }
                     break;
                 case "_update_held_item":
-                    return; // TODO: Needs testing
                     var heldItemPkt = (Dictionary<string, object>)(actionParams.GetValue(0) ?? new Dictionary<string, object>());
 
                     if (server.TryGetPlayer(sender, out var playerHeldItem) && playerHeldItem != null)
@@ -54,9 +52,22 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
                         };
                     }
                     break;
+                case "_sync_level_bubble":
+                    if (server.TryGetPlayer(sender, out var playerLevelUp) && playerLevelUp != null)
+                    {
+                        Log.Information("{0} has levelled up", playerLevelUp.FisherName);
+                    }
+                    break;
+                case "_face_emote":
+                    if (server.TryGetPlayer(sender, out var playerFaceEmote) && playerFaceEmote != null)
+                    {
+                        string emote = (string)(actionParams.GetValue(0) ?? "unknown");
+                        playerFaceEmote.LastEmote = emote;
+                        Log.Information("{0} emoted and is {1}", playerFaceEmote.FisherName, emote);
+                    }
+                    break;
                 case "_sync_sound":
                 case "_talk":
-                case "_face_emote":
                 case "_play_particle":
                 case "_play_sfx":
                 case "_sync_strum":
