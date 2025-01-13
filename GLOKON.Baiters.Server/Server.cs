@@ -10,6 +10,10 @@ using GLOKON.Baiters.Server.HostedServices;
 using GLOKON.Baiters.Core.Packets;
 using GLOKON.Baiters.Core.Chat;
 using Serilog.Events;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using AspNet.Security.OpenId.Steam;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace GLOKON.Baiters.Server
 {
@@ -38,7 +42,10 @@ namespace GLOKON.Baiters.Server
             var serverSection = _configuration.GetRequiredSection("Server");
             ServerOptions serverOptions = serverSection.Get<ServerOptions>() ?? new();
             services.Configure<ServerOptions>(serverSection);
-            services.Configure<WebFishingOptions>(_configuration.GetRequiredSection("WebFishing"));
+
+            var webFishingSection = _configuration.GetRequiredSection("WebFishing");
+            WebFishingOptions webFishingOptions = serverSection.Get<WebFishingOptions>() ?? new();
+            services.Configure<WebFishingOptions>(webFishingSection);
 
             services.AddCors(options =>
             {
@@ -78,7 +85,51 @@ namespace GLOKON.Baiters.Server
                     ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
                 });
             services.AddControllers();
-            services.AddAuthorization();
+            services.AddAuthorizationBuilder()
+                .AddPolicy("AnySteam", policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                })
+                .SetFallbackPolicy(new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .RequireClaim(ClaimTypes.NameIdentifier, webFishingOptions.Admins.Select(steamId => SteamAuthenticationConstants.Namespaces.Identifier + steamId.ToString()).ToList())
+                    .Build()); // Fallback policy (The default policy) is Admin only
+            services.AddAuthentication(options =>
+            {
+                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            })
+                .AddCookie(options =>
+                {
+                    options.LoginPath = "/login";
+                    options.LogoutPath = "/logout";
+                    options.Events.OnRedirectToLogin = (ctx) =>
+                    {
+                        if (ctx.Request.Path.StartsWithSegments("/api"))
+                        {
+                            ctx.Response.StatusCode = 401;
+                        }
+
+                        return Task.CompletedTask;
+                    };
+                    options.Events.OnRedirectToAccessDenied = (ctx) =>
+                    {
+                        if (ctx.Request.Path.StartsWithSegments("/api"))
+                        {
+                            ctx.Response.StatusCode = 403;
+                        }
+
+                        return Task.CompletedTask;
+                    };
+                })
+                .AddSteam(options =>
+                {
+                    options.AccessDeniedPath = "/";
+
+                    if (!string.IsNullOrWhiteSpace(serverOptions.Authentication.SteamApplicationKey))
+                    {
+                        options.ApplicationKey = serverOptions.Authentication.SteamApplicationKey;
+                    }
+                });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IOptions<ServerOptions> serverOptionsVal)
@@ -111,6 +162,7 @@ namespace GLOKON.Baiters.Server
                 .UseEndpoints(endpoints =>
                 {
                     endpoints.MapControllers();
+                    endpoints.MapFallbackToFile("/index.html");
                 })
                 .UseStaticFiles();
         }

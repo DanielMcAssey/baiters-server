@@ -20,6 +20,8 @@
 
         public SslOptions SSL { get; set; } = new SslOptions();
 
+        public AuthenticationOptions Authentication { get; set; } = new AuthenticationOptions();
+
         public bool IsUsingHttps()
         {
             return (LetsEncrypt != null && LetsEncrypt.IsEnabled()) || (SSL != null && SSL.IsEnabled());

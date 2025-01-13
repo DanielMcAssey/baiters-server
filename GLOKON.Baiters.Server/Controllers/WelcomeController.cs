@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace GLOKON.Baiters.Server.Controllers
 {
@@ -10,7 +7,7 @@ namespace GLOKON.Baiters.Server.Controllers
     public class WelcomeController : ControllerBase
     {
         [HttpGet()]
-        public async Task<IActionResult> IndexAsync()
+        public IActionResult IndexAsync()
         {
             return Ok("Welcome to Baiters API");
         }
