@@ -2,7 +2,7 @@
 
 namespace GLOKON.Baiters.Core.Packets.Handlers
 {
-    internal class PlayerPunchHandler(BaitersServer server) : IPacketHandler
+    internal class PlayerPunchHandler() : IPacketHandler
     {
         public void Handle(ulong sender, Packet packet)
         {

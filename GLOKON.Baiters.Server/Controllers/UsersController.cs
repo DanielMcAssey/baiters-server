@@ -41,10 +41,21 @@ namespace GLOKON.Baiters.Server.Controllers
             return NotFound();
         }
 
-        [HttpPost("letter/{steamId}")]
-        public IActionResult SendPlayerLetter([FromRoute] string steamId, [FromBody] SendLetterRequest request)
+        [HttpPost("letter/{steamId?}")]
+        public IActionResult SendPlayerLetter([FromRoute] string? steamId, [FromBody] SendLetterRequest request)
         {
-            gm.Actioner.SendLetter(ulong.Parse(steamId), request.Header, request.Body, request.Closing, request.Items?.ToArray());
+            var items = request.Items?.ToArray();
+            if (!string.IsNullOrWhiteSpace(steamId))
+            {
+                gm.Actioner.SendLetter(ulong.Parse(steamId), request.Header, request.Body, request.Closing, items);
+            }
+            else
+            {
+                foreach (var player in gm.Server.Players)
+                {
+                    gm.Actioner.SendLetter(player.Key, request.Header, request.Body, request.Closing, items);
+                }
+            }
 
             return Ok();
         }

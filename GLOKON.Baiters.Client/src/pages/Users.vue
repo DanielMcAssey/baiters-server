@@ -6,6 +6,10 @@ import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Button from 'primevue/button';
 import ButtonGroup from 'primevue/buttongroup';
+import Dialog from 'primevue/dialog';
+import InputText from 'primevue/inputtext';
+import Textarea from 'primevue/textarea';
+import InputGroup from 'primevue/inputgroup';
 import type { AxiosInstance } from 'axios';
 import PlayerData from '@/components/PlayerData.vue';
 import Tag from 'primevue/tag';
@@ -117,8 +121,53 @@ function kickPlayer(event: Event, steamId: string) {
   });
 }
 
-function sendLetter(steamId?: string): void {
-  // TODO: Ask for message then send it
+const isLetterComposeOpen = ref(false);
+const sendLetterTo = ref<number | undefined>(undefined);
+const letterHeader = ref<string>('');
+const letterBody = ref<string>('');
+const letterClosing = ref<string>('');
+const letterItems = ref<{ id: number, itemId: string }[]>([]);
+
+function composeLetter(steamId?: number): void {
+  sendLetterTo.value = steamId;
+  isLetterComposeOpen.value = true;
+}
+
+function closeComposeLetter(): void {
+  isLetterComposeOpen.value = false;
+  letterHeader.value = '';
+  letterBody.value = '';
+  letterClosing.value = '';
+  letterItems.value = [];
+}
+
+function addLetterItem(): void {
+  letterItems.value.push({ id: letterItems.value.length, itemId: '' });
+}
+
+function removeLetterItem(index: number): void {
+  letterItems.value.splice(index, 1);
+}
+
+function sendLetter(): void {
+  const steamId = sendLetterTo.value ?? '';
+  $http.post(`/api/users/letter/${steamId}`, {
+    header: letterHeader.value,
+    body: letterBody.value,
+    closing: letterClosing.value,
+    items: letterItems.value.map((item) => item.itemId),
+  })
+    .then(() => closeComposeLetter())
+    .catch((err: Error) => {
+      console.error(err, 'Couldn\'t send letter to player(s)');
+      toast.add({
+        severity: 'error',
+        summary: 'Problem Sending Letter',
+        detail: 'There was a problem sending the letter to the player(s)',
+        life: 10000,
+      });
+    })
+    .finally(() => fetchData());
 }
 
 onMounted(() => {
@@ -138,7 +187,7 @@ onMounted(() => {
         <Button icon="fas fa-envelope"
                 label="Send Letter to Everyone"
                 severity="info"
-                @click="sendLetter()" />
+                @click="composeLetter()" />
       </div>
       <DataTable :value="results" data-key="id" paginator :row-hover="true" :loading="isLoading"
                  :rows="50" :rowsPerPageOptions="[25, 50, 100]" stripedRows responsiveLayout="scroll">
@@ -173,7 +222,7 @@ onMounted(() => {
         <Column style="white-space:nowrap;text-align:right;">
           <template #body="slotProps">
             <ButtonGroup>
-              <Button icon="fas fa-envelope" severity="info" v-tooltip.bottom="'Send Letter'" @click="sendLetter(slotProps.data.id)" />
+              <Button icon="fas fa-envelope" severity="info" v-tooltip.bottom="'Send Letter'" @click="composeLetter(slotProps.data.id)" />
               <Button icon="fas fa-bomb" severity="warn" v-tooltip.bottom="'Kick'" @click="kickPlayer($event, slotProps.data.id)" />
               <Button icon="fas fa-ban" severity="danger" v-tooltip.bottom="'Ban'" @click="banPlayer($event, slotProps.data.id)" />
             </ButtonGroup>
@@ -182,4 +231,84 @@ onMounted(() => {
       </DataTable>
     </div>
   </div>
+  <Dialog v-model:visible="isLetterComposeOpen" modal header="Compose Letter" @close="closeComposeLetter" :style="{ width: '30rem' }">
+    <form @submit.prevent="sendLetter">
+      <div class="grid grid-cols-6 gap-2">
+        <div class="col-span-6">
+          <label for="recipient" class="font-semibold">Recipient <span v-if="sendLetterTo"> (SteamID)</span></label>
+          <InputText id="recipient"
+                     class="w-full"
+                     name="recipient"
+                     :value="sendLetterTo ?? 'All Players'"
+                     disabled
+                     autocomplete="off" />
+        </div>
+        <div class="col-span-6">
+          <label for="header" class="font-semibold">Header</label>
+          <InputText id="header"
+                     class="w-full"
+                     name="header"
+                     v-model="letterHeader"
+                     placeholder="Letter title"
+                     required
+                     autocomplete="off" />
+        </div>
+        <div class="col-span-6">
+          <label for="body" class="font-semibold">Message</label>
+          <Textarea id="body"
+                    class="w-full"
+                    name="body"
+                    v-model="letterBody"
+                    placeholder="Your message"
+                    required
+                    rows="5" />
+        </div>
+        <div class="col-span-6">
+          <label for="closing" class="font-semibold">Closing</label>
+          <InputText id="closing"
+                     class="w-full"
+                     name="closing"
+                     v-model="letterClosing"
+                     placeholder="Letter sign-off"
+                     required
+                     autocomplete="off" />
+        </div>
+        <div class="col-span-6">
+          <label for="items" class="font-semibold">Items ({{ letterItems.length }})</label>
+          <Button type="button"
+                  icon="fas fa-plus"
+                  label="Add Item"
+                  severity="info"
+                  size="small"
+                  class="ml-2"
+                  @click="addLetterItem" />
+          <div class="grid grid-cols-6 gap-2 mt-2">
+            <p class="col-span-6 text-center italic" v-if="letterItems.length === 0">
+              Letter has no items
+            </p>
+            <InputGroup v-for="(item, index) in letterItems" :key="item.id" class="col-span-6">
+              <InputText :id="'items_' + index"
+                         class="w-full"
+                         :name="'items_' + index"
+                         v-model="item.itemId"
+                         placeholder="Item ID"
+                         required
+                         autocomplete="off" />
+              <Button type="button"
+                      icon="fas fa-trash"
+                      severity="danger"
+                      @click="removeLetterItem(index)" />
+            </InputGroup>
+            <div class="col-span-6 text-right">
+
+            </div>
+          </div>
+        </div>
+        <div class="col-span-6 flex justify-end gap-2">
+          <Button type="button" icon="fas fa-ban" label="Cancel" severity="secondary" @click="closeComposeLetter" />
+          <Button type="submit" icon="fas fa-envelope" label="Send" severity="success" />
+        </div>
+      </div>
+    </form>
+  </Dialog>
 </template>

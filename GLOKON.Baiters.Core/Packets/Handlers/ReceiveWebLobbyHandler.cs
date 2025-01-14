@@ -2,7 +2,7 @@
 
 namespace GLOKON.Baiters.Core.Packets.Handlers
 {
-    internal class ReceiveWebLobbyHandler(BaitersServer server) : IPacketHandler
+    internal class ReceiveWebLobbyHandler() : IPacketHandler
     {
         public void Handle(ulong sender, Packet packet)
         {

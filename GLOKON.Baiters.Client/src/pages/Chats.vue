@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, onMounted, ref } from "vue";
+import { inject, onMounted, onUnmounted, ref } from "vue";
 import {useToast} from "primevue/usetoast";
 import ColorPicker from 'primevue/colorpicker';
 import VirtualScroller from 'primevue/virtualscroller';
@@ -22,6 +22,8 @@ const defaultMessageColour = '#ff0000';
 const messageColour = ref<string>(defaultMessageColour);
 const userToMessage = ref<number | undefined>(undefined);
 const messageToSend = ref<string>('');
+/* eslint-disable  @typescript-eslint/no-explicit-any */
+let chatPollTimer: any | undefined = undefined;
 
 function fetchData(): void {
   isLoading.value = true;
@@ -80,8 +82,8 @@ function fetchUsers(): void {
 function sendMessage(): void {
   const steamId = userToMessage.value ?? '';
   $http.post(`/api/chats/messages/${steamId}`, {
-    message: messageToSend.value.replace('#', ''),
-    colour: messageColour.value,
+    message: messageToSend.value,
+    colour: messageColour.value.replace('#', ''),
   })
     .then(() => {
       messageColour.value = defaultMessageColour;
@@ -96,12 +98,26 @@ function sendMessage(): void {
         detail: 'There was a problem sending the message',
         life: 10000,
       });
+    })
+    .finally(() => {
+      fetchData();
     });
 }
 
 onMounted(() => {
   fetchData();
   fetchUsers();
+
+  chatPollTimer = setInterval(() => {
+    fetchData();
+    fetchUsers();
+  }, 2500);
+});
+
+onUnmounted(() => {
+  if (chatPollTimer) {
+    clearInterval(chatPollTimer);
+  }
 });
 </script>
 <template>
@@ -111,14 +127,21 @@ onMounted(() => {
     </div>
     <div class="bg-white overflow-hidden shadow sm:rounded-lg">
       <div class="p-4">
-        <VirtualScroller :items="results" :itemSize="50" class="border border-surface-200 dark:border-surface-700 rounded w-full h-96">
+        <VirtualScroller :items="results" :itemSize="30" class="border border-surface-200 dark:border-surface-700 rounded w-full h-96">
           <template v-slot:item="{ item, options }">
-            <div :class="['flex items-center p-2', { 'bg-surface-100 dark:bg-surface-700': options.odd }]" style="height: 50px">
-              <p>
+            <div :class="['flex items-center p-2', { 'bg-surface-100 dark:bg-surface-700': options.odd }]"
+                 v-tooltip.top="'Sent at: ' + item.sentAt"
+                 style="height: 30px">
+              <p class="ml-1">
                 [<span class="text-blue-400 italic">{{ item.senderId }}</span>]
               </p>
               <p class="ml-1 bg-surface-500 px-1 rounded">
-                <span class="font-medium" :style="{ color: '#' + (item.colour.length === 8 ? item.colour.slice(0, -2) : item.colour) }">{{ item.senderName }}:</span>
+                <span class="font-medium" :style="{ color: '#' + (item.colour.length === 8 ? item.colour.slice(0, -2) : item.colour) }">
+                  {{ item.senderName }}
+                </span>
+                &lt;<span class="font-light italic text-white">
+                  {{ item.zone }}
+                </span>&gt;:
               </p>
               <p class="ml-2">
                 {{ item.message }}

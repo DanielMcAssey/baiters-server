@@ -11,6 +11,7 @@ using Steamworks;
 using Steamworks.Data;
 using System.Collections.Concurrent;
 using GLOKON.Baiters.Core.Enums.Networking;
+using GLOKON.Baiters.Core.Models.Chat;
 
 namespace GLOKON.Baiters.Core
 {
@@ -19,6 +20,7 @@ namespace GLOKON.Baiters.Core
         protected readonly int dataChannelCount = Enum.GetNames(typeof(DataChannel)).Length;
         private readonly WebFishingOptions options = _options.Value;
         private readonly Random random = new();
+        private readonly ConcurrentBag<ChatLog> _chatLogs = [];
         private readonly ConcurrentDictionary<ulong, Player> _players = new();
         private readonly ConcurrentDictionary<long, Actor> _actors = new();
 
@@ -43,6 +45,7 @@ namespace GLOKON.Baiters.Core
 
         public IEnumerable<KeyValuePair<long, Actor>> Actors => _actors;
         public IEnumerable<KeyValuePair<ulong, Player>> Players => _players;
+        public IReadOnlyCollection<ChatLog> ChatLogs => _chatLogs;
         public int PlayerCount => _players.Count + 1;
         public int NpcActorCount => _actors.Where((kv) => kv.Value.Type != ActorType.Player).Count();
 
@@ -226,15 +229,31 @@ namespace GLOKON.Baiters.Core
 
         public void SendMessage(string message, string color = MessageColour.Default, ulong? steamId = null)
         {
+            var chatLog = new ChatLog()
+            {
+                SentAt = DateTime.Now,
+                SenderId = ServerId,
+                SenderName = "Server",
+                SendToId = steamId,
+                Message = message,
+                Colour = color,
+                IsLocal = false,
+                Position = Vector3.Zero,
+                Zone = "main_zone",
+                ZoneOwner = 1,
+            };
+
             SendPacket(new("message")
             {
-                ["message"] = string.Format("%u: {0}", message),
-                ["color"] = color,
-                ["local"] = false,
-                ["position"] = Vector3.Zero,
-                ["zone"] = "main_zone",
-                ["zone_owner"] = 1
+                // Need to format it like this, if not username wont appear
+                ["message"] = string.Format("%u: {0}", chatLog.Message),
+                ["color"] = chatLog.Colour,
+                ["local"] = chatLog.IsLocal,
+                ["position"] = chatLog.Position,
+                ["zone"] = chatLog.Zone,
+                ["zone_owner"] = chatLog.ZoneOwner,
             }, DataChannel.GameState, steamId);
+            _chatLogs.Add(chatLog);
         }
 
         public void SendPacket(Packet packet, DataChannel channel, ulong? steamId = null)
@@ -362,17 +381,11 @@ namespace GLOKON.Baiters.Core
             }, channel: DataChannel.ActorUpdate);
         }
 
-        internal void OnPlayerChat(ulong sender, string message)
+        internal void OnPlayerChat(ulong sender, ChatLog chatLog)
         {
-            string fisherName = "UNKNOWN";
-
-            if (_players.TryGetValue(sender, out var player) && player != null)
-            {
-                fisherName = player.FisherName;
-                OnChatMessage?.Invoke(sender, message);
-            }
-
-            Log.ForContext("Scope", "ChatLog").Information("[{sender}] {fisherName}: {message}", sender, fisherName, message);
+            OnChatMessage?.Invoke(sender, chatLog.Message);
+            Log.ForContext("Scope", "ChatLog").Information("[{0}] {1}<{2}>: {3}", sender, chatLog.SenderName, chatLog.Zone, chatLog.Message);
+            _chatLogs.Add(chatLog);
         }
 
         protected abstract void ReceivePackets();

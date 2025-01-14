@@ -3,7 +3,7 @@ using Serilog;
 
 namespace GLOKON.Baiters.Core.Packets.Handlers
 {
-    internal class LetterWasAcceptedHandler(BaitersServer server) : IPacketHandler
+    internal class LetterWasAcceptedHandler() : IPacketHandler
     {
         public void Handle(ulong sender, Packet packet)
         {

@@ -74,8 +74,7 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
                     // TODO: Set actor zone
                     break;
                 case "_sync_create_bubble":
-                    string chatMssage = (string)(actionParams.GetValue(0) ?? -1);
-                    server.OnPlayerChat(sender, chatMssage);
+                    // Uses Message handler instead as we get more data
                     break;
                 case "_wipe_actor":
                     long wipeActorId = (long)(actionParams.GetValue(0) ?? -1);

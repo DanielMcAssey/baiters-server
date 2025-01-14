@@ -1,10 +1,11 @@
 ﻿using GLOKON.Baiters.Core;
 using GLOKON.Baiters.Core.Constants;
+using GLOKON.Baiters.Core.Converters.Json;
 using GLOKON.Baiters.Core.Plugins;
-using Newtonsoft.Json;
 using Serilog;
 using System.Collections.Concurrent;
 using System.Reflection;
+using System.Text.Json;
 
 namespace GLOKON.Baiters.Plugins.BanManager
 {
@@ -26,7 +27,7 @@ namespace GLOKON.Baiters.Plugins.BanManager
             {
                 try
                 {
-                    _playerBans = JsonConvert.DeserializeObject<ConcurrentDictionary<ulong, PlayerBan>>(File.ReadAllText(_bansFilePath)) ?? _playerBans;
+                    _playerBans = JsonSerializer.Deserialize<ConcurrentDictionary<ulong, PlayerBan>>(File.ReadAllText(_bansFilePath), JsonOptions.Default) ?? _playerBans;
                 }
                 catch (Exception ex)
                 {
@@ -109,7 +110,7 @@ namespace GLOKON.Baiters.Plugins.BanManager
             GM.Chat.StopListening("ban");
             GM.Chat.StopListening("ban.list");
             GM.Chat.StopListening("unban");
-            File.WriteAllText(_bansFilePath, JsonConvert.SerializeObject(_playerBans));
+            File.WriteAllText(_bansFilePath, JsonSerializer.Serialize(_playerBans, JsonOptions.Default));
         }
 
         public override bool CanPlayerJoin(ulong steamId)

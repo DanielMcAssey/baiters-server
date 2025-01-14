@@ -12,8 +12,8 @@ using GLOKON.Baiters.Core.Chat;
 using Serilog.Events;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using AspNet.Security.OpenId.Steam;
-using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using GLOKON.Baiters.Core.Converters.Json;
 
 namespace GLOKON.Baiters.Server
 {
@@ -84,7 +84,16 @@ namespace GLOKON.Baiters.Server
                     EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
                     ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
                 });
-            services.AddControllers();
+            services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    foreach (var converter in JsonOptions.Default.Converters)
+                    {
+                        options.JsonSerializerOptions.Converters.Add(converter);
+                    }
+
+                    options.JsonSerializerOptions.PropertyNamingPolicy = JsonOptions.Default.PropertyNamingPolicy;
+                });
             services.AddAuthorizationBuilder()
                 .AddPolicy("SteamUser", policy =>
                 {
