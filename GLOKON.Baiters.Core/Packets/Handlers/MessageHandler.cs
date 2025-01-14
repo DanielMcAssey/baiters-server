@@ -4,10 +4,8 @@ using System.Text.RegularExpressions;
 
 namespace GLOKON.Baiters.Core.Packets.Handlers
 {
-    internal class MessageHandler(BaitersServer server) : IPacketHandler
+    internal partial class MessageHandler(BaitersServer server) : IPacketHandler
     {
-        private readonly Regex _messageCleanUpRegex = new(Regex.Escape("%u:"));
-
         public void Handle(ulong sender, Packet data)
         {
             string playerName = "UNKNOWN";
@@ -22,7 +20,7 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
                 SentAt = DateTime.Now,
                 SenderId = sender,
                 SenderName = playerName,
-                Message = _messageCleanUpRegex.Replace((string)data["message"], string.Empty, 1).Trim(),
+                Message = MessageCleanUpRegex().Replace((string)data["message"], string.Empty, 1).Trim(),
                 Colour = (string)data["color"],
                 IsLocal = (bool)data["local"],
                 Position = (Vector3)data["position"],
@@ -30,5 +28,8 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
                 ZoneOwner = (long)data["zone_owner"],
             });
         }
+
+        [GeneratedRegex("%u:?")]
+        private static partial Regex MessageCleanUpRegex();
     }
 }

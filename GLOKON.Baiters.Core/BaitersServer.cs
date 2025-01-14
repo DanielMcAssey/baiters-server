@@ -231,7 +231,7 @@ namespace GLOKON.Baiters.Core
         {
             SendPacket(new("message")
             {
-                // Need to format it like this, if not username wont appear
+                // Need to format it like this, if not username wont appear and color wont either
                 ["message"] = string.Format("%u: {0}", message),
                 ["color"] = color,
                 ["local"] = false,
