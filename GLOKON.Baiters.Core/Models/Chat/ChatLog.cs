@@ -2,7 +2,7 @@
 
 namespace GLOKON.Baiters.Core.Models.Chat
 {
-    public sealed class ChatLog
+    public struct ChatLog
     {
         public required DateTime SentAt { get; set; }
 

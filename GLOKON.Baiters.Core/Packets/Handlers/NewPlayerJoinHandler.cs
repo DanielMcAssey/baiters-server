@@ -1,6 +1,6 @@
 ﻿using GLOKON.Baiters.Core.Constants;
 using GLOKON.Baiters.Core.Enums.Networking;
-using GLOKON.Baiters.Core.Models.Actor;
+using GLOKON.Baiters.Core.Models.Game;
 using GLOKON.Baiters.Core.Models.Networking;
 using Serilog;
 
@@ -36,39 +36,10 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
         {
             try
             {
-                foreach (KeyValuePair<long, Actor> actor in server.GetActorsByType(ActorType.ChalkCanvas))
+                foreach (KeyValuePair<long, ChalkCanvas> canvas in server.ChalkCanvases)
                 {
-                    ChalkCanvas canvas = (ChalkCanvas)actor.Value;
-
-                    // split the dictionary into chunks of 100
-                    List<object[]> chunks = [];
-                    List<object> chunk = [];
-
-                    int chunkIndex = 0;
-                    foreach (var chalkData in canvas.GetPacket())
-                    {
-                        if (chunkIndex >= 1000)
-                        {
-                            chunks.Add(chunk.ToArray());
-                            chunk.Clear();
-                            chunkIndex = 0;
-                        }
-
-                        chunk.Add(chalkData);
-                        chunkIndex++;
-                    }
-
-                    chunks.Add(chunk.ToArray());
-
-                    foreach (var chunkToSend in chunks)
-                    {
-                        server.SendPacket(new("chalk_packet")
-                        {
-                            ["canvas_id"] = actor.Key,
-                            ["data"] = chunkToSend,
-                        }, DataChannel.Chalk, steamId);
-                        await Task.Delay(10);
-                    }
+                    server.SendCanvas(canvas.Key, canvas.Value.Cells.Values.ToList(), steamId);
+                    await Task.Delay(10);
                 }
             }
             catch (Exception ex)

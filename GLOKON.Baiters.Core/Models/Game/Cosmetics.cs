@@ -1,6 +1,6 @@
 ﻿namespace GLOKON.Baiters.Core.Models.Game
 {
-    public sealed class Cosmetics
+    public struct Cosmetics
     {
         public required string Title { get; set; }
 

@@ -2,7 +2,7 @@
 
 namespace GLOKON.Baiters.Server.Responses
 {
-    public class PluginResponse(BaitersPlugin plugin)
+    internal struct PluginResponse(BaitersPlugin plugin)
     {
         public string ID { get; } = plugin.ID;
 

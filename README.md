@@ -16,7 +16,7 @@ I felt that the servers out there had a lot of room for improvement, in performa
 
 1. **Download** Baiters from the Releases page
 2. **Copy** the `main_zone.tscn` from the game into the `scenes` folder (You need to extract it from the game ([Example Tool](https://github.com/bruvzg/gdsdecomp)))
-3. **Configure** the `appsettings.json` or use the environment variables (See the config reference below)
+3. **Configure** the `appsettings.json` or use the environment variables (See the config reference below, you can also create a `appsettings.Production.json` in the same folder to override anything in `appsettings.json`)
 4. **Run** the Steam client with the account with WebFishing
 5. **Start** Baiters
 
@@ -40,6 +40,7 @@ To install plugins, simply place the plugin file(s) into the `plugins` folder.
 | `WebFishing__MaxPlayers`   | Maximum players allowed on the server (Default is `50`) |
 | `WebFishing__JoinType`   | Visibility of the server to others (Valid values are `Public`, `InviteOnly`, `FriendsOnly`, Defaults to `Public`) |
 | `WebFishing__JoinMessage`   | Message to display to new users joining the server |
+| `WebFishing__SaveChalkCanvases`   | Wether to persist and save the chalk canvases on the server (Values are `true` or `false`, Defaults to `false`) |
 | `WebFishing__Tags__n`   | Tags displayed on the server browser (Replace `n` with an index in the array) (Valid values are `talkative`, `quiet`, `grinding`, `chill`, `silly`, `hardcore`, `mature`, `modded`) |
 | `WebFishing__Modifiers__FishChance`   | Chance (from `0.0` to `1.0`) of a Fish spawning (Default is `0.50` (50%)) |
 | `WebFishing__Modifiers__BirdChance`   | Chance (from `0.0` to `1.0`) of a Void Portal spawning (Default is `0.33` (33%)) |

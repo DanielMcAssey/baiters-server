@@ -1,6 +1,6 @@
 ﻿namespace GLOKON.Baiters.Server.Responses
 {
-    public class ServerInfoResponse
+    internal struct ServerInfoResponse
     {
         public required ulong ServerSteamId { get; set; }
 

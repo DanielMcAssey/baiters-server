@@ -156,11 +156,11 @@ namespace GLOKON.Baiters.Core
             {
                 player.HeldItem = item;
                 var heldItemPkt = new Dictionary<string, object>();
-                if (item != null)
+                if (item.HasValue)
                 {
-                    heldItemPkt.Add("id", item.Id);
-                    heldItemPkt.Add("size", item.Size);
-                    heldItemPkt.Add("quality", (int)item.Quality);
+                    heldItemPkt.Add("id", item.Value.Id);
+                    heldItemPkt.Add("size", item.Value.Size);
+                    heldItemPkt.Add("quality", (int)item.Value.Quality);
                 }
 
                 server.SendPacket(new("actor_action")

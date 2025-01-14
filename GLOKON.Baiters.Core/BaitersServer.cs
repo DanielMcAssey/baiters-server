@@ -12,17 +12,22 @@ using Steamworks.Data;
 using System.Collections.Concurrent;
 using GLOKON.Baiters.Core.Enums.Networking;
 using GLOKON.Baiters.Core.Models.Chat;
+using GLOKON.Baiters.Core.Models.Game;
+using GLOKON.Baiters.Core.Converters.Json;
+using System.Text.Json;
 
 namespace GLOKON.Baiters.Core
 {
     public abstract class BaitersServer(IOptions<WebFishingOptions> _options)
     {
         protected readonly int dataChannelCount = Enum.GetNames(typeof(DataChannel)).Length;
+        private readonly string _chalkCanvasesFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "chalk_canvases.json");
         private readonly WebFishingOptions options = _options.Value;
         private readonly Random random = new();
         private readonly ConcurrentBag<ChatLog> _chatLogs = [];
         private readonly ConcurrentDictionary<ulong, Player> _players = new();
         private readonly ConcurrentDictionary<long, Actor> _actors = new();
+        private readonly ConcurrentDictionary<long, ChalkCanvas> _chalkCanvases = new();
 
         protected static bool CanSteamIdJoin(ulong steamId)
         {
@@ -44,6 +49,7 @@ namespace GLOKON.Baiters.Core
         private ulong? _serverSteamId;
 
         public IEnumerable<KeyValuePair<long, Actor>> Actors => _actors;
+        public IEnumerable<KeyValuePair<long, ChalkCanvas>> ChalkCanvases => _chalkCanvases;
         public IEnumerable<KeyValuePair<ulong, Player>> Players => _players;
         public IReadOnlyCollection<ChatLog> ChatLogs => _chatLogs;
         public int PlayerCount => _players.Count + 1;
@@ -106,6 +112,22 @@ namespace GLOKON.Baiters.Core
                 Log.Error(ex, "Failed to initialize SteamClient");
                 throw;
             }
+
+            if (options.SaveChalkCanvases && File.Exists(_chalkCanvasesFilePath))
+            {
+                try
+                {
+                    var loadedCanvases = JsonSerializer.Deserialize<ConcurrentDictionary<long, ChalkCanvas>>(File.ReadAllText(_chalkCanvasesFilePath), JsonOptions.Default);
+                    foreach (var loadedCanvas in loadedCanvases)
+                    {
+                        _chalkCanvases.TryAdd(loadedCanvas.Key, loadedCanvas.Value);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Failed to load chalk canvases file");
+                }
+            }
         }
 
         public virtual async Task RunAsync(CancellationToken cancellationToken)
@@ -162,6 +184,18 @@ namespace GLOKON.Baiters.Core
             SteamMatchmaking.OnLobbyMemberLeave -= SteamMatchmaking_OnLobbyMemberLeave;
             _lobby.Leave();
             SteamClient.Shutdown();
+
+            if (options.SaveChalkCanvases)
+            {
+                try
+                {
+                    File.WriteAllText(_chalkCanvasesFilePath, JsonSerializer.Serialize(_chalkCanvases, JsonOptions.Default));
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Failed to save chalk canvases");
+                }
+            }
         }
 
         public IEnumerable<KeyValuePair<long, Actor>> GetActorsByType(string type)
@@ -196,6 +230,25 @@ namespace GLOKON.Baiters.Core
                 ["user_id"] = (long)steamId,
             }, DataChannel.GameState);
             SendPacket(new("client_was_banned"), DataChannel.GameState, steamId);
+        }
+
+        public bool TryGetChalkCanvas(long canvasId, out ChalkCanvas? chalkCanvas)
+        {
+            return _chalkCanvases.TryGetValue(canvasId, out chalkCanvas);
+        }
+
+        public void AddChalkCanvas(long canvasId, ChalkCanvas chalkCanvas)
+        {
+            _chalkCanvases.TryAdd(canvasId, chalkCanvas);
+        }
+
+        public void RemoveChalkCanvas(long canvasId)
+        {
+            if (_chalkCanvases.TryRemove(canvasId, out var chalkCanvas) && chalkCanvas != null)
+            {
+                // Blank canvas by overriding the colour to 0
+                SendCanvas(canvasId, chalkCanvas.Cells.Values.ToList(), overrideColour: 0);
+            }
         }
 
         public bool TryGetActor(long actorId, out Actor? actor)
@@ -386,6 +439,15 @@ namespace GLOKON.Baiters.Core
                 ["pos"] = position,
                 ["rot"] = rotation,
             }, channel: DataChannel.ActorUpdate);
+        }
+
+        internal void SendCanvas(long canvasId, IList<ChalkCanvasPoint> points, ulong? steamId = null, int? overrideColour = null)
+        {
+            SendPacket(new("chalk_packet")
+            {
+                ["canvas_id"] = canvasId,
+                ["data"] = points.Select((point) => new object[] { point.Position, overrideColour ?? point.Colour }).ToArray(),
+            }, DataChannel.Chalk, steamId);
         }
 
         internal void OnPlayerChat(ulong sender, ChatLog chatLog)
