@@ -1,10 +1,13 @@
 ﻿using GLOKON.Baiters.Core.Models.Networking;
 using System.Numerics;
+using System.Text.RegularExpressions;
 
 namespace GLOKON.Baiters.Core.Packets.Handlers
 {
     internal class MessageHandler(BaitersServer server) : IPacketHandler
     {
+        private readonly Regex _messageCleanUpRegex = new(Regex.Escape("%u:"));
+
         public void Handle(ulong sender, Packet data)
         {
             string playerName = "UNKNOWN";
@@ -19,7 +22,7 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
                 SentAt = DateTime.Now,
                 SenderId = sender,
                 SenderName = playerName,
-                Message = ((string)data["message"]).Replace("%u", string.Empty).Trim(),
+                Message = _messageCleanUpRegex.Replace((string)data["message"], string.Empty, 1).Trim(),
                 Colour = (string)data["color"],
                 IsLocal = (bool)data["local"],
                 Position = (Vector3)data["position"],
