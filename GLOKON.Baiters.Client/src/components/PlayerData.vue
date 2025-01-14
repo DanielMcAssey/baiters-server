@@ -73,14 +73,16 @@ function hideItem(event: Event) {
     </div>
   </Popover>
   <div class="flex items-center gap-2">
-    <Tag icon="fas fa-fw fa-shirt"
+    <Tag v-if="cosmetics"
+         icon="fas fa-fw fa-shirt"
          severity="info"
          value="Cosmetics"
          @click="toggleCosmetics"
          @mouseenter="showCosmetics"
          @mouseleave="hideCosmetics">
     </Tag>
-    <Tag icon="fas fa-fw fa-crown"
+    <Tag v-if="item"
+         icon="fas fa-fw fa-crown"
          severity="default"
          value="Held Item"
          @click="toggleItem"
