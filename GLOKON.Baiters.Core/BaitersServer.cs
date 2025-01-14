@@ -227,33 +227,40 @@ namespace GLOKON.Baiters.Core
             SendActor(actorId, actor);
         }
 
-        public void SendMessage(string message, string color = MessageColour.Default, ulong? steamId = null)
+        public void SendSystemMessage(string message, string color = MessageColour.Default, ulong? steamId = null)
         {
-            var chatLog = new ChatLog()
-            {
-                SentAt = DateTime.Now,
-                SenderId = ServerId,
-                SenderName = "Server",
-                SendToId = steamId,
-                Message = message,
-                Colour = color,
-                IsLocal = false,
-                Position = Vector3.Zero,
-                Zone = "main_zone",
-                ZoneOwner = 1,
-            };
-
             SendPacket(new("message")
             {
                 // Need to format it like this, if not username wont appear
-                ["message"] = string.Format("%u: {0}", chatLog.Message),
-                ["color"] = chatLog.Colour,
-                ["local"] = chatLog.IsLocal,
-                ["position"] = chatLog.Position,
-                ["zone"] = chatLog.Zone,
-                ["zone_owner"] = chatLog.ZoneOwner,
+                ["message"] = string.Format("%u: {0}", message),
+                ["color"] = color,
+                ["local"] = false,
+                ["position"] = Vector3.Zero,
+                ["zone"] = "main_zone",
+                ["zone_owner"] = 1,
             }, DataChannel.GameState, steamId);
-            _chatLogs.Add(chatLog);
+        }
+
+        public void SendMessage(string message, string color = MessageColour.Default, ulong? steamId = null)
+        {
+            SendSystemMessage(message, color, steamId);
+
+            if (steamId == null || steamId == ServerId)
+            {
+                _chatLogs.Add(new ChatLog()
+                {
+                    SentAt = DateTime.Now,
+                    SenderId = ServerId,
+                    SenderName = "Server",
+                    SendToId = steamId,
+                    Message = message,
+                    Colour = color,
+                    IsLocal = false,
+                    Position = Vector3.Zero,
+                    Zone = "main_zone",
+                    ZoneOwner = 1,
+                });
+            }
         }
 
         public void SendPacket(Packet packet, DataChannel channel, ulong? steamId = null)

@@ -12,7 +12,7 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
         {
             if (!string.IsNullOrEmpty(joinMessage))
             {
-                server.SendMessage(joinMessage, MessageColour.Information, sender);
+                server.SendSystemMessage(joinMessage, MessageColour.Information, sender);
             }
 
             server.SendPacket(new("recieve_host")
@@ -22,8 +22,8 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
 
             if (server.IsAdmin(sender))
             {
-                server.SendMessage("##You are an admin##", MessageColour.Success, sender);
-                server.SendMessage(string.Format("Use '{0}help' to find out what commands are available", commandPrefix), MessageColour.Success, sender);
+                server.SendSystemMessage("##You are an admin##", MessageColour.Success, sender);
+                server.SendSystemMessage(string.Format("Use '{0}help' to find out what commands are available", commandPrefix), MessageColour.Success, sender);
             }
 
             Task.Run(async () =>

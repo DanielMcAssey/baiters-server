@@ -22,11 +22,11 @@ namespace GLOKON.Baiters.Core.Chat
                     return;
                 }
 
-                server.SendMessage("-- Help --", MessageColour.Information, sender);
+                server.SendSystemMessage("-- Help --", MessageColour.Information, sender);
 
                 foreach (var chatCommand in _commands)
                 {
-                    server.SendMessage(string.Format("- {0}: {1}", chatCommand.Key, chatCommand.Value.HelpText), MessageColour.Information, sender);
+                    server.SendSystemMessage(string.Format("- {0}: {1}", chatCommand.Key, chatCommand.Value.HelpText), MessageColour.Information, sender);
                 }
             });
         }

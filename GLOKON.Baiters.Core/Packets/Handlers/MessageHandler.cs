@@ -19,7 +19,7 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
                 SentAt = DateTime.Now,
                 SenderId = sender,
                 SenderName = playerName,
-                Message = (string)data["message"],
+                Message = ((string)data["message"]).Replace("%u", string.Empty).Trim(),
                 Colour = (string)data["color"],
                 IsLocal = (bool)data["local"],
                 Position = (Vector3)data["position"],
