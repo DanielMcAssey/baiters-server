@@ -317,8 +317,9 @@ onMounted(() => {
                        v-model="heldItemSize"
                        mode="decimal"
                        showButtons
-                       :min="0"
-                       :max="12000"
+                       :allowEmpty="false"
+                       :min="0.0"
+                       :max="12000.0"
                        :minFractionDigits="0"
                        :maxFractionDigits="3"
                        placeholder="Item Size"

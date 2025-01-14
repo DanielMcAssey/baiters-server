@@ -160,7 +160,7 @@ namespace GLOKON.Baiters.Core
                 {
                     heldItemPkt.Add("id", item.Id);
                     heldItemPkt.Add("size", item.Size);
-                    heldItemPkt.Add("quality", item.Quality);
+                    heldItemPkt.Add("quality", (int)item.Quality);
                 }
 
                 server.SendPacket(new("actor_action")
