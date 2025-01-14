@@ -15,6 +15,12 @@ namespace GLOKON.Baiters.Server.Controllers
             return Ok(gm.Server.Actors);
         }
 
+        [HttpGet("spawn/types")]
+        public IActionResult GetTypes()
+        {
+            return Ok(ActorSpawner.Spawnable);
+        }
+
         [HttpPost("spawn/{type}")]
         public IActionResult Delete([FromRoute] string type)
         {

@@ -41,20 +41,6 @@ namespace GLOKON.Baiters.Server.Controllers
             return NotFound();
         }
 
-        [HttpPost("message/{steamId?}")]
-        public IActionResult SendPlayerMessage([FromRoute] string? steamId, [FromBody] SendMessageRequest request)
-        {
-            ulong? steamIdToMessage = null;
-            if (!string.IsNullOrWhiteSpace(steamId))
-            {
-                steamIdToMessage = ulong.Parse(steamId);
-            }
-
-            gm.Server.SendMessage(request.Message, request.Colour, steamIdToMessage);
-
-            return Ok();
-        }
-
         [HttpPost("letter/{steamId}")]
         public IActionResult SendPlayerLetter([FromRoute] string steamId, [FromBody] SendLetterRequest request)
         {

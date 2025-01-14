@@ -1,19 +1,29 @@
 <script setup lang="ts">
-import { inject, onMounted, ref } from "vue";
+import { computed, inject, onMounted, ref } from "vue";
 import {useToast} from "primevue/usetoast";
 import {useConfirm} from "primevue/useconfirm";
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Button from 'primevue/button';
 import ButtonGroup from 'primevue/buttongroup';
+import SplitButton from "primevue/splitbutton";
 import type { AxiosInstance } from 'axios';
 const confirm = useConfirm();
 const toast = useToast();
 
 const isLoading = ref(false);
 const $http = inject<AxiosInstance>('axios') as AxiosInstance;
+const spawnables = ref<string[]>([]);
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 const results = ref<any[]>([]);
+
+const spawnableItems = computed(() => spawnables.value.map((spawnable) => {
+  return {
+    label: `Spawn ${spawnable}`,
+    icon: 'fas fa-fw fa-wrench',
+    command: () => spawnActor(null, spawnable),
+  };
+}));
 
 function fetchData(): void {
   isLoading.value = true;
@@ -49,12 +59,34 @@ function fetchData(): void {
     });
 }
 
+function fetchSpawnables(): void {
+  $http.get(`/api/actors/spawn/types`)
+    .then((response) => {
+      if (response.data) {
+        spawnables.value = response.data;
+      } else {
+        spawnables.value = [];
+      }
+    })
+    .catch((err: Error) => {
+      console.error(err, 'Couldn\'t load spawnable types');
+      toast.add({
+        severity: 'error',
+        summary: 'Problem Loading Spawnable Types',
+        detail: 'There was a problem loading spawnable types',
+        life: 10000,
+      });
+    });
+}
+
 function spawnActor(event: Event, type: string): void {
   confirm.require({
-    target: event.currentTarget as HTMLElement | undefined,
-    header: 'Spawn Actor',
-    message: 'Are you sure you want to spawn this actor?',
+    target: event?.currentTarget as HTMLElement | undefined,
+    group: event ? undefined : 'modal',
+    header: `Spawn "${type}" Actor`,
+    message: `Are you sure you want to spawn a ${type} actor?`,
     icon: 'fas fa-exclamation-triangle',
+    modal: !event,
     rejectProps: {
       label: 'Cancel',
       severity: 'secondary',
@@ -117,22 +149,25 @@ function removeActor(event: Event, id: number): void {
 
 onMounted(() => {
   fetchData();
+  fetchSpawnables();
 });
 </script>
 <template>
   <div class="mx-auto sm:max-w-7xl sm:px-6 lg:px-8">
     <div class="text-xl font-bold leading-tight mb-4 px-4">
-      <i class="fas fa-sitemap mr-2"></i>Actors
+      <i class="fas fa-sitemap mr-2"></i>Actors<span v-if="results" class="ml-1">({{ results.length }})</span>
     </div>
     <div class="bg-white overflow-hidden shadow sm:rounded-lg">
       <div class="p-4 flex justify-between sm:justify-end gap-2 flex-wrap">
         <p class="text-sm mr-auto">
           Here you will find all actors currently spawned
         </p>
-        <Button icon="fas fa-wrench"
-                label="Spawn Actor"
-                severity="info"
-                @click="spawnActor($event, 'ambient_bird')" />
+        <SplitButton label="Spawn Actor"
+                     severity="info"
+                     icon="fas fa-wrench"
+                     v-tooltip.bottom="'Spawn Actors'"
+                     :model="spawnableItems">
+        </SplitButton>
       </div>
       <DataTable :value="results" data-key="id" paginator :row-hover="true" :loading="isLoading"
                  :rows="50" :rowsPerPageOptions="[25, 50, 100]" stripedRows responsiveLayout="scroll">

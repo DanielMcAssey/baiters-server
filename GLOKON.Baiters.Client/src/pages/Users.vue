@@ -7,6 +7,8 @@ import Column from 'primevue/column';
 import Button from 'primevue/button';
 import ButtonGroup from 'primevue/buttongroup';
 import type { AxiosInstance } from 'axios';
+import PlayerData from '@/components/PlayerData.vue';
+import Tag from 'primevue/tag';
 const confirm = useConfirm();
 const toast = useToast();
 
@@ -96,7 +98,7 @@ function kickPlayer(event: Event, steamId: string) {
     },
     acceptProps: {
       label: 'Kick',
-      severity: 'danger',
+      severity: 'warn',
       icon: 'fas fa-bomb',
     },
     accept: () => {
@@ -115,7 +117,7 @@ function kickPlayer(event: Event, steamId: string) {
   });
 }
 
-function sendMessage(steamId?: string): void {
+function sendLetter(steamId?: string): void {
   // TODO: Ask for message then send it
 }
 
@@ -133,23 +135,47 @@ onMounted(() => {
         <p class="text-sm mr-auto">
           Here you will find all users currently on the server
         </p>
-        <Button icon="fas fa-users-rectangle"
-                label="Message Everyone"
+        <Button icon="fas fa-envelope"
+                label="Send Letter to Everyone"
                 severity="info"
-                @click="sendMessage()" />
+                @click="sendLetter()" />
       </div>
       <DataTable :value="results" data-key="id" paginator :row-hover="true" :loading="isLoading"
                  :rows="50" :rowsPerPageOptions="[25, 50, 100]" stripedRows responsiveLayout="scroll">
         <template #empty>No users found.</template>
         <template #loading>Loading users. Please wait&hellip;</template>
-        <Column field="fisherName" header="Name" :sortable="true"></Column>
         <Column field="id" header="Steam ID" :sortable="true"></Column>
+        <Column field="fisherName" header="Name" :sortable="true">
+          <template #body="slotProps">
+            <PlayerData
+              :last-emote="slotProps.data.lastEmote"
+              :cosmetics="slotProps.data.cosmetics"
+              :item="slotProps.data.heldItem" />
+            {{ slotProps.data.fisherName }}
+          </template>
+        </Column>
+        <Column field="lastEmote" header="Last Emote" :sortable="true">
+          <template #body="slotProps">
+            <Tag v-if="slotProps.data.lastEmote"
+                 class="w-full"
+                 icon="fas fa-fw fa-face-smile"
+                 severity="secondary"
+                 :value="slotProps.data.lastEmote">
+            </Tag>
+          </template>
+        </Column>
+        <Column field="isAdmin" header="Admin?" :sortable="true">
+          <template #body="slotProps">
+            <i v-if="slotProps.data.isAdmin" class="fas fa-fw fa-check"></i>
+            <i v-else class="fas fa-fw fa-times"></i>
+          </template>
+        </Column>
         <Column style="white-space:nowrap;text-align:right;">
           <template #body="slotProps">
             <ButtonGroup>
-              <Button icon="fas fa-message" severity="info" v-tooltip.bottom="'Message Player'" @click="sendMessage(slotProps.data.id)" />
-              <Button icon="fas fa-bomb" severity="warn" v-tooltip.bottom="'Kick Player'" @click="kickPlayer($event, slotProps.data.id)" />
-              <Button icon="fas fa-ban" severity="danger" v-tooltip.bottom="'Ban Player'" @click="banPlayer($event, slotProps.data.id)" />
+              <Button icon="fas fa-envelope" severity="info" v-tooltip.bottom="'Send Letter'" @click="sendLetter(slotProps.data.id)" />
+              <Button icon="fas fa-bomb" severity="warn" v-tooltip.bottom="'Kick'" @click="kickPlayer($event, slotProps.data.id)" />
+              <Button icon="fas fa-ban" severity="danger" v-tooltip.bottom="'Ban'" @click="banPlayer($event, slotProps.data.id)" />
             </ButtonGroup>
           </template>
         </Column>

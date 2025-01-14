@@ -1,50 +1,82 @@
 <script setup lang="ts">
-  import { ref, watchEffect, computed } from 'vue';
-  import { useRoute } from 'vue-router';
-  import ApplicationMark from '@/components/ApplicationMark.vue';
-  import Banner from '@/components/Banner.vue';
-  import Dropdown from '@/components/Dropdown.vue';
-  import DropdownLink from '@/components/DropdownLink.vue';
-  import NavLink from '@/components/NavLink.vue';
-  import ResponsiveNavLink from '@/components/ResponsiveNavLink.vue';
-  import { useAuthStore } from '@/stores/auth';
-  import ConfirmPopup from 'primevue/confirmpopup';
-  import ConfirmDialog from 'primevue/confirmdialog';
-  import DynamicDialog from 'primevue/dynamicdialog';
-  import Toast from 'primevue/toast';
+import { ref, watchEffect, computed, inject, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import ApplicationMark from '@/components/ApplicationMark.vue';
+import Banner from '@/components/Banner.vue';
+import Dropdown from '@/components/Dropdown.vue';
+import DropdownLink from '@/components/DropdownLink.vue';
+import NavLink from '@/components/NavLink.vue';
+import ResponsiveNavLink from '@/components/ResponsiveNavLink.vue';
+import { useAuthStore } from '@/stores/auth';
+import ConfirmPopup from 'primevue/confirmpopup';
+import ConfirmDialog from 'primevue/confirmdialog';
+import DynamicDialog from 'primevue/dynamicdialog';
+import Toast from 'primevue/toast';
+import type { AxiosInstance } from 'axios';
+import { useToast } from 'primevue/usetoast';
 
-  const auth = useAuthStore();
-  const route = useRoute();
-  const showingNavigationDropdown = ref(false);
-  const showFlashBanner = ref(false);
-  const flashBannerStyle = ref('success');
-  const flashBannerMessage = ref(null);
+const auth = useAuthStore();
+const route = useRoute();
+const toast = useToast();
+const showingNavigationDropdown = ref(false);
+const showFlashBanner = ref(false);
+const flashBannerStyle = ref('success');
+const flashBannerMessage = ref(null);
+const $http = inject<AxiosInstance>('axios') as AxiosInstance;
+/* eslint-disable  @typescript-eslint/no-explicit-any */
+const serverInfo = ref<any>(undefined);
 
-  const isActiveRoute = computed(() => (pathToCheck: string) => {
-    return route.matched.some(({ path }) => {
-      if (!path) {
-        return pathToCheck === '/';
-      }
+const isActiveRoute = computed(() => (pathToCheck: string) => {
+  return route.matched.some(({ path }) => {
+    if (!path) {
+      return pathToCheck === '/';
+    }
 
-      if (pathToCheck.endsWith('*')) {
-        // Remove last * and append / to name so we can match routes correctly, for example /actor/ with /actor/ but not /actor-game/
-        return (path + '/').startsWith(pathToCheck.slice(0, -1));
+    if (pathToCheck.endsWith('*')) {
+      // Remove last * and append / to name so we can match routes correctly, for example /actor/ with /actor/ but not /actor-game/
+      return (path + '/').startsWith(pathToCheck.slice(0, -1));
+    } else {
+      return path === pathToCheck;
+    }
+  });
+});
+
+function fetchServerInfo(): void {
+  $http.get(`/api/servers/`)
+    .then((response) => {
+      if (response.data) {
+        serverInfo.value = response.data;
       } else {
-        return path === pathToCheck;
+        serverInfo.value = undefined;
       }
+    })
+    .catch((err: Error) => {
+      console.error(err, 'Couldn\'t fetch server info');
+      toast.add({
+        severity: 'error',
+        summary: 'Problem Loading Server Info',
+        detail: 'There was a problem loading server info',
+        life: 10000,
+      });
     });
-  });
+}
 
-  function logout(): void {
-    window.location.href = '/logout';
+function logout(): void {
+  window.location.href = '/logout';
+}
+
+watch(() => auth.user, (user) => {
+  if (user) {
+    fetchServerInfo();
   }
+}, { immediate: true });
 
-  watchEffect(async () => {
-    // TODO: Get this working
-    //flashBannerStyle.value = page.props.flash?.bannerStyle || 'success';
-    //flashBannerMessage.value = page.props.flash?.banner;
-    //showFlashBanner.value = true;
-  });
+watchEffect(async () => {
+  // TODO: Get this working
+  //flashBannerStyle.value = page.props.flash?.bannerStyle || 'success';
+  //flashBannerMessage.value = page.props.flash?.banner;
+  //showFlashBanner.value = true;
+});
 </script>
 
 <template>
@@ -64,21 +96,22 @@
                 </a>
               </div>
 
-              <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+              <div class="hidden space-x-4 sm:-my-px sm:ml-5 sm:flex" v-if="auth.isAuthenticated">
                 <NavLink href="/" :active="isActiveRoute('/')">
                   Home
                 </NavLink>
-                <template v-if="auth.isAuthenticated">
-                  <NavLink href="/users" :active="isActiveRoute('/users/*')">
-                    Users
-                  </NavLink>
-                  <NavLink href="/actors" :active="isActiveRoute('/actors/*')">
-                    Actors
-                  </NavLink>
-                  <NavLink href="/plugins" :active="isActiveRoute('/plugins/*')">
-                    Plugins
-                  </NavLink>
-                </template>
+                <NavLink href="/users" :active="isActiveRoute('/users/*')">
+                  Users
+                </NavLink>
+                <NavLink href="/actors" :active="isActiveRoute('/actors/*')">
+                  Actors
+                </NavLink>
+                <NavLink href="/chats" :active="isActiveRoute('/chats/*')">
+                  Chats
+                </NavLink>
+                <NavLink href="/plugins" :active="isActiveRoute('/plugins/*')">
+                  Plugins
+                </NavLink>
               </div>
             </div>
 
@@ -89,10 +122,24 @@
                 </NavLink>
               </div>
 
-              <div class="sm:flex sm:items-center sm:ml-6" v-else>
-                <div class="ml-3 relative">
-                  <Dropdown align="right" width="48">
-                    <template #trigger>
+              <template v-else>
+                <div class="space-x-4 sm:-my-px sm:ml-5 sm:flex">
+                  <NavLink as="button" v-if="serverInfo" @click="fetchServerInfo">
+                    <div>
+                      <div class="font-medium text-base">
+                        <strong>Lobby:</strong> {{ serverInfo.lobbyCode }}
+                      </div>
+                      <div class="font-medium text-sm">
+                        <strong>Players:</strong> {{ serverInfo.playerCount }}/{{ serverInfo.maxPlayers }}
+                      </div>
+                    </div>
+                  </NavLink>
+                </div>
+
+                <div class="sm:flex sm:items-center sm:ml-3">
+                  <div class="relative">
+                    <Dropdown align="right" width="48">
+                      <template #trigger>
                       <span class="inline-flex rounded-md">
                         <button type="button" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition">
                           {{ auth.me?.name ?? 'Unknown' }}
@@ -105,22 +152,23 @@
                           </svg>
                         </button>
                       </span>
-                    </template>
+                      </template>
 
-                    <template #content>
-                      <div class="block px-4 py-2 text-xs text-gray-400">
-                        Manage Account
-                      </div>
+                      <template #content>
+                        <div class="block px-4 py-2 text-xs text-gray-400">
+                          Manage Account
+                        </div>
 
-                      <form method="POST" @submit.prevent="logout">
-                        <DropdownLink as="button">
-                          Log Out
-                        </DropdownLink>
-                      </form>
-                    </template>
-                  </Dropdown>
+                        <form method="POST" @submit.prevent="logout">
+                          <DropdownLink as="button">
+                            Log Out
+                          </DropdownLink>
+                        </form>
+                      </template>
+                    </Dropdown>
+                  </div>
                 </div>
-              </div>
+              </template>
             </div>
 
             <div class="-mr-2 flex items-center sm:hidden">
@@ -146,49 +194,61 @@
         </div>
 
         <div :class="{'block': showingNavigationDropdown, 'hidden': ! showingNavigationDropdown}" class="sm:hidden">
-          <div class="pt-2 pb-3 space-y-1">
+          <div class="pt-2 pb-3 space-y-1" v-if="auth.isAuthenticated">
             <ResponsiveNavLink href="/" :active="isActiveRoute('/')">
               Home
             </ResponsiveNavLink>
-            <template v-if="auth.isAuthenticated">
-              <ResponsiveNavLink href="/users" :active="isActiveRoute('/users/*')">
-                Users
-              </ResponsiveNavLink>
-              <ResponsiveNavLink href="/actors" :active="isActiveRoute('/actors/*')">
-                Actors
-              </ResponsiveNavLink>
-              <ResponsiveNavLink href="/plugins" :active="isActiveRoute('/plugins/*')">
-                Plugins
-              </ResponsiveNavLink>
-            </template>
+            <ResponsiveNavLink href="/users" :active="isActiveRoute('/users/*')">
+              Users
+            </ResponsiveNavLink>
+            <ResponsiveNavLink href="/actors" :active="isActiveRoute('/actors/*')">
+              Actors
+            </ResponsiveNavLink>
+            <ResponsiveNavLink href="/chats" :active="isActiveRoute('/chats/*')">
+              Chats
+            </ResponsiveNavLink>
+            <ResponsiveNavLink href="/plugins" :active="isActiveRoute('/plugins/*')">
+              Plugins
+            </ResponsiveNavLink>
           </div>
 
-          <div class="pt-4 pb-1 border-t border-gray-200" v-if="!auth.isAuthenticated">
+          <div class="pt-4 pb-1 border-t border-gray-200" v-else>
             <ResponsiveNavLink external-href="/login">
               <img src="@/assets/img/steam_login.png" class="h-full mx-auto" alt="Login with Steam" />
             </ResponsiveNavLink>
           </div>
 
-          <div class="pt-4 pb-1 border-t border-gray-200" v-else>
-            <div class="flex items-center px-4">
-              <div>
-                <div class="font-medium text-base text-white">
-                  {{ auth.me?.name ?? 'Unknown' }}
-                </div>
-                <div class="font-medium text-sm text-white">
-                  {{ auth.me?.steamId ?? 'Unknown' }}
+          <template v-if="auth.isAuthenticated">
+            <ResponsiveNavLink as="button" class="border-t border-gray-200" @click="fetchServerInfo" v-if="serverInfo">
+              <div class="font-medium text-base">
+                <strong>Lobby:</strong> {{ serverInfo.lobbyCode }}
+              </div>
+              <div class="font-medium text-sm">
+                <strong>Players:</strong> {{ serverInfo.playerCount }}/{{ serverInfo.maxPlayers }}
+              </div>
+            </ResponsiveNavLink>
+
+            <div class="pt-4 pb-1 border-t border-gray-200">
+              <div class="flex items-center px-4">
+                <div>
+                  <div class="font-medium text-base text-white">
+                    {{ auth.me?.name ?? 'Unknown' }}
+                  </div>
+                  <div class="font-medium text-sm text-white italic">
+                    {{ auth.me?.steamId ?? 'Unknown' }}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="mt-3 space-y-1">
-              <form method="POST" @submit.prevent="logout">
-                <ResponsiveNavLink as="button">
-                  Log Out
-                </ResponsiveNavLink>
-              </form>
+              <div class="mt-3 space-y-1">
+                <form method="POST" @submit.prevent="logout">
+                  <ResponsiveNavLink as="button">
+                    Log Out
+                  </ResponsiveNavLink>
+                </form>
+              </div>
             </div>
-          </div>
+          </template>
         </div>
       </nav>
 

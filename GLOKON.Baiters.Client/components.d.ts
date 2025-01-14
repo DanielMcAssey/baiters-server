@@ -12,6 +12,7 @@ declare module 'vue' {
     Dropdown: typeof import('./src/components/Dropdown.vue')['default']
     DropdownLink: typeof import('./src/components/DropdownLink.vue')['default']
     NavLink: typeof import('./src/components/NavLink.vue')['default']
+    PlayerData: typeof import('./src/components/PlayerData.vue')['default']
     ResponsiveNavLink: typeof import('./src/components/ResponsiveNavLink.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

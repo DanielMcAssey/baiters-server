@@ -46,6 +46,8 @@ namespace GLOKON.Baiters.Core
         public int PlayerCount => _players.Count + 1;
         public int NpcActorCount => _actors.Where((kv) => kv.Value.Type != ActorType.Player).Count();
 
+        public string LobbyCode { get; private set; } = GenerateLobbyCode();
+
         /// <summary>
         /// Called every tick of the server
         /// </summary>
@@ -105,7 +107,8 @@ namespace GLOKON.Baiters.Core
 
         public virtual async Task RunAsync(CancellationToken cancellationToken)
         {
-            _lobby = await SetupLobbyAsync(new(Enumerable.Range(0, 5).Select(_ => "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[new Random().Next(36)]).ToArray()));
+            LobbyCode = GenerateLobbyCode();
+            _lobby = await SetupLobbyAsync(LobbyCode);
             var ticksPerSecond = 1000 / options.Modifiers.TicksPerSecond;
             IList<long> actorsToRemove = [];
 
@@ -484,6 +487,11 @@ namespace GLOKON.Baiters.Core
         {
             _lobby.SetData("count", PlayerCount.ToString());
             Console.Title = string.Format("[{0}] {1} - {2}/{3}", options.JoinType, options.ServerName, PlayerCount, options.MaxPlayers);
+        }
+
+        private static string GenerateLobbyCode()
+        {
+            return new(Enumerable.Range(0, 5).Select(_ => "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[new Random().Next(36)]).ToArray());
         }
     }
 }
