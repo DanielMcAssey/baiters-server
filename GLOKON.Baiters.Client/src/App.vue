@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watchEffect, computed, inject, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import ApplicationMark from '@/components/ApplicationMark.vue';
 import Banner from '@/components/Banner.vue';
 import Dropdown from '@/components/Dropdown.vue';
@@ -16,6 +16,7 @@ import type { AxiosInstance } from 'axios';
 import { useToast } from 'primevue/usetoast';
 
 const auth = useAuthStore();
+const router = useRouter();
 const route = useRoute();
 const toast = useToast();
 const showingNavigationDropdown = ref(false);
@@ -71,6 +72,12 @@ watch(() => auth.user, (user) => {
   }
 }, { immediate: true });
 
+router.afterEach(() => {
+  if (auth.user) {
+    fetchServerInfo();
+  }
+});
+
 watchEffect(async () => {
   // TODO: Get this working
   //flashBannerStyle.value = page.props.flash?.bannerStyle || 'success';
@@ -107,7 +114,7 @@ watchEffect(async () => {
                   Actors
                 </NavLink>
                 <NavLink href="/chats" :active="isActiveRoute('/chats/*')">
-                  Chats
+                  Chat
                 </NavLink>
                 <NavLink href="/plugins" :active="isActiveRoute('/plugins/*')">
                   Plugins
@@ -205,7 +212,7 @@ watchEffect(async () => {
               Actors
             </ResponsiveNavLink>
             <ResponsiveNavLink href="/chats" :active="isActiveRoute('/chats/*')">
-              Chats
+              Chat
             </ResponsiveNavLink>
             <ResponsiveNavLink href="/plugins" :active="isActiveRoute('/plugins/*')">
               Plugins

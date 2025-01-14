@@ -1,6 +1,7 @@
 ﻿using GLOKON.Baiters.Core;
+using GLOKON.Baiters.Core.Constants;
+using GLOKON.Baiters.Core.Models.Chat;
 using GLOKON.Baiters.Server.Requests;
-using GLOKON.Baiters.Server.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,7 +15,17 @@ namespace GLOKON.Baiters.Server.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            return Ok();
+            // TODO: Add support for chat logs
+            return Ok(new List<ChatLog>
+            {
+                new()
+                {
+                    SenderId = gm.Server.ServerId,
+                    SenderName = "Server",
+                    Message = "Chat Window coming soon…",
+                    Colour = MessageColour.Error,
+                }
+            });
         }
 
         [HttpPost("messages/{steamId?}")]

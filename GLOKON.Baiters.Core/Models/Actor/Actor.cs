@@ -51,7 +51,7 @@
 
         public virtual void OnUpdate()
         {
-            if (_despawnAt.HasValue && !IsDespawned && _despawnAt.Value >= DateTimeOffset.UtcNow)
+            if (_despawnAt.HasValue && !IsDespawned && _despawnAt.Value <= DateTimeOffset.UtcNow)
             {
                 IsDespawned = true; // Server tick will clean this actor up
             }

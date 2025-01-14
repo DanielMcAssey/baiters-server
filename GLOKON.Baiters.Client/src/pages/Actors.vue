@@ -21,7 +21,7 @@ const spawnableItems = computed(() => spawnables.value.map((spawnable) => {
   return {
     label: `Spawn ${spawnable}`,
     icon: 'fas fa-fw fa-wrench',
-    command: () => spawnActor(null, spawnable),
+    command: () => spawnActor(undefined, spawnable),
   };
 }));
 
@@ -79,7 +79,7 @@ function fetchSpawnables(): void {
     });
 }
 
-function spawnActor(event: Event, type: string): void {
+function spawnActor(event: Event | undefined, type: string): void {
   confirm.require({
     target: event?.currentTarget as HTMLElement | undefined,
     group: event ? undefined : 'modal',
