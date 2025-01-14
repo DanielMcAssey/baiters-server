@@ -60,18 +60,38 @@ namespace GLOKON.Baiters.Server.Controllers
             return Ok();
         }
 
-        [HttpPost("cosmetics/{steamId}")]
-        public IActionResult SetPlayerCosmetics([FromRoute] string steamId, [FromBody] Cosmetics request)
+        [HttpPost("cosmetics/{steamId?}")]
+        public IActionResult SetPlayerCosmetics([FromRoute] string? steamId, [FromBody] Cosmetics request)
         {
-            gm.Actioner.SetPlayerCosmetics(ulong.Parse(steamId), request);
+            if (!string.IsNullOrWhiteSpace(steamId))
+            {
+                gm.Actioner.SetPlayerCosmetics(ulong.Parse(steamId), request);
+            }
+            else
+            {
+                foreach (var player in gm.Server.Players)
+                {
+                    gm.Actioner.SetPlayerCosmetics(player.Key, request);
+                }
+            }
 
             return Ok();
         }
 
-        [HttpPost("held-item/{steamId}")]
-        public IActionResult SetPlayerHeldItem([FromRoute] string steamId, [FromBody] HeldItem request)
+        [HttpPost("held-item/{steamId?}")]
+        public IActionResult SetPlayerHeldItem([FromRoute] string? steamId, [FromBody] HeldItem request)
         {
-            gm.Actioner.SetPlayerHeldItem(ulong.Parse(steamId), request);
+            if (!string.IsNullOrWhiteSpace(steamId))
+            {
+                gm.Actioner.SetPlayerHeldItem(ulong.Parse(steamId), request);
+            }
+            else
+            {
+                foreach (var player in gm.Server.Players)
+                {
+                    gm.Actioner.SetPlayerHeldItem(player.Key, request);
+                }
+            }
 
             return Ok();
         }
