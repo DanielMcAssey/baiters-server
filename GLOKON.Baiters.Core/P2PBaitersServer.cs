@@ -43,9 +43,9 @@ namespace GLOKON.Baiters.Core
             };
         }
 
-        internal override void LeavePlayer(ulong steamId)
+        internal override void LeavePlayer(ulong steamId, DisconnectReason reason = DisconnectReason.NormalLeave)
         {
-            base.LeavePlayer(steamId);
+            base.LeavePlayer(steamId, reason);
             SteamNetworking.CloseP2PSessionWithUser(steamId);
         }
 

@@ -234,8 +234,9 @@ namespace GLOKON.Baiters.Core
             if (_players.TryGetValue(steamId, out var player) && player != null)
             {
                 SendMessage($"Kicked {player.FisherName}", MessageColour.Error, steamId);
-                SendMessage($"{player.FisherName} was kicked from the lobby!", MessageColour.Error);
             }
+
+            LeavePlayer(steamId, DisconnectReason.Kicked);
         }
 
         public void BanPlayer(ulong steamId, string? reason = null)
@@ -263,6 +264,8 @@ namespace GLOKON.Baiters.Core
                 PlayerName = playerName,
                 Reason = reason,
             });
+
+            LeavePlayer(steamId, DisconnectReason.Banned);
         }
 
         public void UnbanPlayer(ulong steamId)
@@ -336,9 +339,9 @@ namespace GLOKON.Baiters.Core
         {
             SendSystemMessage(message, color, steamId);
 
-            if (steamId == null || steamId == ServerId)
+            if (!steamId.HasValue || steamId.Value == ServerId)
             {
-                _chatLogs.Add(new ChatLog()
+                _chatLogs.Add(new()
                 {
                     SentAt = DateTime.Now,
                     SenderId = ServerId,
@@ -389,6 +392,12 @@ namespace GLOKON.Baiters.Core
                 return;
             }
 
+            if (PlayerCount >= options.MaxPlayers)
+            {
+                _lobby.SendChatString($"$weblobby_request_denied_full-{steamId}");
+                return;
+            }
+
             Log.Debug("Joining new player [{steamId}] {playerName}", steamId, playerName);
             _lobby.SendChatString($"$weblobby_request_accepted-{steamId}");
             _players.TryAdd(steamId, new Player(steamId, playerName, IsAdmin(steamId)));
@@ -410,25 +419,36 @@ namespace GLOKON.Baiters.Core
             OnPlayerJoined?.Invoke(steamId);
         }
 
-        internal virtual void LeavePlayer(ulong steamId)
+        internal virtual void LeavePlayer(ulong steamId, DisconnectReason reason = DisconnectReason.NormalLeave)
         {
             if (_players.Remove(steamId, out var player) && player != null)
             {
-                var fisherName = player.FisherName;
-                Log.Information("[{steamId}] {fisherName} left the server", steamId, fisherName);
+                switch (reason)
+                {
+                    case DisconnectReason.Kicked:
+                        Log.Information("[{0}] {1} was kicked from the server", steamId, player.FisherName);
+                        break;
+                    case DisconnectReason.Banned:
+                        Log.Information("[{0}] {1} was banned from the server", steamId, player.FisherName);
+                        break;
+                    case DisconnectReason.NormalLeave:
+                    default:
+                        Log.Information("[{0}] {1} left the server", steamId, player.FisherName);
+                        break;
+                };
 
                 SendPacket(new("user_left_weblobby")
                 {
                     ["user_id"] = (long)steamId,
-                    ["reason"] = 0
+                    ["reason"] = (int)reason,
                 }, DataChannel.GameState);
-
-                UpdatePlayerCount();
 
                 if (player.ActorId.HasValue)
                 {
                     RemoveActor(player.ActorId.Value);
                 }
+
+                UpdatePlayerCount();
 
                 OnPlayerLeft?.Invoke(steamId);
             }

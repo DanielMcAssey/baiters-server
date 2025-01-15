@@ -31,14 +31,14 @@ namespace GLOKON.Baiters.Core
             SteamNetworkingMessages.OnMessage -= SteamNetworkingMessages_OnMessage;
         }
 
-        internal override void LeavePlayer(ulong steamId)
+        internal override void LeavePlayer(ulong steamId, DisconnectReason reason = DisconnectReason.NormalLeave)
         {
             if (_connections.TryRemove(steamId, out var connection))
             {
                 SteamNetworkingMessages.CloseSessionWithUser(ref connection);
             }
 
-            base.LeavePlayer(steamId);
+            base.LeavePlayer(steamId, reason);
         }
 
         protected override void ReceivePackets()
