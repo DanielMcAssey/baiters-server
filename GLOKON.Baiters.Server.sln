@@ -9,10 +9,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GLOKON.Baiters.Core", "GLOK
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GLOKON.Baiters.GodotInterop", "GLOKON.Baiters.GodotInterop\GLOKON.Baiters.GodotInterop.csproj", "{AE92C627-3BD6-4301-B537-5514360E5365}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GLOKON.Baiters.Plugins.ChatCommand", "GLOKON.Baiters.Plugins.ChatCommand\GLOKON.Baiters.Plugins.ChatCommand.csproj", "{9151B66B-88F2-4FF5-A8DE-E32A944A85DF}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GLOKON.Baiters.Plugins.BanManager", "GLOKON.Baiters.Plugins.BanManager\GLOKON.Baiters.Plugins.BanManager.csproj", "{90CD84D4-B402-4FE5-9608-4F8AD381991D}"
-EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "GLOKON.Baiters.Client", "GLOKON.Baiters.Client\GLOKON.Baiters.Client.esproj", "{9D97E87B-C624-44F2-A978-BE2460910113}"
 EndProject
 Global
@@ -33,14 +29,6 @@ Global
 		{AE92C627-3BD6-4301-B537-5514360E5365}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AE92C627-3BD6-4301-B537-5514360E5365}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AE92C627-3BD6-4301-B537-5514360E5365}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9151B66B-88F2-4FF5-A8DE-E32A944A85DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9151B66B-88F2-4FF5-A8DE-E32A944A85DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9151B66B-88F2-4FF5-A8DE-E32A944A85DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9151B66B-88F2-4FF5-A8DE-E32A944A85DF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{90CD84D4-B402-4FE5-9608-4F8AD381991D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{90CD84D4-B402-4FE5-9608-4F8AD381991D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{90CD84D4-B402-4FE5-9608-4F8AD381991D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{90CD84D4-B402-4FE5-9608-4F8AD381991D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9D97E87B-C624-44F2-A978-BE2460910113}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9D97E87B-C624-44F2-A978-BE2460910113}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9D97E87B-C624-44F2-A978-BE2460910113}.Debug|Any CPU.Deploy.0 = Debug|Any CPU

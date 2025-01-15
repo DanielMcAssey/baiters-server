@@ -1,5 +1,6 @@
 ﻿using GLOKON.Baiters.Core;
 using GLOKON.Baiters.Core.Constants;
+using GLOKON.Baiters.Core.Models.Game;
 using GLOKON.Baiters.Core.Plugins;
 using System.Reflection;
 
@@ -127,6 +128,68 @@ namespace GLOKON.Baiters.Plugins.ChatCommand
                 GM.Server.SendMessage(string.Join(" ", commandParams), MessageColour.Warning);
             });
 
+            GM.Chat.ListenFor("ban", "Ban a player by passing their SteamID with an optional reason", (sender, commandParams) =>
+            {
+                if (!GM.Server.IsAdmin(sender))
+                {
+                    return;
+                }
+
+                if (commandParams.Length < 1)
+                {
+                    GM.Server.SendSystemMessage("Invalid ban command, not enough parameters", MessageColour.Error, sender);
+                    return;
+                }
+
+                bool didParseSteamId = ulong.TryParse(commandParams[0], out var steamId);
+                if (!didParseSteamId)
+                {
+                    GM.Server.SendSystemMessage("Invalid SteamID, could not be parsed", MessageColour.Error, sender);
+                    return;
+                }
+
+                string? reason = null;
+                if (commandParams.Length > 1)
+                {
+                    reason = string.Join(' ', commandParams.Skip(1).ToArray());
+                }
+
+                GM.Server.BanPlayer(steamId, reason);
+            });
+
+            GM.Chat.ListenFor("ban.list", "List all players that are currently banned", (sender, commandParams) =>
+            {
+                GM.Server.SendSystemMessage("-- Ban List --", MessageColour.Information, sender);
+
+                foreach (var playerBan in GM.Server.PlayerBans)
+                {
+                    GM.Server.SendSystemMessage(string.Format("[{0}] {1}: {2}", playerBan.Key, playerBan.Value.FisherName, playerBan.Value.Reason ?? "(No Reason Given)"), MessageColour.Information, sender);
+                }
+            });
+
+            GM.Chat.ListenFor("unban", "Un-Ban a player by passing their SteamID", (sender, commandParams) =>
+            {
+                if (!GM.Server.IsAdmin(sender))
+                {
+                    return;
+                }
+
+                if (commandParams.Length < 1)
+                {
+                    GM.Server.SendSystemMessage("Invalid unban command, not enough parameters", MessageColour.Error, sender);
+                    return;
+                }
+
+                bool didParseSteamId = ulong.TryParse(commandParams[0], out var steamId);
+                if (!didParseSteamId)
+                {
+                    GM.Server.SendSystemMessage("Invalid SteamID, could not be parsed", MessageColour.Error, sender);
+                    return;
+                }
+
+                GM.Server.UnbanPlayer(steamId);
+            });
+
             GM.Chat.ListenFor("plugins", "Show all the plugins loaded", (sender, commandParams) =>
             {
                 if (!GM.Server.IsAdmin(sender))
@@ -154,6 +217,9 @@ namespace GLOKON.Baiters.Plugins.ChatCommand
             GM.Chat.StopListening("kick");
             GM.Chat.StopListening("say");
             GM.Chat.StopListening("say.all");
+            GM.Chat.StopListening("ban");
+            GM.Chat.StopListening("ban.list");
+            GM.Chat.StopListening("unban");
             GM.Chat.StopListening("plugins");
         }
     }

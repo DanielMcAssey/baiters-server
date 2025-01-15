@@ -18,23 +18,11 @@ namespace GLOKON.Baiters.Server.Controllers
         }
 
         [HttpPost("kick/{steamId}")]
-        public IActionResult KickPlayer([FromRoute]string steamId)
+        public IActionResult KickPlayer([FromRoute] ulong steamId)
         {
-            if (ulong.TryParse(steamId, out ulong parsedSteamId) && gm.Server.TryGetPlayer(parsedSteamId, out var player) && player != null)
+            if (gm.Server.TryGetPlayer(steamId, out var player) && player != null)
             {
-                gm.Server.KickPlayer(parsedSteamId);
-                return Ok();
-            }
-
-            return NotFound();
-        }
-
-        [HttpPost("ban/{steamId}")]
-        public IActionResult BanPlayer([FromRoute] string steamId)
-        {
-            if (ulong.TryParse(steamId, out ulong parsedSteamId) && gm.Server.TryGetPlayer(parsedSteamId, out var player) && player != null)
-            {
-                gm.Server.BanPlayer(parsedSteamId);
+                gm.Server.KickPlayer(steamId);
                 return Ok();
             }
 

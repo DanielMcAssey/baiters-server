@@ -8,6 +8,7 @@ const router = createRouter({
     { path: '/', component: Home, meta: { title: 'Home', requiresAuth: true } },
     { path: '/users', component: () => import('@/pages/Users.vue'), meta: { title: 'Users', requiresAuth: true } },
     { path: '/actors', component: () => import('@/pages/Actors.vue'), meta: { title: 'Actors', requiresAuth: true } },
+    { path: '/bans', component: () => import('@/pages/Bans.vue'), meta: { title: 'Bans', requiresAuth: true } },
     { path: '/chalk-canvases', component: () => import('@/pages/ChalkCanvases.vue'), meta: { title: 'Chalk Canvases', requiresAuth: true } },
     { path: '/chats', component: () => import('@/pages/Chats.vue'), meta: { title: 'Chats', requiresAuth: true } },
     { path: '/plugins', component: () => import('@/pages/Plugins.vue'), meta: { title: 'Plugins', requiresAuth: true } },
@@ -23,6 +24,12 @@ router.beforeEach((to) => {
   if (to.meta?.requiresAuth && !auth.isAuthenticated) {
     return {
       path: '/unauthorized',
+    };
+  }
+
+  if (to.path === '/unauthorized' && auth.isAuthenticated) {
+    return {
+      path: '/',
     };
   }
 

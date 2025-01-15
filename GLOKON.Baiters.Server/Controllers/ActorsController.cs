@@ -12,7 +12,7 @@ namespace GLOKON.Baiters.Server.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            return Ok(gm.Server.Actors);
+            return Ok(gm.Server.Actors.ToList().OrderByDescending(actor => actor.Value.SpawnTime));
         }
 
         [HttpGet("spawn/types")]

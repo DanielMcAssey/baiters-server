@@ -1,7 +1,11 @@
 ﻿namespace GLOKON.Baiters.Server.Requests
 {
-    public class SendLetterRequest
+    public struct SendLetterRequest
     {
+        public SendLetterRequest()
+        {
+        }
+
         public required string Header { get; set; }
 
         public required string Body { get; set; }

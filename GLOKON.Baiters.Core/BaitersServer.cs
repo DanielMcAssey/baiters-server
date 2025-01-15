@@ -15,36 +15,21 @@ using GLOKON.Baiters.Core.Models.Chat;
 using GLOKON.Baiters.Core.Models.Game;
 using GLOKON.Baiters.Core.Converters.Json;
 using System.Text.Json;
-using System.Reflection;
 
 namespace GLOKON.Baiters.Core
 {
-    public abstract class BaitersServer(IOptions<WebFishingOptions> _options)
+    public abstract class BaitersServer
     {
         protected readonly int dataChannelCount = Enum.GetNames(typeof(DataChannel)).Length;
+        private readonly string _bansFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bans.json");
         private readonly string _chalkCanvasesFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "chalk_canvases.json");
-        private readonly WebFishingOptions options = _options.Value;
+        private readonly WebFishingOptions options;
         private readonly Random random = new();
         private readonly ConcurrentBag<ChatLog> _chatLogs = [];
         private readonly ConcurrentDictionary<ulong, Player> _players = new();
+        private readonly ConcurrentDictionary<ulong, PlayerBan> _playerBans = new();
         private readonly ConcurrentDictionary<long, Actor> _actors = new();
         private readonly ConcurrentDictionary<long, ChalkCanvas> _chalkCanvases = new();
-
-        protected static bool CanSteamIdJoin(ulong steamId)
-        {
-            bool canJoin = true;
-
-            foreach (var plugin in PluginLoader.Plugins)
-            {
-                if (!plugin.CanPlayerJoin(steamId))
-                {
-                    canJoin = false;
-                    break;
-                }
-            }
-
-            return canJoin;
-        }
 
         private Lobby _lobby;
         private ulong? _serverSteamId;
@@ -52,6 +37,7 @@ namespace GLOKON.Baiters.Core
         public IEnumerable<KeyValuePair<long, Actor>> Actors => _actors;
         public IEnumerable<KeyValuePair<long, ChalkCanvas>> ChalkCanvases => _chalkCanvases;
         public IEnumerable<KeyValuePair<ulong, Player>> Players => _players;
+        public IEnumerable<KeyValuePair<ulong, PlayerBan>> PlayerBans => _playerBans;
         public IReadOnlyCollection<ChatLog> ChatLogs => _chatLogs;
         public int PlayerCount => _players.Count + 1;
         public int NpcActorCount => _actors.Where((kv) => kv.Value.Type != ActorType.Player).Count();
@@ -100,6 +86,35 @@ namespace GLOKON.Baiters.Core
             }
         }
 
+        public BaitersServer(IOptions<WebFishingOptions> _options)
+        {
+            options = _options.Value;
+
+            if (options.SaveChalkCanvases && File.Exists(_chalkCanvasesFilePath))
+            {
+                try
+                {
+                    _chalkCanvases = JsonSerializer.Deserialize<ConcurrentDictionary<long, ChalkCanvas>>(File.ReadAllText(_chalkCanvasesFilePath), JsonOptions.Default) ?? _chalkCanvases;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Failed to load chalk canvases file");
+                }
+            }
+
+            if (File.Exists(_bansFilePath))
+            {
+                try
+                {
+                    _playerBans = JsonSerializer.Deserialize<ConcurrentDictionary<ulong, PlayerBan>>(File.ReadAllText(_bansFilePath), JsonOptions.Default) ?? _playerBans;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Failed to load bans file");
+                }
+            }
+        }
+
         public virtual void Setup()
         {
             Log.Information("Setting up server...");
@@ -112,25 +127,6 @@ namespace GLOKON.Baiters.Core
             {
                 Log.Error(ex, "Failed to initialize SteamClient");
                 throw;
-            }
-
-            if (options.SaveChalkCanvases && File.Exists(_chalkCanvasesFilePath))
-            {
-                try
-                {
-                    var loadedCanvases = JsonSerializer.Deserialize<ConcurrentDictionary<long, ChalkCanvas>>(File.ReadAllText(_chalkCanvasesFilePath), JsonOptions.Default);
-                    if (loadedCanvases != null)
-                    {
-                        foreach (var loadedCanvas in loadedCanvases)
-                        {
-                            _chalkCanvases.TryAdd(loadedCanvas.Key, loadedCanvas.Value);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, "Failed to load chalk canvases file");
-                }
             }
         }
 
@@ -189,6 +185,7 @@ namespace GLOKON.Baiters.Core
             _lobby.Leave();
             SteamClient.Shutdown();
 
+            // TODO: For Canvases and bans should we do periodic saves, just incase the server crashes?
             if (options.SaveChalkCanvases)
             {
                 try
@@ -199,6 +196,15 @@ namespace GLOKON.Baiters.Core
                 {
                     Log.Error(ex, "Failed to save chalk canvases");
                 }
+            }
+
+            try
+            {
+                File.WriteAllText(_bansFilePath, JsonSerializer.Serialize(_playerBans, JsonOptions.Default));
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to save bans");
             }
         }
 
@@ -214,6 +220,11 @@ namespace GLOKON.Baiters.Core
 
         public void KickPlayer(ulong steamId)
         {
+            if (steamId == ServerId)
+            {
+                return; // Lets not kick ourselves
+            }
+
             SendPacket(new("peer_was_kicked")
             {
                 ["user_id"] = (long)steamId,
@@ -227,13 +238,36 @@ namespace GLOKON.Baiters.Core
             }
         }
 
-        public void BanPlayer(ulong steamId)
+        public void BanPlayer(ulong steamId, string? reason = null)
         {
+            if (steamId == ServerId)
+            {
+                return; // Lets not ban ourselves
+            }
+
             SendPacket(new("peer_was_banned")
             {
                 ["user_id"] = (long)steamId,
             }, DataChannel.GameState);
             SendPacket(new("client_was_banned"), DataChannel.GameState, steamId);
+
+            string playerName = "Unknown";
+            if (TryGetPlayer(steamId, out var player) && player != null)
+            {
+                playerName = player.FisherName;
+            }
+
+            _playerBans.TryAdd(steamId, new()
+            {
+                CreatedAt = DateTime.Now,
+                PlayerName = playerName,
+                Reason = reason,
+            });
+        }
+
+        public void UnbanPlayer(ulong steamId)
+        {
+            _playerBans.TryRemove(steamId, out _);
         }
 
         public bool TryGetChalkCanvas(long canvasId, out ChalkCanvas? chalkCanvas)
@@ -466,6 +500,25 @@ namespace GLOKON.Baiters.Core
         protected abstract void SendPacketTo(byte[] data, DataChannel channel);
 
         protected abstract void SendPacketTo(byte[] data, DataChannel channel, ulong steamId);
+
+        protected bool CanSteamIdJoin(ulong steamId)
+        {
+            bool canJoin = !_playerBans.ContainsKey(steamId);
+
+            if (canJoin)
+            {
+                foreach (var plugin in PluginLoader.Plugins)
+                {
+                    if (!plugin.CanPlayerJoin(steamId))
+                    {
+                        canJoin = false;
+                        break;
+                    }
+                }
+            }
+
+            return canJoin;
+        }
 
         protected void HandleNetworkPacket(ulong sender, byte[] data, DataChannel channel)
         {

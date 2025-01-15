@@ -43,6 +43,9 @@ function fetchData(): void {
 
 const isChalkPreviewOpen = ref(false);
 const isGeneratingPreview = ref(false);
+const isDarkPreviewBackground = ref(false);
+/* eslint-disable  @typescript-eslint/no-explicit-any */
+const previewingChalkCanvas = ref<any | undefined>(undefined);
 const chalkPreviewB64 = ref<string | undefined>(undefined);
 const chalkDimensions = ref<{ width: number; height: number } | undefined>(undefined);
 
@@ -50,6 +53,7 @@ const chalkDimensions = ref<{ width: number; height: number } | undefined>(undef
 function previewChalk(event: Event, chalkCanvas: any): void {
   isChalkPreviewOpen.value = true;
   isGeneratingPreview.value = true;
+  previewingChalkCanvas.value = chalkCanvas;
   const imageWidth = chalkCanvas.maxX - chalkCanvas.minX;
   const imageHeight = chalkCanvas.maxY - chalkCanvas.minY;
   chalkDimensions.value = {
@@ -60,17 +64,7 @@ function previewChalk(event: Event, chalkCanvas: any): void {
   const originY = chalkCanvas.minY;
   const imageBuffer = new Uint8ClampedArray(imageWidth * imageHeight * 4);
 
-  // Set to white background
-  for(let y = 0; y < imageHeight; y++) {
-    for(let x = 0; x < imageWidth; x++) {
-      const coordinate = (y * imageWidth + x) * 4;
-      imageBuffer[coordinate]     = 25; // R
-      imageBuffer[coordinate + 1] = 25; // G
-      imageBuffer[coordinate + 2] = 25; // B
-      imageBuffer[coordinate + 3] = 255; // Alpha
-    }
-  }
-
+  // Fill buffer with pixels
   for(const point of chalkCanvas.points) {
     const fixedX = point.position.x - originX;
     const fixedY = point.position.y - originY;
@@ -103,8 +97,13 @@ function previewChalk(event: Event, chalkCanvas: any): void {
 function stopPreviewingChalk(): void {
   isChalkPreviewOpen.value = false;
   isGeneratingPreview.value = false;
+  previewingChalkCanvas.value = undefined;
   chalkPreviewB64.value = undefined;
   chalkDimensions.value = undefined;
+}
+
+function setPreviewBackground(isDark: boolean): void {
+  isDarkPreviewBackground.value = isDark;
 }
 
 function removeChalk(event: Event, id: number): void {
@@ -188,13 +187,39 @@ onMounted(() => {
               Generating preview&hellip;
             </p>
           </div>
-          <div class="col-span-6" v-else-if="chalkDimensions && chalkPreviewB64">
-            <img :src="chalkPreviewB64"
-                 alt="Chalk Preview"
-                 class="object-contain w-full h-full"
-                 :height="chalkDimensions.height"
-                 :width="chalkDimensions.width" />
-          </div>
+          <template v-else-if="chalkDimensions && chalkPreviewB64">
+            <div class="col-span-6 flex justify-between">
+              <div class="flex flex-col justify-center gap-1">
+                <p class="font-bold text-xl">
+                  {{ previewingChalkCanvas?.id }}
+                </p>
+                <p class="text-xs">
+                  <strong>Cells:</strong>&nbsp;{{ previewingChalkCanvas?.pointsCount }}
+                </p>
+              </div>
+              <ButtonGroup>
+                <Button icon="fas fa-moon"
+                        severity="primary"
+                        label="Dark"
+                        size="small"
+                        :variant="isDarkPreviewBackground ? undefined : 'outlined'"
+                        @click="setPreviewBackground(true)" />
+                <Button icon="fas fa-sun"
+                        severity="primary"
+                        label="Light"
+                        size="small"
+                        :variant="isDarkPreviewBackground ? 'outlined' : undefined"
+                        @click="setPreviewBackground(false)" />
+              </ButtonGroup>
+            </div>
+            <div class="col-span-6 rounded" :class="{ 'bg-surface-800': isDarkPreviewBackground, 'bg-surface-200': !isDarkPreviewBackground }">
+              <img :src="chalkPreviewB64"
+                   alt="Chalk Preview"
+                   class="object-contain w-full h-full"
+                   :height="chalkDimensions.height"
+                   :width="chalkDimensions.width" />
+            </div>
+          </template>
           <p class="col-span-6 text-center italic" v-else>
             Failed to generate preview
           </p>

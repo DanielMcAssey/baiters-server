@@ -83,7 +83,7 @@ function banPlayer(event: Event, steamId: string) {
       icon: 'fas fa-ban',
     },
     accept: () => {
-      $http.post(`/api/users/ban/${steamId}`)
+      $http.post(`/api/bans/${steamId}`)
         .catch((err: Error) => {
           console.error(err, 'Couldn\'t ban player');
           toast.add({
@@ -293,6 +293,7 @@ onMounted(() => {
         <div class="col-span-6">
           <label for="item_set_on" class="font-semibold">Set On <span v-if="setHeldItemOn"> (SteamID)</span></label>
           <InputText id="item_set_on"
+                     type="text"
                      class="w-full mt-1"
                      name="item_set_on"
                      :value="setHeldItemOn ?? 'All Players'"
@@ -302,6 +303,7 @@ onMounted(() => {
         <div class="col-span-4">
           <label for="item_id" class="font-semibold">Item ID</label>
           <InputText id="item_id"
+                     type="text"
                      class="w-full mt-1"
                      name="item_id"
                      v-model="heldItemId"
@@ -350,6 +352,7 @@ onMounted(() => {
         <div class="col-span-6">
           <label for="recipient" class="font-semibold">Recipient <span v-if="sendLetterTo"> (SteamID)</span></label>
           <InputText id="recipient"
+                     type="text"
                      class="w-full mt-1"
                      name="recipient"
                      :value="sendLetterTo ?? 'All Players'"
@@ -359,6 +362,7 @@ onMounted(() => {
         <div class="col-span-6">
           <label for="header" class="font-semibold">Header</label>
           <InputText id="header"
+                     type="text"
                      class="w-full mt-1"
                      name="header"
                      v-model="letterHeader"
@@ -379,6 +383,7 @@ onMounted(() => {
         <div class="col-span-6">
           <label for="closing" class="font-semibold">Closing</label>
           <InputText id="closing"
+                     type="text"
                      class="w-full mt-1"
                      name="closing"
                      v-model="letterClosing"
@@ -401,6 +406,7 @@ onMounted(() => {
             </p>
             <InputGroup v-for="(item, index) in letterItems" :key="item.id" class="col-span-6">
               <InputText :id="'items_' + index"
+                         type="text"
                          class="w-full"
                          :name="'items_' + index"
                          v-model="item.itemId"
