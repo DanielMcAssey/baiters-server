@@ -88,9 +88,9 @@ namespace GLOKON.Baiters.Core
             HandleNetworkPacket(identity.SteamId, messageData, (DataChannel)channel);
         }
 
-        internal override void LeavePlayer(ulong steamId)
+        internal override void LeavePlayer(ulong steamId, DisconnectReason reason = DisconnectReason.NormalLeave)
         {
-            base.LeavePlayer(steamId);
+            base.LeavePlayer(steamId, reason);
 
             _connections.TryRemove(steamId, out _);
         }
