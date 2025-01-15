@@ -10,12 +10,12 @@ namespace GLOKON.Baiters.Server.Responses
 
         public int PointsCount { get; set; } = chalkCanvas.Cells.Count;
 
-        public float MinX { get; set; } = chalkCanvas.MinX;
+        public float? MinX { get; set; } = chalkCanvas.MinX;
 
-        public float MinY { get; set; } = chalkCanvas.MinY;
+        public float? MinY { get; set; } = chalkCanvas.MinY;
 
-        public float MaxX { get; set; } = chalkCanvas.MaxX;
+        public float? MaxX { get; set; } = chalkCanvas.MaxX;
 
-        public float MaxY { get; set; } = chalkCanvas.MaxY;
+        public float? MaxY { get; set; } = chalkCanvas.MaxY;
     }
 }

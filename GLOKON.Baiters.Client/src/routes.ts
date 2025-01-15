@@ -8,6 +8,7 @@ const router = createRouter({
     { path: '/', component: Home, meta: { title: 'Home', requiresAuth: true } },
     { path: '/users', component: () => import('@/pages/Users.vue'), meta: { title: 'Users', requiresAuth: true } },
     { path: '/actors', component: () => import('@/pages/Actors.vue'), meta: { title: 'Actors', requiresAuth: true } },
+    { path: '/chalk-canvases', component: () => import('@/pages/ChalkCanvases.vue'), meta: { title: 'Chalk Canvases', requiresAuth: true } },
     { path: '/chats', component: () => import('@/pages/Chats.vue'), meta: { title: 'Chats', requiresAuth: true } },
     { path: '/plugins', component: () => import('@/pages/Plugins.vue'), meta: { title: 'Plugins', requiresAuth: true } },
     { path: '/error', component: () => import('@/pages/Error.vue'), meta: { title: 'Error' } },

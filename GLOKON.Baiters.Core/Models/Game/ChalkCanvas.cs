@@ -5,22 +5,22 @@ namespace GLOKON.Baiters.Core.Models.Game
     public sealed class ChalkCanvas()
     {
         // No need for concurrent dictionary, as messages are handled sequentially
-        public Dictionary<int, ChalkCanvasPoint> Cells { get; } = [];
+        public Dictionary<int, ChalkCanvasPoint> Cells { get; set; } = [];
 
-        public float MinX { get; set; } = 0f;
+        public float? MinX { get; set; }
 
-        public float MinY { get; set; } = 0f;
+        public float? MinY { get; set; }
 
-        public float MaxX { get; set; } = 0f;
+        public float? MaxX { get; set; }
 
-        public float MaxY { get; set; } = 0f;
+        public float? MaxY { get; set; }
 
         public void Draw(Vector2 position, int color)
         {
-            MinX = MathF.Min(position.X, MinX);
-            MaxX = MathF.Max(position.X, MaxX);
-            MinY = MathF.Min(position.Y, MinY);
-            MaxY = MathF.Max(position.Y, MaxY);
+            MinX = MinX.HasValue ? MathF.Min(position.X, MinX.Value) : position.X;
+            MaxX = MaxX.HasValue ? MathF.Max(position.X, MaxX.Value) : position.X;
+            MinY = MinY.HasValue ? MathF.Min(position.Y, MinY.Value) : position.Y;
+            MaxY = MaxY.HasValue ? MathF.Max(position.Y, MaxY.Value) : position.Y;
 
             Cells[position.GetHashCode()] = new()
             {

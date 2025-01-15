@@ -20,6 +20,12 @@
 
         public int MaxBird { get; set; } = 8;
 
+        public int MaxRainCloud { get; set; } = 3;
+
+        public int MaxMeteor { get; set; } = 3;
+
+        public int MaxVoidPortal { get; set; } = 1;
+
         public int TicksPerSecond { get; set; } = 24; // 24hz
     }
 }

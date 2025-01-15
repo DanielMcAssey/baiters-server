@@ -15,6 +15,7 @@ using GLOKON.Baiters.Core.Models.Chat;
 using GLOKON.Baiters.Core.Models.Game;
 using GLOKON.Baiters.Core.Converters.Json;
 using System.Text.Json;
+using System.Reflection;
 
 namespace GLOKON.Baiters.Core
 {
@@ -118,9 +119,12 @@ namespace GLOKON.Baiters.Core
                 try
                 {
                     var loadedCanvases = JsonSerializer.Deserialize<ConcurrentDictionary<long, ChalkCanvas>>(File.ReadAllText(_chalkCanvasesFilePath), JsonOptions.Default);
-                    foreach (var loadedCanvas in loadedCanvases)
+                    if (loadedCanvases != null)
                     {
-                        _chalkCanvases.TryAdd(loadedCanvas.Key, loadedCanvas.Value);
+                        foreach (var loadedCanvas in loadedCanvases)
+                        {
+                            _chalkCanvases.TryAdd(loadedCanvas.Key, loadedCanvas.Value);
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -453,7 +457,7 @@ namespace GLOKON.Baiters.Core
         internal void OnPlayerChat(ulong sender, ChatLog chatLog)
         {
             OnChatMessage?.Invoke(sender, chatLog.Message);
-            Log.ForContext("Scope", "ChatLog").Information("[{0}] {1}<{2}>: {3}", sender, chatLog.SenderName, chatLog.Zone, chatLog.Message);
+            Log.ForContext("Scope", "Chat").Information("[{0}] {1}<{2}>: {3}", sender, chatLog.SenderName, chatLog.Zone, chatLog.Message);
             _chatLogs.Add(chatLog);
         }
 

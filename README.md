@@ -14,7 +14,7 @@ I felt that the servers out there had a lot of room for improvement, in performa
 > [!IMPORTANT]
 > Steam installed and a Steam account with WebFishing is required.
 
-1. **Download** Baiters from the Releases page
+1. **Download** the latest Baiters from the Releases page
 2. **Copy** the `main_zone.tscn` from the game into the `scenes` folder (You need to extract it from the game ([Example Tool](https://github.com/bruvzg/gdsdecomp)))
 3. **Configure** the `appsettings.json` or use the environment variables (See the config reference below, you can also create a `appsettings.Production.json` in the same folder to override anything in `appsettings.json`)
 4. **Run** the Steam client with the account with WebFishing
@@ -25,6 +25,36 @@ I felt that the servers out there had a lot of room for improvement, in performa
 Please see [PLUGINS.md](https://github.com/DanielMcAssey/baiters-server/blob/main/PLUGINS.md) on how to build your own plugins.
 
 To install plugins, simply place the plugin file(s) into the `plugins` folder.
+
+
+## Updating
+
+Follow these steps to update your Baiters server to the latest version.
+
+1. **Download** the latest Baiters from the Releases page
+2. **Settings** copy from the current version your `appsettings.Production.json` (If it exists, or if you changed the `appsettings.json` directly, then manually copy over your changes to the new `appsettings.json`, **do not overwite it**)
+3. **State** copy from the current version your `bans.json` (If it exists), `chalk_canvases.json` (If it exists), your `scenes/main_zone.tscn`
+4. **Plugins** copy from the current version your plugins from the `plugins/` folder (**do not overwite any bundled plugins in the new version**)
+5. **Stop** your old version of Baiters (If its running)
+6. **Start** Baiters and your upgrade is complete
+
+
+## SSL
+> [!IMPORTANT]
+> To use **LetsEncrypt** you will need a domain that points to this server and change `Server.HttpPort` to `80`. (You may need to run the server as administrator to use port `80`)
+
+The server supports access to the admin panel via SSL, and the server can manage the certificates for you via **LetsEncrypt**.
+
+Simply enter your email address to `Server.LetsEncrypt.EmailAddress` and enter the domain(s) you want to generate the certificate for to `Server.LetsEncrypt.Domains`
+
+
+## Reverse Proxy
+> [!IMPORTANT]
+> Read this section if you are using or intend to use reverse proxy to access the admin panel, this does not affect the game server
+
+You will need to add your reverse proxies address (in CIDR format) to the `Server.TrustedProxies` list.
+
+**NOTE:** Do NOT use `0.0.0.0/0` as this will allow anyone to mask their IP address to the server.
 
 
 ## Enviroment Variables
@@ -50,4 +80,8 @@ To install plugins, simply place the plugin file(s) into the `plugins` folder.
 | `WebFishing__Modifiers__MaxMetal`   | Maximum metal spawned (Defaults to `7`) |
 | `WebFishing__Modifiers__MaxFish`   | Maximum Fish spawned in the server (Defaults to `30`) |
 | `WebFishing__Modifiers__MaxBird`   | Maximum Birds spawned in the server (Defaults to `8`) |
+| `WebFishing__Modifiers__MaxRainCloud`   | Maximum Rain Clouds spawned in the server (Defaults to `3`) |
+| `WebFishing__Modifiers__MaxMeteor`   | Maximum Meteors spawned in the server (Defaults to `3`) |
+| `WebFishing__Modifiers__MaxVoidPortal`   | Maximum Void Portals spawned in the server (Defaults to `1`) |
 | `WebFishing__Modifiers__MaxNpcActors`   | Maximum NPC (Non-Playable Characters, like fish, birds, metal, etc.) spawned (Defaults to `50`) |
+| `WebFishing__Modifiers__TicksPerSecond`   | Server ticks per second, essentially the server FPS, lower this value to reduce CPU load as a trade-off for responsiveness (Defaults to `24`) |

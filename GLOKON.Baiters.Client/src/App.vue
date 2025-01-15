@@ -113,6 +113,9 @@ watchEffect(async () => {
                 <NavLink href="/actors" :active="isActiveRoute('/actors/*')">
                   Actors
                 </NavLink>
+                <NavLink href="/chalk-canvases" :active="isActiveRoute('/chalk-canvases/*')">
+                  Chalk
+                </NavLink>
                 <NavLink href="/chats" :active="isActiveRoute('/chats/*')">
                   Chat
                 </NavLink>
@@ -210,6 +213,9 @@ watchEffect(async () => {
             </ResponsiveNavLink>
             <ResponsiveNavLink href="/actors" :active="isActiveRoute('/actors/*')">
               Actors
+            </ResponsiveNavLink>
+            <ResponsiveNavLink href="/chalk-canvases" :active="isActiveRoute('/chalk-canvases/*')">
+              Chalk Canvases
             </ResponsiveNavLink>
             <ResponsiveNavLink href="/chats" :active="isActiveRoute('/chats/*')">
               Chat
