@@ -16,6 +16,8 @@
 
         public bool UseHsts { get; set; } = false;
 
+        public IList<string> TrustedProxies { get; set; } = [];
+
         public LetsEncryptOptions LetsEncrypt { get; set; } = new LetsEncryptOptions();
 
         public SslOptions SSL { get; set; } = new SslOptions();

@@ -12,39 +12,32 @@ using Steamworks.Data;
 using System.Collections.Concurrent;
 using GLOKON.Baiters.Core.Enums.Networking;
 using GLOKON.Baiters.Core.Models.Chat;
+using GLOKON.Baiters.Core.Models.Game;
+using GLOKON.Baiters.Core.Converters.Json;
+using System.Text.Json;
 
 namespace GLOKON.Baiters.Core
 {
-    public abstract class BaitersServer(IOptions<WebFishingOptions> _options)
+    public abstract class BaitersServer
     {
         protected readonly int dataChannelCount = Enum.GetNames(typeof(DataChannel)).Length;
-        private readonly WebFishingOptions options = _options.Value;
+        private readonly string _bansFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bans.json");
+        private readonly string _chalkCanvasesFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "chalk_canvases.json");
+        private readonly WebFishingOptions options;
         private readonly Random random = new();
         private readonly ConcurrentBag<ChatLog> _chatLogs = [];
         private readonly ConcurrentDictionary<ulong, Player> _players = new();
+        private readonly ConcurrentDictionary<ulong, PlayerBan> _playerBans = new();
         private readonly ConcurrentDictionary<long, Actor> _actors = new();
-
-        protected static bool CanSteamIdJoin(ulong steamId)
-        {
-            bool canJoin = true;
-
-            foreach (var plugin in PluginLoader.Plugins)
-            {
-                if (!plugin.CanPlayerJoin(steamId))
-                {
-                    canJoin = false;
-                    break;
-                }
-            }
-
-            return canJoin;
-        }
+        private readonly ConcurrentDictionary<long, ChalkCanvas> _chalkCanvases = new();
 
         private Lobby _lobby;
         private ulong? _serverSteamId;
 
         public IEnumerable<KeyValuePair<long, Actor>> Actors => _actors;
+        public IEnumerable<KeyValuePair<long, ChalkCanvas>> ChalkCanvases => _chalkCanvases;
         public IEnumerable<KeyValuePair<ulong, Player>> Players => _players;
+        public IEnumerable<KeyValuePair<ulong, PlayerBan>> PlayerBans => _playerBans;
         public IReadOnlyCollection<ChatLog> ChatLogs => _chatLogs;
         public int PlayerCount => _players.Count + 1;
         public int NpcActorCount => _actors.Where((kv) => kv.Value.Type != ActorType.Player).Count();
@@ -90,6 +83,35 @@ namespace GLOKON.Baiters.Core
                 }
 
                 return _serverSteamId.Value;
+            }
+        }
+
+        public BaitersServer(IOptions<WebFishingOptions> _options)
+        {
+            options = _options.Value;
+
+            if (options.SaveChalkCanvases && File.Exists(_chalkCanvasesFilePath))
+            {
+                try
+                {
+                    _chalkCanvases = JsonSerializer.Deserialize<ConcurrentDictionary<long, ChalkCanvas>>(File.ReadAllText(_chalkCanvasesFilePath), JsonOptions.Default) ?? _chalkCanvases;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Failed to load chalk canvases file");
+                }
+            }
+
+            if (File.Exists(_bansFilePath))
+            {
+                try
+                {
+                    _playerBans = JsonSerializer.Deserialize<ConcurrentDictionary<ulong, PlayerBan>>(File.ReadAllText(_bansFilePath), JsonOptions.Default) ?? _playerBans;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Failed to load bans file");
+                }
             }
         }
 
@@ -162,6 +184,28 @@ namespace GLOKON.Baiters.Core
             SteamMatchmaking.OnLobbyMemberLeave -= SteamMatchmaking_OnLobbyMemberLeave;
             _lobby.Leave();
             SteamClient.Shutdown();
+
+            // TODO: For Canvases and bans should we do periodic saves, just incase the server crashes?
+            if (options.SaveChalkCanvases)
+            {
+                try
+                {
+                    File.WriteAllText(_chalkCanvasesFilePath, JsonSerializer.Serialize(_chalkCanvases, JsonOptions.Default));
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Failed to save chalk canvases");
+                }
+            }
+
+            try
+            {
+                File.WriteAllText(_bansFilePath, JsonSerializer.Serialize(_playerBans, JsonOptions.Default));
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to save bans");
+            }
         }
 
         public IEnumerable<KeyValuePair<long, Actor>> GetActorsByType(string type)
@@ -176,6 +220,11 @@ namespace GLOKON.Baiters.Core
 
         public void KickPlayer(ulong steamId)
         {
+            if (steamId == ServerId)
+            {
+                return; // Lets not kick ourselves
+            }
+
             SendPacket(new("peer_was_kicked")
             {
                 ["user_id"] = (long)steamId,
@@ -189,13 +238,55 @@ namespace GLOKON.Baiters.Core
             }
         }
 
-        public void BanPlayer(ulong steamId)
+        public void BanPlayer(ulong steamId, string? reason = null)
         {
+            if (steamId == ServerId)
+            {
+                return; // Lets not ban ourselves
+            }
+
             SendPacket(new("peer_was_banned")
             {
                 ["user_id"] = (long)steamId,
             }, DataChannel.GameState);
             SendPacket(new("client_was_banned"), DataChannel.GameState, steamId);
+
+            string playerName = "Unknown";
+            if (TryGetPlayer(steamId, out var player) && player != null)
+            {
+                playerName = player.FisherName;
+            }
+
+            _playerBans.TryAdd(steamId, new()
+            {
+                CreatedAt = DateTime.Now,
+                PlayerName = playerName,
+                Reason = reason,
+            });
+        }
+
+        public void UnbanPlayer(ulong steamId)
+        {
+            _playerBans.TryRemove(steamId, out _);
+        }
+
+        public bool TryGetChalkCanvas(long canvasId, out ChalkCanvas? chalkCanvas)
+        {
+            return _chalkCanvases.TryGetValue(canvasId, out chalkCanvas);
+        }
+
+        public void AddChalkCanvas(long canvasId, ChalkCanvas chalkCanvas)
+        {
+            _chalkCanvases.TryAdd(canvasId, chalkCanvas);
+        }
+
+        public void RemoveChalkCanvas(long canvasId)
+        {
+            if (_chalkCanvases.TryRemove(canvasId, out var chalkCanvas) && chalkCanvas != null)
+            {
+                // Blank canvas by overriding the colour to 0
+                SendCanvas(canvasId, chalkCanvas.Cells.Values.ToList(), overrideColour: 0);
+            }
         }
 
         public bool TryGetActor(long actorId, out Actor? actor)
@@ -388,10 +479,19 @@ namespace GLOKON.Baiters.Core
             }, channel: DataChannel.ActorUpdate);
         }
 
+        internal void SendCanvas(long canvasId, IList<ChalkCanvasPoint> points, ulong? steamId = null, int? overrideColour = null)
+        {
+            SendPacket(new("chalk_packet")
+            {
+                ["canvas_id"] = canvasId,
+                ["data"] = points.Select((point) => new object[] { point.Position, overrideColour ?? point.Colour }).ToArray(),
+            }, DataChannel.Chalk, steamId);
+        }
+
         internal void OnPlayerChat(ulong sender, ChatLog chatLog)
         {
             OnChatMessage?.Invoke(sender, chatLog.Message);
-            Log.ForContext("Scope", "ChatLog").Information("[{0}] {1}<{2}>: {3}", sender, chatLog.SenderName, chatLog.Zone, chatLog.Message);
+            Log.ForContext("Scope", "Chat").Information("[{0}] {1}<{2}>: {3}", sender, chatLog.SenderName, chatLog.Zone, chatLog.Message);
             _chatLogs.Add(chatLog);
         }
 
@@ -400,6 +500,25 @@ namespace GLOKON.Baiters.Core
         protected abstract void SendPacketTo(byte[] data, DataChannel channel);
 
         protected abstract void SendPacketTo(byte[] data, DataChannel channel, ulong steamId);
+
+        protected bool CanSteamIdJoin(ulong steamId)
+        {
+            bool canJoin = !_playerBans.ContainsKey(steamId);
+
+            if (canJoin)
+            {
+                foreach (var plugin in PluginLoader.Plugins)
+                {
+                    if (!plugin.CanPlayerJoin(steamId))
+                    {
+                        canJoin = false;
+                        break;
+                    }
+                }
+            }
+
+            return canJoin;
+        }
 
         protected void HandleNetworkPacket(ulong sender, byte[] data, DataChannel channel)
         {

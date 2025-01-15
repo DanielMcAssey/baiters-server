@@ -1,6 +1,6 @@
 ﻿namespace GLOKON.Baiters.Server.Responses
 {
-    internal sealed class SteamIdResponse
+    internal struct SteamIdResponse
     {
         public required string SteamId { get; set; }
 

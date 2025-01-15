@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace GLOKON.Baiters.Core.Converters.Json
@@ -8,14 +9,15 @@ namespace GLOKON.Baiters.Core.Converters.Json
     {
         public override Vector3 Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var rawVal = reader.GetString();
-
-            if (rawVal != null)
+            if (JsonNode.Parse(ref reader) is JsonObject obj &&
+                obj.TryGetPropertyValue("x", out var xProp) && xProp != null &&
+                obj.TryGetPropertyValue("y", out var yProp) && yProp != null &&
+                obj.TryGetPropertyValue("z", out var zProp) && zProp != null)
             {
-                return JsonSerializer.Deserialize<Vector3>(rawVal, JsonOptions.ConverterDefault);
+                return new Vector3((float)xProp, (float)yProp, (float)zProp);
             }
 
-            return Vector3.Zero; // Couldnt parse, default value
+            return Vector3.Zero;
         }
 
         public override void Write(Utf8JsonWriter writer, Vector3 value, JsonSerializerOptions options)

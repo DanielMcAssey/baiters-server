@@ -2,7 +2,7 @@
 
 Building plugins for Baiters is really easy!
 
-There are 2 example plugins on this repository, the BanManager and ChatCommands, so feel free to use that as a basis.
+There is an example plugin on this repository, the ChatCommands plugin, so feel free to use that as a basis.
 
 ## Steps
 

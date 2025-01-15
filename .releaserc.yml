@@ -6,7 +6,6 @@ plugins:
     - replacements:
         - files:
             - "GLOKON.Baiters.Core/GLOKON.Baiters.Core.csproj"
-            - "GLOKON.Baiters.Plugins.BanManager/GLOKON.Baiters.Plugins.BanManager.csproj"
             - "GLOKON.Baiters.Plugins.ChatCommand/GLOKON.Baiters.Plugins.ChatCommand.csproj"
             - "GLOKON.Baiters.Server/GLOKON.Baiters.Server.csproj"
           from: "<AssemblyVersion>.*</AssemblyVersion>"

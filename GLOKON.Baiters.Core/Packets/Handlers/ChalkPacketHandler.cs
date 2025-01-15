@@ -1,4 +1,5 @@
-﻿using GLOKON.Baiters.Core.Models.Actor;
+﻿using GLOKON.Baiters.Core.Models.Chat;
+using GLOKON.Baiters.Core.Models.Game;
 using GLOKON.Baiters.Core.Models.Networking;
 using Serilog;
 
@@ -8,21 +9,23 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
     {
         public void Handle(ulong sender, Packet data)
         {
-            long canvasId = (long)data["canvas_id"];
+            var canvasId = (long)data["canvas_id"];
+            var canvasData = (Array)data["data"];
             ChalkCanvas canvas;
 
-            if (server.TryGetActor(canvasId, out var actor) && actor is ChalkCanvas foundCanvas)
+            if (server.TryGetChalkCanvas(canvasId, out var foundCanvas) && foundCanvas != null)
             {
+                Log.ForContext("Scope", "ChalkCanvas").Information("[{0}] Updating chalk canvas({1}), with {2} points", sender, canvasId, canvasData.Length);
                 canvas = foundCanvas;
             }
             else
             {
-                Log.Debug("Creating new canvas({0})", canvasId);
+                Log.ForContext("Scope", "ChalkCanvas").Information("[{0}] Creating new chalk canvas({1}), with {2} points", sender, canvasId, canvasData.Length);
                 canvas = new();
-                server.AddActor(canvasId, canvas);
+                server.AddChalkCanvas(canvasId, canvas);
             }
 
-            canvas.UpdateFromPacket((Array)data["data"]);
+            canvas.UpdateFromPacket(canvasData);
         }
     }
 }

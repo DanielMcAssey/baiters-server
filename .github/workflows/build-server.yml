@@ -64,9 +64,6 @@ jobs:
       - name: Build Server
         run: dotnet publish GLOKON.Baiters.Server/GLOKON.Baiters.Server.csproj -p:AssemblyVersion="${{ inputs.version }}.0" --configuration Release --runtime ${{ inputs.buildRuntime }} --output dist
 
-      - name: Build Plugin (BanManager)
-        run: dotnet build GLOKON.Baiters.Plugins.BanManager/GLOKON.Baiters.Plugins.BanManager.csproj -p:AssemblyVersion="${{ inputs.version }}.0" --configuration Release --runtime ${{ inputs.buildRuntime }} --no-dependencies --output dist/plugins
-
       - name: Build Plugin (ChatCommand)
         run: dotnet build GLOKON.Baiters.Plugins.ChatCommand/GLOKON.Baiters.Plugins.ChatCommand.csproj -p:AssemblyVersion="${{ inputs.version }}.0" --configuration Release --runtime ${{ inputs.buildRuntime }} --no-dependencies --output dist/plugins
 

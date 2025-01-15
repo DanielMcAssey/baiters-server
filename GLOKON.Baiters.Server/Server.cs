@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using AspNet.Security.OpenId.Steam;
 using System.Security.Claims;
 using GLOKON.Baiters.Core.Converters.Json;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace GLOKON.Baiters.Server
 {
@@ -78,6 +79,18 @@ namespace GLOKON.Baiters.Server
                 });
             }
 
+            services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
+                foreach (var trustedProxy in serverOptions.TrustedProxies)
+                {
+                    if (IPNetwork.TryParse(trustedProxy, out var trustedNetwork) && trustedNetwork != null)
+                    {
+                        options.KnownNetworks.Add(trustedNetwork);
+                    }
+                }
+            });
             services.AddDataProtection()
                 .UseCryptographicAlgorithms(new AuthenticatedEncryptorConfiguration
                 {
@@ -144,6 +157,8 @@ namespace GLOKON.Baiters.Server
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IOptions<ServerOptions> serverOptionsVal)
         {
+            app.UseForwardedHeaders();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

@@ -2,8 +2,12 @@
 
 namespace GLOKON.Baiters.Core.Models.Game
 {
-    public sealed class HeldItem
+    public struct HeldItem
     {
+        public HeldItem()
+        {
+        }
+
         public required string Id { get; set; }
 
         public required double Size { get; set; }

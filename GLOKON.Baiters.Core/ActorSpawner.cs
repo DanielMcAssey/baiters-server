@@ -85,14 +85,29 @@ namespace GLOKON.Baiters.Core
 
                     break;
                 case ActorType.RainCloud:
-                    SpawnRainCloud();
-                    return true;
+                    if (server.GetActorsByType(ActorType.RainCloud).Count() < options.Modifiers.MaxRainCloud)
+                    {
+                        SpawnRainCloud();
+                        return true;
+                    }
+
+                    break;
                 case ActorType.Meteor:
-                    SpawnFish(ActorType.Meteor);
-                    return true;
+                    if (server.GetActorsByType(ActorType.Meteor).Count() < options.Modifiers.MaxMeteor)
+                    {
+                        SpawnFish(ActorType.Meteor);
+                        return true;
+                    }
+
+                    break;
                 case ActorType.VoidPortal:
-                    SpawnVoidPortal();
-                    return true;
+                    if (server.GetActorsByType(ActorType.VoidPortal).Count() < options.Modifiers.MaxVoidPortal)
+                    {
+                        SpawnVoidPortal();
+                        return true;
+                    }
+
+                    break;
                 case ActorType.Metal:
                     if (server.GetActorsByType(ActorType.Metal).Count() < options.Modifiers.MaxMetal)
                     {
