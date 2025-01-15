@@ -163,7 +163,7 @@ namespace GLOKON.Baiters.Plugins.ChatCommand
 
                 foreach (var playerBan in GM.Server.PlayerBans)
                 {
-                    GM.Server.SendSystemMessage(string.Format("[{0}] {1}: {2}", playerBan.Key, playerBan.Value.FisherName, playerBan.Value.Reason ?? "(No Reason Given)"), MessageColour.Information, sender);
+                    GM.Server.SendSystemMessage(string.Format("[{0}] {1}: {2}", playerBan.Key, playerBan.Value.PlayerName, playerBan.Value.Reason ?? "(No Reason Given)"), MessageColour.Information, sender);
                 }
             });
 
