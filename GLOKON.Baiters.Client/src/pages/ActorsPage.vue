@@ -165,7 +165,7 @@ onMounted(() => {
         <template #loading>Loading users. Please wait&hellip;</template>
         <Column field="id" header="ID" :sortable="true"></Column>
         <Column field="type" header="Type" :sortable="true"></Column>
-        <Column field="spawnTime" header="Spawned At" :sortable="true"></Column>
+        <Column field="spawnedAt" header="Spawned At" :sortable="true"></Column>
         <Column field="zone" header="Zone" :sortable="true"></Column>
         <Column style="white-space:nowrap;text-align:right;">
           <template #body="slotProps">
