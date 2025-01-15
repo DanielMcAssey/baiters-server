@@ -1,4 +1,5 @@
 ﻿using GLOKON.Baiters.Core;
+using GLOKON.Baiters.Server.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,7 +13,7 @@ namespace GLOKON.Baiters.Server.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            return Ok(gm.Server.Actors.ToList().OrderByDescending(actor => actor.Value.SpawnTime));
+            return Ok(gm.Server.Actors.Select((actor) => new ActorResponse(actor.Key, actor.Value)).ToList().OrderByDescending(actor => actor.SpawnedAt));
         }
 
         [HttpGet("spawn/types")]

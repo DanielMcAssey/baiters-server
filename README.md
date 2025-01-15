@@ -52,7 +52,8 @@ Simply enter your email address to `Server.LetsEncrypt.EmailAddress` and enter t
 > [!IMPORTANT]
 > Read this section if you are using or intend to use reverse proxy to access the admin panel, this does not affect the game server
 
-You will need to add your reverse proxies address (in CIDR format) to the `Server.TrustedProxies` list.
+If your reverse proxy is not on the local network or you want fine-grained control, you can add your reverse proxies address (in CIDR format) to the `Server.TrustedProxies` list.
+It defaults to the common local networks CIDRs: `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16` (For IPv4) and `fd00::/8` (For IPv6)
 
 **NOTE:** Do NOT use `0.0.0.0/0` as this will allow anyone to mask their IP address to the server.
 

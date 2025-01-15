@@ -6,7 +6,7 @@
         private uint? _despawnTime = null;
         private bool _syncRequired = false;
 
-        public DateTimeOffset SpawnTime { get; } = DateTimeOffset.UtcNow;
+        public DateTimeOffset SpawnedAt { get; } = DateTimeOffset.UtcNow;
 
         public string Type { get; } = type;
 

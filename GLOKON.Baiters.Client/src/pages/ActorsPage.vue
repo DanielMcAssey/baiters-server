@@ -30,17 +30,7 @@ function fetchData(): void {
   $http.get(`/api/actors/`)
     .then((response) => {
       if (response.data) {
-        const responseData = response.data;
-        const items = [];
-
-        for (const id of Object.keys(responseData)) {
-          items.push({
-            id: id,
-            ...responseData[id],
-          });
-        }
-
-        results.value = items;
+        results.value = response.data;
       } else {
         results.value = [];
       }
