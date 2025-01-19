@@ -1,4 +1,5 @@
 ﻿using GLOKON.Baiters.Core.Models.Actor;
+using System.Numerics;
 
 namespace GLOKON.Baiters.Server.Responses
 {
@@ -11,6 +12,10 @@ namespace GLOKON.Baiters.Server.Responses
         public string Type { get; set; } = actor.Type;
 
         public ulong OwnerId { get; set; } = actor.OwnerId;
+
+        public Vector3 Position { get; set; } = actor.Position;
+
+        public Vector3 Rotation { get; set; } = actor.Rotation;
 
         public string Zone { get; set; } = actor.Zone;
 
