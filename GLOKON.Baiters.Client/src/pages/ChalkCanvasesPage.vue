@@ -16,6 +16,7 @@ const isLoading = ref(false);
 const $http = inject<AxiosInstance>('axios') as AxiosInstance;
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 const results = ref<any[]>([]);
+const colours = ['#101c31', '#ac0029', '#a4aa39', '#008583', '#e69d00'];
 
 function fetchData(): void {
   isLoading.value = true;
@@ -69,11 +70,19 @@ function previewChalk(event: Event, chalkCanvas: any): void {
     const fixedX = point.position.x - originX;
     const fixedY = point.position.y - originY;
     const coordinate = (fixedY * imageWidth + fixedX) * 4;
-    const colour = point.colour >>> 0;
-    imageBuffer[coordinate]     = (colour & 0xFF0000) >>> 16; // R
-    imageBuffer[coordinate + 1] = (colour & 0xFF00) >>> 8; // G
+    const colourHex = colours[point.colour - 1] ?? colours[0];
+
+    let colourParts = colourHex.substring(1).split('');
+    if(colourParts.length == 3){
+      // Handle short hex codes
+      colourParts = [colourParts[0], colourParts[0], colourParts[1], colourParts[1], colourParts[2], colourParts[2]];
+    }
+
+    const colour = Number('0x' + colourParts.join(''));
+    imageBuffer[coordinate]     = (colour >>> 16) & 0xFF; // R
+    imageBuffer[coordinate + 1] = (colour >>> 8) & 0xFF; // G
     imageBuffer[coordinate + 2] = colour & 0xFF; // B
-    imageBuffer[coordinate + 3] = (colour & 0xFF000000) >>> 24; // Alpha
+    imageBuffer[coordinate + 3] = 0xFF; // Alpha
   }
 
   const canvas = document.createElement('canvas');
