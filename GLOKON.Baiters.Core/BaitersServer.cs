@@ -206,6 +206,8 @@ namespace GLOKON.Baiters.Core
             {
                 Log.Error(ex, "Failed to save bans");
             }
+
+            Log.Information("Server stopped");
         }
 
         public IEnumerable<KeyValuePair<long, Actor>> GetActorsByType(string type)
@@ -443,9 +445,20 @@ namespace GLOKON.Baiters.Core
                     ["reason"] = (int)reason,
                 }, DataChannel.GameState);
 
+                IList<long> actorsToRemove = [];
+                foreach (var actor in _actors.Where(actor => actor.Value.OwnerId == steamId))
+                {
+                    actorsToRemove.Add(actor.Key);
+                }
+
                 if (player.ActorId.HasValue)
                 {
-                    RemoveActor(player.ActorId.Value);
+                    actorsToRemove.Add(player.ActorId.Value);
+                }
+
+                foreach (var actorId in actorsToRemove)
+                {
+                    RemoveActor(actorId);
                 }
 
                 UpdatePlayerCount();
@@ -456,55 +469,37 @@ namespace GLOKON.Baiters.Core
 
         internal void SendActor(long actorId, Actor actor, ulong? steamId = null)
         {
-            Dictionary<string, object> instanceActorParams = [];
-            instanceActorParams["actor_type"] = actor.Type;
-
-            if (actor is MovableActor movableActor)
-            {
-                instanceActorParams["at"] = movableActor.Position;
-                instanceActorParams["rot"] = movableActor.Rotation;
-            }
-            else
-            {
-                instanceActorParams["at"] = Vector3.Zero;
-                instanceActorParams["rot"] = Vector3.Zero;
-            }
-
-            instanceActorParams["zone"] = actor.Zone;
-            instanceActorParams["zone_owner"] = -1;
-            instanceActorParams["actor_id"] = actorId;
-            instanceActorParams["creator_id"] = (long)ServerId;
-
             SendPacket(new("instance_actor")
             {
-                ["params"] = instanceActorParams,
+                ["params"] = new Dictionary<string, object>
+                {
+                    ["actor_type"] = actor.Type,
+                    ["at"] = actor.Position,
+                    ["rot"] = actor.Rotation,
+                    ["zone"] = actor.Zone,
+                    ["zone_owner"] = -1,
+                    ["actor_id"] = actorId,
+                    ["creator_id"] = (long)ServerId,
+                },
             }, DataChannel.GameState, steamId);
         }
 
         internal void SendActorUpdate(long actorId, Actor actor)
         {
-            var position = Vector3.Zero;
-            var rotation = Vector3.Zero;
-            if (actor is MovableActor movableActor)
-            {
-                position = movableActor.Position;
-                rotation = movableActor.Rotation;
-            }
-
             SendPacket(new("actor_update")
             {
                 ["actor_id"] = actorId,
-                ["pos"] = position,
-                ["rot"] = rotation,
+                ["pos"] = actor.Position,
+                ["rot"] = actor.Rotation,
             }, channel: DataChannel.ActorUpdate);
         }
 
-        internal void SendCanvas(long canvasId, IList<ChalkCanvasPoint> points, ulong? steamId = null, int? overrideColour = null)
+        internal void SendCanvas(long canvasId, IList<ChalkCanvasPoint> points, ulong? steamId = null, uint? overrideColour = null)
         {
             SendPacket(new("chalk_packet")
             {
                 ["canvas_id"] = canvasId,
-                ["data"] = points.Select((point) => new object[] { point.Position, overrideColour ?? point.Colour }).ToArray(),
+                ["data"] = points.Select((point) => new object[] { point.Position, Convert.ToInt64(overrideColour ?? point.Colour) }).ToArray(),
             }, DataChannel.Chalk, steamId);
         }
 
@@ -645,7 +640,7 @@ namespace GLOKON.Baiters.Core
         private void UpdatePlayerCount()
         {
             _lobby.SetData("count", PlayerCount.ToString());
-            Console.Title = string.Format("[{0}] {1} - {2}/{3}", options.JoinType, options.ServerName, PlayerCount, options.MaxPlayers);
+            Console.Title = string.Format("[{0}] {1} - {2} - {3}/{4}", options.JoinType, options.ServerName, LobbyCode, PlayerCount, options.MaxPlayers);
         }
 
         private static string GenerateLobbyCode()

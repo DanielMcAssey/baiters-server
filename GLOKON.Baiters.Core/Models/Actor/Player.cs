@@ -1,10 +1,9 @@
 ﻿using GLOKON.Baiters.Core.Constants;
 using GLOKON.Baiters.Core.Models.Game;
-using System.Numerics;
 
 namespace GLOKON.Baiters.Core.Models.Actor
 {
-    public sealed class Player(ulong steamId, string fisherName, bool isAdmin = false) : MovableActor(ActorType.Player, Vector3.Zero, null, steamId)
+    public sealed class Player(ulong steamId, string fisherName, bool isAdmin = false) : Actor(ActorType.Player, steamId)
     {
         public string FisherName { get; } = fisherName;
 

@@ -1,4 +1,6 @@
-﻿namespace GLOKON.Baiters.Core.Models.Actor
+﻿using System.Numerics;
+
+namespace GLOKON.Baiters.Core.Models.Actor
 {
     public abstract class Actor(string type, ulong ownerId = 0)
     {
@@ -9,6 +11,10 @@
         public DateTimeOffset SpawnedAt { get; } = DateTimeOffset.UtcNow;
 
         public string Type { get; } = type;
+
+        public Vector3 Position { get; set; } = Vector3.Zero;
+
+        public Vector3 Rotation { get; set; } = Vector3.Zero;
 
         public ulong OwnerId { get; } = ownerId;
 
