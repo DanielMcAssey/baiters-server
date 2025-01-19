@@ -206,6 +206,8 @@ namespace GLOKON.Baiters.Core
             {
                 Log.Error(ex, "Failed to save bans");
             }
+
+            Log.Information("Server stopped");
         }
 
         public IEnumerable<KeyValuePair<long, Actor>> GetActorsByType(string type)
@@ -492,12 +494,12 @@ namespace GLOKON.Baiters.Core
             }, channel: DataChannel.ActorUpdate);
         }
 
-        internal void SendCanvas(long canvasId, IList<ChalkCanvasPoint> points, ulong? steamId = null, int? overrideColour = null)
+        internal void SendCanvas(long canvasId, IList<ChalkCanvasPoint> points, ulong? steamId = null, uint? overrideColour = null)
         {
             SendPacket(new("chalk_packet")
             {
                 ["canvas_id"] = canvasId,
-                ["data"] = points.Select((point) => new object[] { point.Position, overrideColour ?? point.Colour }).ToArray(),
+                ["data"] = points.Select((point) => new object[] { point.Position, Convert.ToInt64(overrideColour ?? point.Colour) }).ToArray(),
             }, DataChannel.Chalk, steamId);
         }
 
@@ -638,7 +640,7 @@ namespace GLOKON.Baiters.Core
         private void UpdatePlayerCount()
         {
             _lobby.SetData("count", PlayerCount.ToString());
-            Console.Title = string.Format("[{0}] {1} - {2}/{3}", options.JoinType, options.ServerName, PlayerCount, options.MaxPlayers);
+            Console.Title = string.Format("[{0}] {1} - {2} - {3}/{4}", options.JoinType, options.ServerName, LobbyCode, PlayerCount, options.MaxPlayers);
         }
 
         private static string GenerateLobbyCode()

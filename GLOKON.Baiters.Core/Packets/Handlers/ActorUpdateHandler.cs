@@ -1,5 +1,4 @@
-﻿using GLOKON.Baiters.Core.Models.Actor;
-using GLOKON.Baiters.Core.Models.Networking;
+﻿using GLOKON.Baiters.Core.Models.Networking;
 using System.Numerics;
 
 namespace GLOKON.Baiters.Core.Packets.Handlers
@@ -9,10 +8,10 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
         public void Handle(ulong sender, Packet data)
         {
             long actorId = (long)data["actor_id"];
-            if (server.TryGetActor(actorId, out var actor) && actor is Player player)
+            if (server.TryGetActor(actorId, out var actor) && actor != null)
             {
-                player.Position = (Vector3)data["pos"];
-                player.Rotation = (Vector3)data["rot"];
+                actor.Position = (Vector3)data["pos"];
+                actor.Rotation = (Vector3)data["rot"];
             }
         }
     }
