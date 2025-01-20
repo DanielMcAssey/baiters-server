@@ -6,7 +6,7 @@ namespace GLOKON.Baiters.Core.Models.Actor
     {
         private DateTimeOffset? _despawnAt = null;
         private uint? _despawnTime = null;
-        private bool _syncRequired = false;
+        private bool _syncRequired = ownerId == 0; // If the server owns it, we need to sync it after its created
 
         public DateTimeOffset SpawnedAt { get; } = DateTimeOffset.UtcNow;
 
@@ -19,6 +19,8 @@ namespace GLOKON.Baiters.Core.Models.Actor
         public ulong OwnerId { get; } = ownerId;
 
         public string Zone { get; set; } = "main_zone";
+
+        public int ZoneOwnerId { get; set; } = -1;
 
         public uint? DespawnTime
         {

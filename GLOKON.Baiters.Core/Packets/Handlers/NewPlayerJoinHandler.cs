@@ -29,6 +29,11 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
             Task.Run(async () =>
             {
                 await SendChalkPacketsAsync(sender);
+
+                foreach (var actor in server.Actors)
+                {
+                    server.SendActorUpdate(actor.Key, actor.Value);
+                }
             });
         }
 

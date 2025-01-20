@@ -3,6 +3,7 @@ using GLOKON.Baiters.Core.Enums.Networking;
 using GLOKON.Baiters.Core.Models.Actor;
 using GLOKON.Baiters.Core.Models.Networking;
 using Serilog;
+using System.Numerics;
 
 namespace GLOKON.Baiters.Core.Packets.Handlers
 {
@@ -40,7 +41,13 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
                         break;
                     default:
                         // TODO: Do we need to instantiate all the different types or just use the generic actor?
-                        server.AddActor(actorId, new GenericActor(type, sender));
+                        server.AddActor(actorId, new GenericActor(type, sender)
+                        {
+                            Position = (Vector3)pktParams["at"],
+                            Rotation = (Vector3)pktParams["rot"],
+                            Zone = (string)pktParams["zone"],
+                            ZoneOwnerId = (int)pktParams["zone_owner"]
+                        });
                         break;
                 }
             }

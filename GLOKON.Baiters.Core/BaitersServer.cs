@@ -323,6 +323,34 @@ namespace GLOKON.Baiters.Core
             SendActor(actorId, actor);
         }
 
+        public void SetActorZone(long actorId, string zone, ulong? steamId = null)
+        {
+            if (TryGetActor(actorId, out var actor) && actor != null)
+            {
+                actor.Zone = zone;
+                SendPacket(new("actor_action")
+                {
+                    ["actor_id"] = actorId,
+                    ["action"] = "_set_zone",
+                    ["params"] = new List<object>()
+                    {
+                        zone,
+                        actor.ZoneOwnerId,
+                    }.ToArray(),
+                }, DataChannel.ActorAction, steamId);
+            }
+        }
+
+        public void SetActorReady(long actorId, ulong? steamId = null)
+        {
+            SendPacket(new("actor_action")
+            {
+                ["actor_id"] = actorId,
+                ["action"] = "_ready",
+                ["params"] = Array.Empty<object>(),
+            }, DataChannel.ActorAction, steamId);
+        }
+
         public void SendSystemMessage(string message, string color = MessageColour.Default, ulong? steamId = null)
         {
             SendPacket(new("message")
@@ -477,7 +505,7 @@ namespace GLOKON.Baiters.Core
                     ["at"] = actor.Position,
                     ["rot"] = actor.Rotation,
                     ["zone"] = actor.Zone,
-                    ["zone_owner"] = -1,
+                    ["zone_owner"] = actor.ZoneOwnerId,
                     ["actor_id"] = actorId,
                     ["creator_id"] = (long)ServerId,
                 },
