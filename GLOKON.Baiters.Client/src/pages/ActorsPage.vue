@@ -6,7 +6,8 @@ import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Button from 'primevue/button';
 import ButtonGroup from 'primevue/buttongroup';
-import SplitButton from "primevue/splitbutton";
+import SplitButton from 'primevue/splitbutton';
+import Tag from 'primevue/tag';
 import type { AxiosInstance } from 'axios';
 const confirm = useConfirm();
 const toast = useToast();
@@ -166,6 +167,15 @@ onMounted(() => {
         <Column field="id" header="ID" :sortable="true"></Column>
         <Column field="type" header="Type" :sortable="true"></Column>
         <Column field="spawnedAt" header="Spawned At" :sortable="true"></Column>
+        <Column field="position" header="Position" :sortable="true">
+          <template #body="slotProps">
+            <Tag :pt="{ root: { style: 'white-space:preserve nowrap' } }" icon="fas fa-location-dot" severity="info" size="small">
+              X: {{ slotProps.data.position.x.toFixed(2) }}<br />
+              Y: {{ slotProps.data.position.y.toFixed(2) }}<br />
+              Z: {{ slotProps.data.position.z.toFixed(2) }}
+            </Tag>
+          </template>
+        </Column>
         <Column field="zone" header="Zone" :sortable="true"></Column>
         <Column style="white-space:nowrap;text-align:right;">
           <template #body="slotProps">

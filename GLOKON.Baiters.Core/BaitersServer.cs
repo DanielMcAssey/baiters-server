@@ -289,8 +289,8 @@ namespace GLOKON.Baiters.Core
         {
             if (_chalkCanvases.TryRemove(canvasId, out var chalkCanvas) && chalkCanvas != null)
             {
-                // Blank canvas by overriding the colour to 0
-                SendCanvas(canvasId, chalkCanvas.Cells.Values.ToList(), overrideColour: 0);
+                // Blank canvas by overriding the colour to -1 (Eraser)
+                SendCanvas(canvasId, chalkCanvas.Cells.Values.ToList(), overrideColour: -1);
             }
         }
 
@@ -494,7 +494,7 @@ namespace GLOKON.Baiters.Core
             }, channel: DataChannel.ActorUpdate);
         }
 
-        internal void SendCanvas(long canvasId, IList<ChalkCanvasPoint> points, ulong? steamId = null, uint? overrideColour = null)
+        internal void SendCanvas(long canvasId, IList<ChalkCanvasPoint> points, ulong? steamId = null, int? overrideColour = null)
         {
             SendPacket(new("chalk_packet")
             {

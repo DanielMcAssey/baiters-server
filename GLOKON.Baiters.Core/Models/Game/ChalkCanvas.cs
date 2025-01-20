@@ -15,7 +15,7 @@ namespace GLOKON.Baiters.Core.Models.Game
 
         public float? MaxY { get; set; }
 
-        public void Draw(Vector2 position, uint color)
+        public void Draw(Vector2 position, int color)
         {
             MinX = MinX.HasValue ? MathF.Min(position.X, MinX.Value) : position.X;
             MaxX = MaxX.HasValue ? MathF.Max(position.X, MaxX.Value) : position.X;
@@ -36,7 +36,7 @@ namespace GLOKON.Baiters.Core.Models.Game
                 var packetPart = (Array)rawPacketPart;
                 var pktPosition = (Vector2)(packetPart.GetValue(0) ?? Vector2.Zero);
                 var cleanPosition = new Vector2((int)Math.Round(pktPosition.X), (int)Math.Round(pktPosition.Y));
-                var pktColour = Convert.ToUInt32(packetPart.GetValue(1) ?? 0);
+                var pktColour = Convert.ToInt32(packetPart.GetValue(1) ?? 0);
                 Draw(cleanPosition, pktColour);
             }
         }

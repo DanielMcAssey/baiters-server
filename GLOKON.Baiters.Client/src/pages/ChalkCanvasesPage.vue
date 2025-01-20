@@ -16,7 +16,8 @@ const isLoading = ref(false);
 const $http = inject<AxiosInstance>('axios') as AxiosInstance;
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 const results = ref<any[]>([]);
-const colours = ['#101c31', '#ac0029', '#a4aa39', '#008583', '#e69d00'];
+const colours = ['#ffeed5', '#101c31', '#ac0029', '#a4aa39', '#008583', '#e69d00', '#5a755a', '#525900'];
+// Need to check 0, 6, 7
 
 function fetchData(): void {
   isLoading.value = true;
@@ -70,7 +71,7 @@ function previewChalk(event: Event, chalkCanvas: any): void {
     const fixedX = point.position.x - originX;
     const fixedY = point.position.y - originY;
     const coordinate = (fixedY * imageWidth + fixedX) * 4;
-    const colourHex = colours[point.colour - 1] ?? colours[0];
+    const colourHex = colours[point.colour] ?? colours[0];
 
     let colourParts = colourHex.substring(1).split('');
     if(colourParts.length == 3){

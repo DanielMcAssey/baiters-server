@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import Popover from 'primevue/popover';
-import Tag from "primevue/tag";
+import Tag from 'primevue/tag';
 
 defineProps({
   cosmetics: {
@@ -12,6 +12,14 @@ defineProps({
   },
 });
 
+const itemQualities = [
+  'Normal',
+  'Shining',
+  'Glistening',
+  'Opulent',
+  'Radiant',
+  'Alpha',
+];
 const cosmeticsPanel = ref();
 const itemPanel = ref();
 
@@ -69,7 +77,7 @@ function hideItem(event: Event) {
     <div class="max-w-sm text-xs" v-if="item">
       <p><strong>ID:</strong> {{ item.id }}</p>
       <p><strong>Size:</strong> {{ item.size }}</p>
-      <p><strong>Quality:</strong> {{ item.quality }}</p>
+      <p><strong>Quality:</strong> {{ itemQualities[item.quality] ?? item.quality }}</p>
     </div>
   </Popover>
   <div class="flex items-center gap-2">

@@ -268,6 +268,15 @@ onMounted(() => {
             </Tag>
           </template>
         </Column>
+        <Column field="position" header="Position" :sortable="true">
+          <template #body="slotProps">
+            <Tag :pt="{ root: { style: 'white-space:preserve nowrap' } }" icon="fas fa-location-dot" severity="info" size="small">
+              X: {{ slotProps.data.position.x.toFixed(2) }}<br />
+              Y: {{ slotProps.data.position.y.toFixed(2) }}<br />
+              Z: {{ slotProps.data.position.z.toFixed(2) }}
+            </Tag>
+          </template>
+        </Column>
         <Column field="isAdmin" header="Admin?" :sortable="true">
           <template #body="slotProps">
             <i v-if="slotProps.data.isAdmin" class="fas fa-fw fa-check"></i>
