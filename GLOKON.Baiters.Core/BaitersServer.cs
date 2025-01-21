@@ -132,7 +132,7 @@ namespace GLOKON.Baiters.Core
 
         public virtual async Task RunAsync(CancellationToken cancellationToken)
         {
-            LobbyCode = GenerateLobbyCode();
+            LobbyCode = options.CustomLobbyCode ?? GenerateLobbyCode();
             _lobby = await SetupLobbyAsync(LobbyCode);
             var ticksPerSecond = 1000 / options.Modifiers.TicksPerSecond;
             IList<long> actorsToRemove = [];

@@ -10,6 +10,8 @@ namespace GLOKON.Baiters.Core.Configuration
 
         public string ServerName { get; set; } = "My Baiters Server";
 
+        public string? CustomLobbyCode { get; set; } = null;
+
         public IList<ulong> Admins { get; set; } = [];
 
         public bool PluginsEnabled { get; set; } = false;
