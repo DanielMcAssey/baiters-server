@@ -70,6 +70,11 @@ namespace GLOKON.Baiters.Core
         public event Action<ulong, Packet>? OnPacket;
 
         /// <summary>
+        /// Called when a new lobby message is received
+        /// </summary>
+        public event Action<ulong, string>? OnLobbyChatMessage;
+
+        /// <summary>
         /// Only available after the server Setup has been called
         /// </summary>
         public ulong ServerId
@@ -373,6 +378,16 @@ namespace GLOKON.Baiters.Core
             }
         }
 
+        public bool SendLobbyChatMessage(string message)
+        {
+            return _lobby.SendChatString(message);
+        }
+
+        public bool SendLobbyChatMessage(byte[] message)
+        {
+            return _lobby.SendChatBytes(message);
+        }
+
         public bool IsAdmin(ulong steamId)
         {
             return options.Admins.Contains(steamId);
@@ -621,6 +636,8 @@ namespace GLOKON.Baiters.Core
             {
                 JoinPlayerLobby(from.Id, from.Name ?? "Unknown");
             }
+
+            OnLobbyChatMessage?.Invoke(from.Id, message);
         }
 
         private void SteamMatchmaking_OnLobbyMemberLeave(Lobby lobby, Friend from)
