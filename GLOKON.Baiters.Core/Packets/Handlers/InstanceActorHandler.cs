@@ -46,7 +46,7 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
                             Position = (Vector3)pktParams["at"],
                             Rotation = (Vector3)pktParams["rot"],
                             Zone = (string)pktParams["zone"],
-                            ZoneOwnerId = (int)pktParams["zone_owner"]
+                            ZoneOwnerId = (long)pktParams["zone_owner"]
                         });
                         break;
                 }

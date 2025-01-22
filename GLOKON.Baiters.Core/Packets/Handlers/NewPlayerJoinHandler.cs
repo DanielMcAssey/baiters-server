@@ -32,7 +32,7 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
 
                 foreach (var actor in server.Actors)
                 {
-                    server.SendActorUpdate(actor.Key, actor.Value);
+                    server.SendActorUpdate(actor.Key, actor.Value, sender);
                 }
             });
         }

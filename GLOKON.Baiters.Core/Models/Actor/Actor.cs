@@ -20,7 +20,7 @@ namespace GLOKON.Baiters.Core.Models.Actor
 
         public string Zone { get; set; } = "main_zone";
 
-        public int ZoneOwnerId { get; set; } = -1;
+        public long ZoneOwnerId { get; set; } = -1;
 
         public uint? DespawnTime
         {

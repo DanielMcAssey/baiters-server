@@ -10,11 +10,12 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
             foreach (var actor in server.Actors)
             {
                 server.SendActor(actor.Key, actor.Value, sender);
-                server.SendPacket(new("actor_request_send")
-                {
-                    ["list"] = Array.Empty<object>(),
-                }, DataChannel.GameState, sender);
             }
+
+            server.SendPacket(new("actor_request_send")
+            {
+                ["list"] = Array.Empty<object>(),
+            }, DataChannel.GameState, sender);
         }
     }
 }

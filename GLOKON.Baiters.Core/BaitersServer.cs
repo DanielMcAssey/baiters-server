@@ -41,6 +41,7 @@ namespace GLOKON.Baiters.Core
         public IEnumerable<KeyValuePair<ulong, PlayerBan>> PlayerBans => _playerBans;
         public IReadOnlyCollection<ChatLog> ChatLogs => _chatLogs;
         public int PlayerCount => _players.Count + 1;
+        public int MaxPlayerCount => options.MaxPlayers + 1;
         public int NpcActorCount => _actors.Where((kv) => kv.Value.Type != ActorType.Player).Count();
 
         public string LobbyCode { get; private set; } = GenerateLobbyCode();
@@ -463,6 +464,7 @@ namespace GLOKON.Baiters.Core
 
             if (_players.ContainsKey(steamId))
             {
+                SendLobbyChatMessage($"$weblobby_request_accepted-{steamId}");
                 SendWebLobbyPacket(steamId);
                 return;
             }
@@ -473,7 +475,7 @@ namespace GLOKON.Baiters.Core
                 return;
             }
 
-            if (PlayerCount >= options.MaxPlayers)
+            if (PlayerCount >= MaxPlayerCount)
             {
                 _lobby.Value.SendChatString($"$weblobby_request_denied_full-{steamId}");
                 return;
@@ -569,14 +571,14 @@ namespace GLOKON.Baiters.Core
             }, DataChannel.GameState, steamId);
         }
 
-        internal void SendActorUpdate(long actorId, Actor actor)
+        internal void SendActorUpdate(long actorId, Actor actor, ulong? steamId = null)
         {
             SendPacket(new("actor_update")
             {
                 ["actor_id"] = actorId,
                 ["pos"] = actor.Position,
                 ["rot"] = actor.Rotation,
-            }, channel: DataChannel.ActorUpdate);
+            }, DataChannel.ActorUpdate, steamId);
         }
 
         internal void SendCanvas(long canvasId, IList<ChalkCanvasPoint> points, ulong? steamId = null, int? overrideColour = null)
@@ -678,8 +680,8 @@ namespace GLOKON.Baiters.Core
             newLobby.SetData("type", "0");
             newLobby.SetData("public", options.JoinType == JoinType.InviteOnly ? "false" : "true");
             newLobby.SetData("request", "false"); // TODO: Add support for join request
-            newLobby.SetData("cap", options.MaxPlayers.ToString());
-            newLobby.SetData("count", "1");
+            newLobby.SetData("cap", MaxPlayerCount.ToString());
+            newLobby.SetData("count", PlayerCount.ToString());
             newLobby.SetData("lobby_name", options.ServerName);
             newLobby.SetData("name", options.ServerName);
             newLobby.SetData("server_browser_value", "0");
@@ -729,9 +731,25 @@ namespace GLOKON.Baiters.Core
             if (_lobby.HasValue)
             {
                 _lobby.Value.SetData("count", PlayerCount.ToString());
+
+                if (options.HideMaxPlayers && options.MaxPlayers > 12)
+                {
+                    if (PlayerCount >= 12)
+                    {
+                        _lobby.Value.SetData("cap", MaxPlayerCount.ToString());
+                    }
+                    else if (PlayerCount < 12)
+                    {
+                        _lobby.Value.SetData("cap", "12+");
+                    }
+                }
+                else
+                {
+                    _lobby.Value.SetData("cap", MaxPlayerCount.ToString());
+                }
             }
 
-            Console.Title = string.Format("[{0}] {1} - {2} - {3}/{4}", options.JoinType, options.ServerName, LobbyCode, PlayerCount, options.MaxPlayers);
+            Console.Title = string.Format("[{0}] {1} - {2} - {3}/{4}", options.JoinType, options.ServerName, LobbyCode, PlayerCount, MaxPlayerCount);
         }
 
         private static string GenerateLobbyCode()
