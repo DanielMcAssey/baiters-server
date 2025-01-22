@@ -34,6 +34,7 @@ namespace GLOKON.Baiters.Core
 
         private Lobby? _lobby;
         private ulong? _serverSteamId;
+        private Player? _serverPlayer;
 
         public IEnumerable<KeyValuePair<long, Actor>> Actors => _actors;
         public IEnumerable<KeyValuePair<long, ChalkCanvas>> ChalkCanvases => _chalkCanvases;
@@ -89,6 +90,24 @@ namespace GLOKON.Baiters.Core
                 }
 
                 return _serverSteamId.Value;
+            }
+        }
+
+        /// <summary>
+        /// Special server actor, to allow
+        /// </summary>
+        internal Player ServerActor
+        {
+            get
+            {
+                // Cache this, as call can be slow
+                _serverPlayer ??= new Player(ServerId, SteamClient.Name, true)
+                {
+                    Position = new Vector3(300.0f),
+                    ActorId = long.MaxValue,
+                };
+
+                return _serverPlayer;
             }
         }
 
@@ -569,14 +588,14 @@ namespace GLOKON.Baiters.Core
             }, DataChannel.GameState, steamId);
         }
 
-        internal void SendActorUpdate(long actorId, Actor actor)
+        internal void SendActorUpdate(long actorId, Actor actor, ulong? steamId = null)
         {
             SendPacket(new("actor_update")
             {
                 ["actor_id"] = actorId,
                 ["pos"] = actor.Position,
                 ["rot"] = actor.Rotation,
-            }, channel: DataChannel.ActorUpdate);
+            }, DataChannel.ActorUpdate, steamId);
         }
 
         internal void SendCanvas(long canvasId, IList<ChalkCanvasPoint> points, ulong? steamId = null, int? overrideColour = null)

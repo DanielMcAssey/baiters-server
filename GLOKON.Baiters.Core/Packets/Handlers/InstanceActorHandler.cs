@@ -1,5 +1,4 @@
 ﻿using GLOKON.Baiters.Core.Constants;
-using GLOKON.Baiters.Core.Enums.Networking;
 using GLOKON.Baiters.Core.Models.Actor;
 using GLOKON.Baiters.Core.Models.Networking;
 using Serilog;
@@ -46,7 +45,7 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
                             Position = (Vector3)pktParams["at"],
                             Rotation = (Vector3)pktParams["rot"],
                             Zone = (string)pktParams["zone"],
-                            ZoneOwnerId = (int)pktParams["zone_owner"]
+                            ZoneOwnerId = (long)pktParams["zone_owner"]
                         });
                         break;
                 }

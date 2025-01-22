@@ -7,14 +7,20 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
     {
         public void Handle(ulong sender, Packet data)
         {
+            if (server.ServerActor.ActorId.HasValue)
+            {
+                server.SendActor(server.ServerActor.ActorId.Value, server.ServerActor, sender);
+            }
+
             foreach (var actor in server.Actors)
             {
                 server.SendActor(actor.Key, actor.Value, sender);
-                server.SendPacket(new("actor_request_send")
-                {
-                    ["list"] = Array.Empty<object>(),
-                }, DataChannel.GameState, sender);
             }
+
+            server.SendPacket(new("actor_request_send")
+            {
+                ["list"] = Array.Empty<object>(),
+            }, DataChannel.GameState, sender);
         }
     }
 }
