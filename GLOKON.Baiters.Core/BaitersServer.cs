@@ -15,6 +15,7 @@ using GLOKON.Baiters.Core.Models.Chat;
 using GLOKON.Baiters.Core.Models.Game;
 using GLOKON.Baiters.Core.Converters.Json;
 using System.Text.Json;
+using GLOKON.Baiters.Core.Exceptions;
 
 namespace GLOKON.Baiters.Core
 {
@@ -31,7 +32,7 @@ namespace GLOKON.Baiters.Core
         private readonly ConcurrentDictionary<long, Actor> _actors = new();
         private readonly ConcurrentDictionary<long, ChalkCanvas> _chalkCanvases = new();
 
-        private Lobby _lobby;
+        private Lobby? _lobby;
         private ulong? _serverSteamId;
 
         public IEnumerable<KeyValuePair<long, Actor>> Actors => _actors;
@@ -123,6 +124,7 @@ namespace GLOKON.Baiters.Core
         public virtual void Setup()
         {
             Log.Information("Setting up server...");
+
             try
             {
                 SteamClient.Init(options.AppId);
@@ -130,9 +132,10 @@ namespace GLOKON.Baiters.Core
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Failed to initialize SteamClient");
-                throw;
+                throw new ServerSetupFailed("Failed to initialize SteamClient", ex);
             }
+
+            Log.Information("Server setup");
         }
 
         public virtual async Task RunAsync(CancellationToken cancellationToken)
@@ -144,11 +147,14 @@ namespace GLOKON.Baiters.Core
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                if (!_lobby.IsOwnedBy(ServerId))
+                if (!_lobby.HasValue)
                 {
-                    Log.Error("You are no longer the host, stopping the server, host changed to: {0}", _lobby.Owner.Id);
-                    Stop();
-                    break;
+                    throw new LobbyGoneException("The lobby no longer exists, or the server is shutting down, you should never see this error");
+                }
+
+                if (!_lobby.Value.IsOwnedBy(ServerId))
+                {
+                    throw new LostLobbyHost(string.Format("You are no longer the host, stopping the server, host changed to: {0}", _lobby.Value.Owner.Id));
                 }
 
                 ReceivePackets();
@@ -183,18 +189,31 @@ namespace GLOKON.Baiters.Core
         public virtual void Stop()
         {
             Log.Information("Stopping server...");
-            SendPacket(new("server_close"), DataChannel.GameState);
-            SteamMatchmaking.OnChatMessage -= SteamMatchmaking_OnChatMessage;
-            SteamMatchmaking.OnLobbyMemberDisconnected -= SteamMatchmaking_OnLobbyMemberDisconnected;
-            SteamMatchmaking.OnLobbyMemberLeave -= SteamMatchmaking_OnLobbyMemberLeave;
-            _lobby.Leave();
-            SteamClient.Shutdown();
+
+            try
+            {
+                SendPacket(new("server_close"), DataChannel.GameState);
+                SteamMatchmaking.OnChatMessage -= SteamMatchmaking_OnChatMessage;
+                SteamMatchmaking.OnLobbyMemberDisconnected -= SteamMatchmaking_OnLobbyMemberDisconnected;
+                SteamMatchmaking.OnLobbyMemberLeave -= SteamMatchmaking_OnLobbyMemberLeave;
+                if (_lobby.HasValue)
+                {
+                    _lobby.Value.Leave();
+                    _lobby = null;
+                }
+                SteamClient.Shutdown();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to stop server gracefully");
+            }
 
             // TODO: For Canvases and bans should we do periodic saves, just incase the server crashes?
             if (options.SaveChalkCanvases)
             {
                 try
                 {
+                    Log.Information("Saving chalk canvases...");
                     File.WriteAllText(_chalkCanvasesFilePath, JsonSerializer.Serialize(_chalkCanvases, JsonOptions.Default));
                 }
                 catch (Exception ex)
@@ -205,6 +224,7 @@ namespace GLOKON.Baiters.Core
 
             try
             {
+                Log.Information("Saving bans...");
                 File.WriteAllText(_bansFilePath, JsonSerializer.Serialize(_playerBans, JsonOptions.Default));
             }
             catch (Exception ex)
@@ -410,12 +430,22 @@ namespace GLOKON.Baiters.Core
 
         public bool SendLobbyChatMessage(string message)
         {
-            return _lobby.SendChatString(message);
+            if (_lobby.HasValue)
+            {
+                return _lobby.Value.SendChatString(message);
+            }
+
+            return false;
         }
 
         public bool SendLobbyChatMessage(byte[] message)
         {
-            return _lobby.SendChatBytes(message);
+            if (_lobby.HasValue)
+            {
+                return _lobby.Value.SendChatBytes(message);
+            }
+
+            return false;
         }
 
         public bool IsAdmin(ulong steamId)
@@ -425,6 +455,12 @@ namespace GLOKON.Baiters.Core
 
         internal void JoinPlayerLobby(ulong steamId, string playerName)
         {
+            if (!_lobby.HasValue)
+            {
+                Log.Warning("Lobby is not ready to accept players, please wait before trying to join a player");
+                return;
+            }
+
             if (_players.ContainsKey(steamId))
             {
                 SendWebLobbyPacket(steamId);
@@ -433,25 +469,31 @@ namespace GLOKON.Baiters.Core
 
             if (!CanSteamIdJoin(steamId))
             {
-                _lobby.SendChatString($"$weblobby_request_denied_deny-{steamId}");
+                _lobby.Value.SendChatString($"$weblobby_request_denied_deny-{steamId}");
                 return;
             }
 
             if (PlayerCount >= options.MaxPlayers)
             {
-                _lobby.SendChatString($"$weblobby_request_denied_full-{steamId}");
+                _lobby.Value.SendChatString($"$weblobby_request_denied_full-{steamId}");
                 return;
             }
 
             Log.Debug("Joining new player [{steamId}] {playerName}", steamId, playerName);
-            _lobby.SendChatString($"$weblobby_request_accepted-{steamId}");
-            _players.TryAdd(steamId, new Player(steamId, playerName, IsAdmin(steamId)));
 
-            SendPacket(new("user_joined_weblobby")
+            if (SendLobbyChatMessage($"$weblobby_request_accepted-{steamId}")) {
+                _players.TryAdd(steamId, new Player(steamId, playerName, IsAdmin(steamId)));
+
+                SendPacket(new("user_joined_weblobby")
+                {
+                    ["user_id"] = (long)steamId,
+                }, DataChannel.GameState);
+                SendWebLobbyPacket();
+            }
+            else
             {
-                ["user_id"] = (long)steamId,
-            }, DataChannel.GameState);
-            SendWebLobbyPacket();
+                Log.Error("Failed to send lobby message, cannot accept player join request for [{0}] {1}", steamId, playerName);
+            }
         }
 
         internal virtual void JoinPlayer(ulong steamId, long actorId, Player player)
@@ -684,7 +726,11 @@ namespace GLOKON.Baiters.Core
 
         private void UpdatePlayerCount()
         {
-            _lobby.SetData("count", PlayerCount.ToString());
+            if (_lobby.HasValue)
+            {
+                _lobby.Value.SetData("count", PlayerCount.ToString());
+            }
+
             Console.Title = string.Format("[{0}] {1} - {2} - {3}/{4}", options.JoinType, options.ServerName, LobbyCode, PlayerCount, options.MaxPlayers);
         }
 

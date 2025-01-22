@@ -1,5 +1,6 @@
 ﻿using GLOKON.Baiters.Core.Chat;
 using GLOKON.Baiters.Core.Configuration;
+using GLOKON.Baiters.Core.Exceptions;
 using GLOKON.Baiters.Core.Packets;
 using GLOKON.Baiters.Core.Plugins;
 using Microsoft.Extensions.Options;
@@ -28,6 +29,11 @@ namespace GLOKON.Baiters.Core
 
         public ChatManager Chat => chat;
 
+        /// <summary>
+        /// Called when the server has stopped for any reason except for manual stop
+        /// </summary>
+        public event Action? OnServerStop;
+
         public void Setup()
         {
             if (Options.SteamDebug)
@@ -48,7 +54,18 @@ namespace GLOKON.Baiters.Core
                 PluginLoader.LoadPlugins(this);
             }
 
-            Task.Run(() => Server.RunAsync(cancellationToken), CancellationToken.None);
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await Server.RunAsync(cancellationToken);
+                }
+                catch (GameShutdownException ex)
+                {
+                    Log.Error(ex, "Server encountered an error");
+                    OnServerStop?.Invoke();
+                }
+            }, CancellationToken.None);
             Task.Run(() => Spawner.RunAsync(cancellationToken), CancellationToken.None);
         }
 
