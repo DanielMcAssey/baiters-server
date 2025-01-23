@@ -68,6 +68,7 @@ It defaults to the common local networks CIDRs: `10.0.0.0/8`, `172.16.0.0/12`, `
 | `WebFishing__PluginsEnabled`   | Enable/Disable plugins from being loaded (Values are `true` or `false`, Defaults to `false`) |
 | `WebFishing__ServerName`   | Name of the server to display on the server browser (Defaults to `My Baiters Server`) |
 | `WebFishing__CustomLobbyCode`   | (Optional) Custom lobby code to use for the server (Server will fail to start if its taken) (Defaults to an auto-generated code) |
+| `WebFishing__HideMaxPlayers`   | Hides the max player from the server list (Values are `true` or `false`, Defaults to `false`) |
 | `WebFishing__CommandPrefix`   | Chat command prefix for server commands (Defaults to `!`) |
 | `WebFishing__MaxPlayers`   | Maximum players allowed on the server (Default is `50`) |
 | `WebFishing__JoinType`   | Visibility of the server to others (Valid values are `Public`, `InviteOnly`, `FriendsOnly`, Defaults to `Public`) |

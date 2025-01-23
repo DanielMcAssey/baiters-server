@@ -28,6 +28,8 @@ namespace GLOKON.Baiters.Core.Configuration
 
         public bool SaveChalkCanvases { get; set; } = false;
 
+        public bool HideMaxPlayers { get; set; } = false;
+
         public bool SteamDebug { get; set; } = false;
 
         public WebFishingModifiers Modifiers { get; set; } = new WebFishingModifiers();
