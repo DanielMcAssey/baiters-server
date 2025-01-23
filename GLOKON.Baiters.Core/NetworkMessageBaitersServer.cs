@@ -49,19 +49,19 @@ namespace GLOKON.Baiters.Core
             }
         }
 
-        protected override void SendPacketTo(byte[] data, DataChannel channel)
+        protected override void SendPacketTo(byte[] data, DataChannel channel, bool reliable)
         {
             foreach (var connection in _connections)
             {
-                InternalSendPacket(connection.Key, connection.Value, data, channel);
+                InternalSendPacket(connection.Key, connection.Value, data, channel, reliable);
             }
         }
 
-        protected override void SendPacketTo(byte[] data, DataChannel channel, ulong steamId)
+        protected override void SendPacketTo(byte[] data, DataChannel channel, ulong steamId, bool reliable)
         {
             if (TryGetConnection(steamId, out var netIdentity))
             {
-                InternalSendPacket(steamId, netIdentity, data, channel);
+                InternalSendPacket(steamId, netIdentity, data, channel, reliable);
             }
         }
 
@@ -84,9 +84,9 @@ namespace GLOKON.Baiters.Core
             }
         }
 
-        private void InternalSendPacket(ulong steamId, NetIdentity netIdentity, byte[] data, DataChannel channel)
+        private void InternalSendPacket(ulong steamId, NetIdentity netIdentity, byte[] data, DataChannel channel, bool reliable)
         {
-            if (SteamNetworkingMessages.SendMessageToUser(ref netIdentity, data, data.Length, (int)channel) != Result.OK)
+            if (SteamNetworkingMessages.SendMessageToUser(ref netIdentity, data, data.Length, (int)channel, reliable ? SendType.Reliable : SendType.Unreliable) != Result.OK)
             {
                 Log.Error("Failed to send network message packet to {0}", steamId);
                 LeavePlayer(steamId);

@@ -26,20 +26,7 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
                 server.SendSystemMessage(string.Format("Use '{0}help' to find out what commands are available", commandPrefix), MessageColour.Success, sender);
             }
 
-            Task.Run(async () =>
-            {
-                await SendChalkPacketsAsync(sender);
-
-                foreach (var actor in server.Actors)
-                {
-                    server.SendActorUpdate(actor.Key, actor.Value, sender);
-                }
-
-                if (server.ServerActor.ActorId.HasValue)
-                {
-                    server.SendActor(server.ServerActor.ActorId.Value, server.ServerActor, sender);
-                }
-            });
+            Task.Run(() => SendChalkPacketsAsync(sender));
         }
 
         private async Task SendChalkPacketsAsync(ulong steamId)

@@ -100,7 +100,7 @@ namespace GLOKON.Baiters.Core
             _socketManager?.Receive();
         }
 
-        protected override void SendPacketTo(byte[] data, DataChannel channel)
+        protected override void SendPacketTo(byte[] data, DataChannel channel, bool reliable)
         {
             foreach (var connection in _connections)
             {
@@ -108,7 +108,7 @@ namespace GLOKON.Baiters.Core
             }
         }
 
-        protected override void SendPacketTo(byte[] data, DataChannel channel, ulong steamId)
+        protected override void SendPacketTo(byte[] data, DataChannel channel, ulong steamId, bool reliable)
         {
             if (_connections.TryGetValue(steamId, out var connection))
             {
