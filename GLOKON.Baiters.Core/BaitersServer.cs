@@ -337,7 +337,7 @@ namespace GLOKON.Baiters.Core
                 ["actor_id"] = actorId,
                 ["action"] = "queue_free",
                 ["params"] = Array.Empty<object>(),
-            }, DataChannel.GameState);
+            }, DataChannel.ActorAction);
 
             _actors.TryRemove(actorId, out _);
         }
@@ -387,7 +387,7 @@ namespace GLOKON.Baiters.Core
                 ["local"] = false,
                 ["position"] = Vector3.Zero,
                 ["zone"] = "main_zone",
-                ["zone_owner"] = 1,
+                ["zone_owner"] = -1,
             }, DataChannel.GameState, steamId);
         }
 
@@ -464,7 +464,6 @@ namespace GLOKON.Baiters.Core
 
             if (_players.ContainsKey(steamId))
             {
-                SendLobbyChatMessage($"$weblobby_request_accepted-{steamId}");
                 SendWebLobbyPacket(steamId);
                 return;
             }
@@ -485,7 +484,7 @@ namespace GLOKON.Baiters.Core
 
             if (SendLobbyChatMessage($"$weblobby_request_accepted-{steamId}")) {
                 _players.TryAdd(steamId, new Player(steamId, playerName, IsAdmin(steamId)));
-
+                SendHandshake();
                 SendPacket(new("user_joined_weblobby")
                 {
                     ["user_id"] = (long)steamId,
@@ -590,6 +589,26 @@ namespace GLOKON.Baiters.Core
             }, DataChannel.Chalk, steamId);
         }
 
+        internal void SendHandshake(ulong? steamId = null)
+        {
+            SendPacket(new("handshake"), DataChannel.GameState, steamId);
+        }
+
+        internal void SendWebLobbyPacket(ulong? steamId = null)
+        {
+            List<long> usersInServer = [(long)ServerId];
+
+            foreach (var player in _players)
+            {
+                usersInServer.Add((long)player.Key);
+            }
+
+            SendPacket(new("receive_weblobby")
+            {
+                ["weblobby"] = usersInServer.ToArray(),
+            }, DataChannel.GameState, steamId);
+        }
+
         internal void OnPlayerChat(ulong sender, ChatLog chatLog)
         {
             OnChatMessage?.Invoke(sender, chatLog.Message);
@@ -627,21 +646,6 @@ namespace GLOKON.Baiters.Core
             var parsedPacket = Packet.Parse(data);
             Log.Verbose("Received packet {0} on channel {1} from {2}", parsedPacket.Type, channel, sender);
             OnPacket?.Invoke(sender, parsedPacket);
-        }
-
-        protected void SendWebLobbyPacket(ulong? steamId = null)
-        {
-            List<long> usersInServer = [(long)ServerId];
-
-            foreach (var player in _players)
-            {
-                usersInServer.Add((long)player.Key);
-            }
-
-            SendPacket(new("receive_weblobby")
-            {
-                ["weblobby"] = usersInServer.ToArray(),
-            }, DataChannel.GameState, steamId);
         }
 
         private async Task<Lobby> SetupLobbyAsync(string lobbyCode)
