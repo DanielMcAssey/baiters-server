@@ -738,7 +738,7 @@ namespace GLOKON.Baiters.Core
                     {
                         _lobby.Value.SetData("cap", MaxPlayerCount.ToString());
                     }
-                    else if (PlayerCount < 12)
+                    else
                     {
                         _lobby.Value.SetData("cap", "12+");
                     }
