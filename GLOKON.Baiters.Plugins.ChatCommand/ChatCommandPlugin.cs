@@ -24,7 +24,7 @@ namespace GLOKON.Baiters.Plugins.ChatCommand
                     return;
                 }
 
-                GM.Server.SendSystemMessage(string.Format("-- Players ({0}/{1}) --", GM.Server.PlayerCount, GM.Options.MaxPlayers), MessageColour.Information, sender);
+                GM.Server.SendSystemMessage(string.Format("-- Players ({0}/{1}) --", GM.Server.PlayerCount, GM.Server.MaxPlayerCount), MessageColour.Information, sender);
 
                 foreach (var player in GM.Server.Players)
                 {

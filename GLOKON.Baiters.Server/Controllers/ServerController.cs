@@ -18,7 +18,7 @@ namespace GLOKON.Baiters.Server.Controllers
                 ServerSteamId = gm.Server.ServerId,
                 LobbyCode = gm.Server.LobbyCode,
                 PlayerCount = gm.Server.PlayerCount,
-                MaxPlayers = gm.Options.MaxPlayers,
+                MaxPlayers = gm.Server.MaxPlayerCount,
             });
         }
     }

@@ -671,7 +671,7 @@ namespace GLOKON.Baiters.Core
         {
             Log.Information("Setting up game lobby...");
 
-            var maybeNewLobby = await SteamMatchmaking.CreateLobbyAsync(options.MaxPlayers);
+            var maybeNewLobby = await SteamMatchmaking.CreateLobbyAsync(MaxPlayerCount);
             if (!maybeNewLobby.HasValue)
             {
                 throw new Exception("Failed to create Steam Lobby");
@@ -718,7 +718,7 @@ namespace GLOKON.Baiters.Core
             }
 
             UpdatePlayerCount();
-            Log.Information("{0} {1} lobby created, max players {2}, invite code: {3}", options.ServerName, options.JoinType, options.MaxPlayers, lobbyCode);
+            Log.Information("{0} {1} lobby created, max players {2}, invite code: {3}", options.ServerName, options.JoinType, MaxPlayerCount, lobbyCode);
 
             return newLobby;
         }
