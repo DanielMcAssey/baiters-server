@@ -34,7 +34,6 @@ namespace GLOKON.Baiters.Core
 
         private Lobby? _lobby;
         private ulong? _serverSteamId;
-        private Player? _serverPlayer;
 
         public IEnumerable<KeyValuePair<long, Actor>> Actors => _actors;
         public IEnumerable<KeyValuePair<long, Actor>> OwnedActors => _actors.Where((kv) => kv.Value.OwnerId == ServerId);
@@ -92,24 +91,6 @@ namespace GLOKON.Baiters.Core
                 }
 
                 return _serverSteamId.Value;
-            }
-        }
-
-        /// <summary>
-        /// Special server actor, to allow
-        /// </summary>
-        internal Player ServerActor
-        {
-            get
-            {
-                // Cache this, as call can be slow
-                _serverPlayer ??= new Player(ServerId, SteamClient.Name, true)
-                {
-                    Position = new Vector3(300.0f),
-                    ActorId = long.MaxValue,
-                };
-
-                return _serverPlayer;
             }
         }
 
