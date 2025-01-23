@@ -1,5 +1,4 @@
 ﻿using GLOKON.Baiters.Core.Constants;
-using GLOKON.Baiters.Core.Enums.Networking;
 using GLOKON.Baiters.Core.Models.Actor;
 using GLOKON.Baiters.Core.Models.Networking;
 using Serilog;

@@ -1,4 +1,5 @@
-﻿using GLOKON.Baiters.Core.Enums.Networking;
+﻿using GLOKON.Baiters.Core.Constants;
+using GLOKON.Baiters.Core.Enums.Networking;
 using GLOKON.Baiters.Core.Models.Game;
 using System.Numerics;
 
@@ -8,7 +9,7 @@ namespace GLOKON.Baiters.Core
     {
         public void SendTalk(char letter, float pitch = 1.5f, ulong? steamId = null)
         {
-            server.SendPacket(new("actor_action")
+            server.SendPacket(new(PacketType.ActorAction)
             {
                 ["action"] = "_talk",
                 ["actor_id"] = (long)server.ServerId,
@@ -22,7 +23,7 @@ namespace GLOKON.Baiters.Core
 
         public void PlayGuitarStrum(string guitarString, int guitarFret, float volume, ulong? steamId = null)
         {
-            server.SendPacket(new("actor_action")
+            server.SendPacket(new(PacketType.ActorAction)
             {
                 ["action"] = "_sync_strum",
                 ["actor_id"] = (long)server.ServerId,
@@ -37,7 +38,7 @@ namespace GLOKON.Baiters.Core
 
         public void PlayGuitarHammer(string guitarString, int guitarFret, ulong? steamId = null)
         {
-            server.SendPacket(new("actor_action")
+            server.SendPacket(new(PacketType.ActorAction)
             {
                 ["action"] = "_sync_hammer",
                 ["actor_id"] = (long)server.ServerId,
@@ -51,7 +52,7 @@ namespace GLOKON.Baiters.Core
 
         public void PlayParticle(string id, Vector3 offset, bool global, ulong? steamId = null)
         {
-            server.SendPacket(new("actor_action")
+            server.SendPacket(new(PacketType.ActorAction)
             {
                 ["action"] = "_play_particle",
                 ["actor_id"] = (long)server.ServerId,
@@ -66,7 +67,7 @@ namespace GLOKON.Baiters.Core
 
         public void PlaySFX(string id, Vector3? position = null, float pitch = 1.0f, ulong? steamId = null)
         {
-            server.SendPacket(new("actor_action")
+            server.SendPacket(new(PacketType.ActorAction)
             {
                 ["action"] = "_play_sfx",
                 ["actor_id"] = (long)server.ServerId,
@@ -96,8 +97,7 @@ namespace GLOKON.Baiters.Core
 
         public void SendLetter(ulong toSteamId, string header, string body, string closing, string[]? items = null)
         {
-            // NOTE: Typo in "received" is in WebFishing not here
-            server.SendPacket(new("letter_recieved")
+            server.SendPacket(new(PacketType.LetterReceived)
             {
                 ["to"] = toSteamId.ToString(),
                 ["data"] = new Dictionary<string, object>()
@@ -141,7 +141,7 @@ namespace GLOKON.Baiters.Core
                     cosmeticsPkt.Add("bobber", cosmetics.Bobber);
                 }
 
-                server.SendPacket(new("actor_action")
+                server.SendPacket(new(PacketType.ActorAction)
                 {
                     ["action"] = "_update_cosmetics",
                     ["actor_id"] = player.ActorId.Value,
@@ -163,7 +163,7 @@ namespace GLOKON.Baiters.Core
                     heldItemPkt.Add("quality", (int)item.Value.Quality);
                 }
 
-                server.SendPacket(new("actor_action")
+                server.SendPacket(new(PacketType.ActorAction)
                 {
                     ["action"] = "_update_held_item",
                     ["actor_id"] = player.ActorId.Value,

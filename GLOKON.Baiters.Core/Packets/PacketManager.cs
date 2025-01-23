@@ -1,4 +1,5 @@
 ﻿using GLOKON.Baiters.Core.Configuration;
+using GLOKON.Baiters.Core.Constants;
 using GLOKON.Baiters.Core.Models.Networking;
 using GLOKON.Baiters.Core.Packets.Handlers;
 using Microsoft.Extensions.Options;
@@ -21,23 +22,22 @@ namespace GLOKON.Baiters.Core.Packets
 
         public void Setup()
         {
-            handlers.Add("handshake", new HandshakeHandler(server));
-            handlers.Add("new_player_join", new NewPlayerJoinHandler(server, options.CommandPrefix, options.JoinMessage));
-            handlers.Add("instance_actor", new InstanceActorHandler(server));
-            handlers.Add("actor_update", new ActorUpdateHandler(server));
-            handlers.Add("actor_animation_update", new ActorAnimationUpdateHandler(server));
-            handlers.Add("request_ping", new RequestPingHandler(server));
-            handlers.Add("actor_action", new ActorActionHandler(server));
-            handlers.Add("request_actors", new RequestActorsHandler(server));
-            handlers.Add("chalk_packet", new ChalkPacketHandler(server));
-            handlers.Add("message", new MessageHandler(server));
-            handlers.Add("letter_recieved", new LetterReceivedHandler(server));
-            handlers.Add("letter_was_accepted", new LetterWasAcceptedHandler());
-            handlers.Add("letter_was_denied", new LetterWasDeniedHandler());
-            handlers.Add("player_punch", new PlayerPunchHandler());
-            handlers.Add("user_joined_weblobby", new UserJoinedWebLobbyHandler());
-            handlers.Add("user_left_weblobby", new UserLeftWebLobbyHandler());
-            handlers.Add("receive_weblobby", new ReceiveWebLobbyHandler());
+            handlers.Add(PacketType.Handshake, new HandshakeHandler(server));
+            handlers.Add(PacketType.NewPlayerJoin, new NewPlayerJoinHandler(server, options.CommandPrefix, options.JoinMessage));
+            handlers.Add(PacketType.InstanceActor, new InstanceActorHandler(server));
+            handlers.Add(PacketType.ActorUpdate, new ActorUpdateHandler(server));
+            handlers.Add(PacketType.ActorAnimationUpdate, new ActorAnimationUpdateHandler(server));
+            handlers.Add(PacketType.ActorAction, new ActorActionHandler(server));
+            handlers.Add(PacketType.RequestActors, new RequestActorsHandler(server));
+            handlers.Add(PacketType.ChalkPacket, new ChalkPacketHandler(server));
+            handlers.Add(PacketType.Message, new MessageHandler(server));
+            handlers.Add(PacketType.LetterReceived, new LetterReceivedHandler(server));
+            handlers.Add(PacketType.LetterWasAccepted, new LetterWasAcceptedHandler());
+            handlers.Add(PacketType.LetterWasDenied, new LetterWasDeniedHandler());
+            handlers.Add(PacketType.PlayerPunch, new PlayerPunchHandler());
+            handlers.Add(PacketType.UserJoinedWebLobby, new UserJoinedWebLobbyHandler());
+            handlers.Add(PacketType.UserLeftWebLobby, new UserLeftWebLobbyHandler());
+            handlers.Add(PacketType.ReceiveWebLobby, new ReceiveWebLobbyHandler());
         }
 
         private void Server_OnPacket(ulong sender, Packet packet)

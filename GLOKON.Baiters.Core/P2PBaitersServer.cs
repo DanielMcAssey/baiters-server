@@ -23,11 +23,13 @@ namespace GLOKON.Baiters.Core
                     if (SteamNetworking.AcceptP2PSessionWithUser(steamId))
                     {
                         Log.Debug("P2P session {0} is accepted", steamId);
+                        SendHandshake(steamId);
                         SendWebLobbyPacket(steamId);
                     }
                     else
                     {
                         Log.Error("Failed to accept P2P session request from {0}", steamId);
+                        SteamNetworking.CloseP2PSessionWithUser(steamId);
                     }
                 }
                 else
@@ -65,22 +67,22 @@ namespace GLOKON.Baiters.Core
         }
 
 
-        protected override void SendPacketTo(byte[] data, DataChannel channel)
+        protected override void SendPacketTo(byte[] data, DataChannel channel, bool reliable)
         {
             foreach (var player in Players)
             {
-                InternalSendPacket(player.Key, data, channel);
+                InternalSendPacket(player.Key, data, channel, reliable);
             }
         }
 
-        protected override void SendPacketTo(byte[] data, DataChannel channel, ulong steamId)
+        protected override void SendPacketTo(byte[] data, DataChannel channel, ulong steamId, bool reliable)
         {
-            InternalSendPacket(steamId, data, channel);
+            InternalSendPacket(steamId, data, channel, reliable);
         }
 
-        private void InternalSendPacket(ulong steamId, byte[] data, DataChannel channel)
+        private void InternalSendPacket(ulong steamId, byte[] data, DataChannel channel, bool reliable)
         {
-            if (!SteamNetworking.SendP2PPacket(steamId, data, data.Length, (int)channel))
+            if (!SteamNetworking.SendP2PPacket(steamId, data, data.Length, (int)channel, reliable ? P2PSend.Reliable : P2PSend.Unreliable))
             {
                 Log.Error("Failed to send P2P packet to {0}", steamId);
                 LeavePlayer(steamId);
