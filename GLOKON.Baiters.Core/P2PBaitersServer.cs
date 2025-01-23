@@ -23,11 +23,13 @@ namespace GLOKON.Baiters.Core
                     if (SteamNetworking.AcceptP2PSessionWithUser(steamId))
                     {
                         Log.Debug("P2P session {0} is accepted", steamId);
+                        SendHandshake(steamId);
                         SendWebLobbyPacket(steamId);
                     }
                     else
                     {
                         Log.Error("Failed to accept P2P session request from {0}", steamId);
+                        SteamNetworking.CloseP2PSessionWithUser(steamId);
                     }
                 }
                 else

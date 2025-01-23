@@ -6,6 +6,7 @@ using Steamworks;
 using Steamworks.Data;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
+using System.Security.Principal;
 
 namespace GLOKON.Baiters.Core
 {
@@ -53,11 +54,13 @@ namespace GLOKON.Baiters.Core
                 if (connection.Accept() == Result.OK && _connections.TryAdd(data.Identity.SteamId, connection))
                 {
                     Log.Debug("Connection {0} is accepted", data.Identity.SteamId);
+                    SendHandshake(data.Identity.SteamId);
                     SendWebLobbyPacket(data.Identity.SteamId);
                 }
                 else
                 {
                     Log.Error("Failed to accept connection from {0}", data.Identity.SteamId);
+                    connection.Close();
                 }
             }
             else
@@ -102,6 +105,7 @@ namespace GLOKON.Baiters.Core
 
         protected override void SendPacketTo(byte[] data, DataChannel channel, bool reliable)
         {
+            // Reliable/Unreliable not supported on Sockets
             foreach (var connection in _connections)
             {
                 InternalSendPacket(connection.Key, connection.Value, data, channel);
@@ -110,6 +114,7 @@ namespace GLOKON.Baiters.Core
 
         protected override void SendPacketTo(byte[] data, DataChannel channel, ulong steamId, bool reliable)
         {
+            // Reliable/Unreliable not supported on Sockets
             if (_connections.TryGetValue(steamId, out var connection))
             {
                 InternalSendPacket(steamId, connection, data, channel);

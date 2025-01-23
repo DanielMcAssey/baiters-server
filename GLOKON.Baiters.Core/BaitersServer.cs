@@ -37,6 +37,7 @@ namespace GLOKON.Baiters.Core
         private Player? _serverPlayer;
 
         public IEnumerable<KeyValuePair<long, Actor>> Actors => _actors;
+        public IEnumerable<KeyValuePair<long, Actor>> OwnedActors => _actors.Where((kv) => kv.Value.OwnerId == ServerId);
         public IEnumerable<KeyValuePair<long, ChalkCanvas>> ChalkCanvases => _chalkCanvases;
         public IEnumerable<KeyValuePair<ulong, Player>> Players => _players;
         public IEnumerable<KeyValuePair<ulong, PlayerBan>> PlayerBans => _playerBans;
@@ -216,7 +217,7 @@ namespace GLOKON.Baiters.Core
 
             try
             {
-                SendPacket(new("server_close"), DataChannel.GameState);
+                SendPacket(new(PacketType.ServerClose), DataChannel.GameState);
                 SteamMatchmaking.OnChatMessage -= SteamMatchmaking_OnChatMessage;
                 SteamMatchmaking.OnLobbyMemberDisconnected -= SteamMatchmaking_OnLobbyMemberDisconnected;
                 SteamMatchmaking.OnLobbyMemberLeave -= SteamMatchmaking_OnLobbyMemberLeave;
@@ -276,11 +277,11 @@ namespace GLOKON.Baiters.Core
                 return; // Lets not kick ourselves
             }
 
-            SendPacket(new("peer_was_kicked")
+            SendPacket(new(PacketType.PeerWasKicked)
             {
                 ["user_id"] = (long)steamId,
             }, DataChannel.GameState);
-            SendPacket(new("client_was_kicked"), DataChannel.GameState, steamId);
+            SendPacket(new(PacketType.ClientWasKicked), DataChannel.GameState, steamId);
 
             if (_players.TryGetValue(steamId, out var player) && player != null)
             {
@@ -297,11 +298,11 @@ namespace GLOKON.Baiters.Core
                 return; // Lets not ban ourselves
             }
 
-            SendPacket(new("peer_was_banned")
+            SendPacket(new(PacketType.PeerWasBanned)
             {
                 ["user_id"] = (long)steamId,
             }, DataChannel.GameState);
-            SendPacket(new("client_was_banned"), DataChannel.GameState, steamId);
+            SendPacket(new(PacketType.ClientWasBanned), DataChannel.GameState, steamId);
 
             string playerName = "Unknown";
             if (TryGetPlayer(steamId, out var player) && player != null)
@@ -355,7 +356,7 @@ namespace GLOKON.Baiters.Core
 
         public void RemoveActor(long actorId)
         {
-            SendPacket(new("actor_action")
+            SendPacket(new(PacketType.ActorAction)
             {
                 ["actor_id"] = actorId,
                 ["action"] = "queue_free",
@@ -377,7 +378,7 @@ namespace GLOKON.Baiters.Core
             if (TryGetActor(actorId, out var actor) && actor != null)
             {
                 actor.Zone = zone;
-                SendPacket(new("actor_action")
+                SendPacket(new(PacketType.ActorAction)
                 {
                     ["actor_id"] = actorId,
                     ["action"] = "_set_zone",
@@ -392,7 +393,7 @@ namespace GLOKON.Baiters.Core
 
         public void SetActorReady(long actorId, ulong? steamId = null)
         {
-            SendPacket(new("actor_action")
+            SendPacket(new(PacketType.ActorAction)
             {
                 ["actor_id"] = actorId,
                 ["action"] = "_ready",
@@ -402,7 +403,7 @@ namespace GLOKON.Baiters.Core
 
         public void SendSystemMessage(string message, string color = MessageColour.Default, ulong? steamId = null)
         {
-            SendPacket(new("message")
+            SendPacket(new(PacketType.Message)
             {
                 // Need to format it like this, if not username wont appear and color wont either
                 ["message"] = string.Format("%u: {0}", message),
@@ -507,8 +508,7 @@ namespace GLOKON.Baiters.Core
 
             if (SendLobbyChatMessage($"$weblobby_request_accepted-{steamId}")) {
                 _players.TryAdd(steamId, new Player(steamId, playerName, IsAdmin(steamId)));
-                SendHandshake();
-                SendPacket(new("user_joined_weblobby")
+                SendPacket(new(PacketType.UserJoinedWebLobby)
                 {
                     ["user_id"] = (long)steamId,
                 }, DataChannel.GameState);
@@ -548,7 +548,7 @@ namespace GLOKON.Baiters.Core
                         break;
                 };
 
-                SendPacket(new("user_left_weblobby")
+                SendPacket(new(PacketType.UserLeftWebLobby)
                 {
                     ["user_id"] = (long)steamId,
                     ["reason"] = (int)reason,
@@ -578,7 +578,7 @@ namespace GLOKON.Baiters.Core
 
         internal void SendActor(long actorId, Actor actor, ulong? steamId = null)
         {
-            SendPacket(new("instance_actor")
+            SendPacket(new(PacketType.InstanceActor)
             {
                 ["params"] = new Dictionary<string, object>
                 {
@@ -595,7 +595,7 @@ namespace GLOKON.Baiters.Core
 
         internal void SendActorUpdate(long actorId, Actor actor, ulong? steamId = null)
         {
-            SendPacket(new("actor_update")
+            SendPacket(new(PacketType.ActorUpdate)
             {
                 ["actor_id"] = actorId,
                 ["pos"] = actor.Position,
@@ -606,7 +606,7 @@ namespace GLOKON.Baiters.Core
         internal void SendActorAnimationUpdate(long actorId, Actor actor, ulong? steamId = null)
         {
             // TODO: Placeholder, Implement correctly
-            SendPacket(new("actor_animation_update")
+            SendPacket(new(PacketType.ActorAnimationUpdate)
             {
                 ["actor_id"] = actorId,
                 ["data"] = new Dictionary<string, object>
@@ -638,7 +638,7 @@ namespace GLOKON.Baiters.Core
 
         internal void SendCanvas(long canvasId, IList<ChalkCanvasPoint> points, ulong? steamId = null, int? overrideColour = null)
         {
-            SendPacket(new("chalk_packet")
+            SendPacket(new(PacketType.ChalkPacket)
             {
                 ["canvas_id"] = canvasId,
                 ["data"] = points.Select((point) => new object[] { point.Position, Convert.ToInt64(overrideColour ?? point.Colour) }).ToArray(),
@@ -647,7 +647,7 @@ namespace GLOKON.Baiters.Core
 
         internal void SendHandshake(ulong? steamId = null)
         {
-            SendPacket(new("handshake"), DataChannel.GameState, steamId, false);
+            SendPacket(new(PacketType.Handshake), DataChannel.GameState, steamId, false);
         }
 
         internal void SendWebLobbyPacket(ulong? steamId = null)
@@ -659,7 +659,7 @@ namespace GLOKON.Baiters.Core
                 usersInServer.Add((long)player.Key);
             }
 
-            SendPacket(new("receive_weblobby")
+            SendPacket(new(PacketType.ReceiveWebLobby)
             {
                 ["weblobby"] = usersInServer.ToArray(),
             }, DataChannel.GameState, steamId);

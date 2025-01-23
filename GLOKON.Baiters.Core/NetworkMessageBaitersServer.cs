@@ -59,7 +59,7 @@ namespace GLOKON.Baiters.Core
 
         protected override void SendPacketTo(byte[] data, DataChannel channel, ulong steamId, bool reliable)
         {
-            if (TryGetConnection(steamId, out var netIdentity))
+            if (_connections.TryGetValue(steamId, out var netIdentity))
             {
                 InternalSendPacket(steamId, netIdentity, data, channel, reliable);
             }
@@ -117,11 +117,13 @@ namespace GLOKON.Baiters.Core
                 if (SteamNetworkingMessages.AcceptSessionWithUser(ref identity) && _connections.TryAdd(identity.SteamId, identity))
                 {
                     Log.Debug("Session {0} is accepted", identity.SteamId);
+                    SendHandshake(identity.SteamId);
                     SendWebLobbyPacket(identity.SteamId);
                 }
                 else
                 {
                     Log.Error("Failed to accept session request from {0}", identity.SteamId);
+                    SteamNetworkingMessages.CloseSessionWithUser(ref identity);
                 }
             }
             else

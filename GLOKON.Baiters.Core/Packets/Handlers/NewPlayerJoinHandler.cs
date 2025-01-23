@@ -1,5 +1,4 @@
 ﻿using GLOKON.Baiters.Core.Constants;
-using GLOKON.Baiters.Core.Enums.Networking;
 using GLOKON.Baiters.Core.Models.Game;
 using GLOKON.Baiters.Core.Models.Networking;
 using Serilog;
@@ -14,11 +13,6 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
             {
                 server.SendSystemMessage(joinMessage, MessageColour.Information, sender);
             }
-
-            server.SendPacket(new("recieve_host")
-            {
-                ["host_id"] = server.ServerId.ToString(),
-            }, DataChannel.GameState);
 
             if (server.IsAdmin(sender))
             {
