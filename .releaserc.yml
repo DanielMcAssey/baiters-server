@@ -6,6 +6,7 @@ plugins:
     - replacements:
         - files:
             - "GLOKON.Baiters.Core/GLOKON.Baiters.Core.csproj"
+            - "GLOKON.Baiters.GodotInterop/GLOKON.Baiters.GodotInterop.csproj"
             - "GLOKON.Baiters.Plugins.ChatCommand/GLOKON.Baiters.Plugins.ChatCommand.csproj"
             - "GLOKON.Baiters.Server/GLOKON.Baiters.Server.csproj"
           from: "<AssemblyVersion>.*</AssemblyVersion>"
