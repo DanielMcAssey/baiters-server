@@ -1,5 +1,6 @@
 ﻿using Serilog;
 using System.Reflection;
+using System.Runtime.Loader;
 
 namespace GLOKON.Baiters.Core.Plugins
 {
@@ -22,21 +23,7 @@ namespace GLOKON.Baiters.Core.Plugins
             {
                 try
                 {
-                    Assembly pluginAssembly = Assembly.Load(AssemblyName.GetAssemblyName(pluginPath));
-
-                    foreach (var pluginDependency in pluginAssembly.GetReferencedAssemblies())
-                    {
-                        try
-                        {
-                            AppDomain.CurrentDomain.Load(pluginDependency);
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.Error(ex, "Failed to load plugin dependency ({0})", pluginDependency.FullName);
-                        }
-                    }
-
-                    pluginAssm.Add(pluginAssembly);
+                    pluginAssm.Add(Assembly.LoadFrom(pluginPath));
                 }
                 catch (Exception ex)
                 {
@@ -44,15 +31,18 @@ namespace GLOKON.Baiters.Core.Plugins
                 }
             }
 
+            AssemblyLoadContext.Default.Resolving += Default_Resolving;
+            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+
             foreach (var assembly in pluginAssm)
             {
-                Type[] pluginTypes = assembly.GetTypes()
-                    .Where((type) => type.IsClass && type.IsSubclassOf(typeof(BaitersPlugin)))
-                    .ToArray();
-
-                foreach (Type pluginType in pluginTypes)
+                try
                 {
-                    try
+                    Type[] pluginTypes = assembly.GetTypes()
+                        .Where((type) => type.IsClass && type.IsSubclassOf(typeof(BaitersPlugin)))
+                        .ToArray();
+
+                    foreach (Type pluginType in pluginTypes)
                     {
                         if (Activator.CreateInstance(pluginType, gm) is BaitersPlugin plugin)
                         {
@@ -65,10 +55,10 @@ namespace GLOKON.Baiters.Core.Plugins
                             Log.Error("Failed to instantiate plugin ({0})", pluginType.FullName);
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        Log.Error(ex, "Failed to load plugin ({0})", pluginType.FullName);
-                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Failed to load plugin ({0})", assembly.FullName);
                 }
             }
         }
@@ -87,8 +77,37 @@ namespace GLOKON.Baiters.Core.Plugins
                 }
             }
 
+            AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
+            AssemblyLoadContext.Default.Resolving -= Default_Resolving;
             Plugins.Clear();
             GC.Collect();
+        }
+
+        private static Assembly? Default_Resolving(AssemblyLoadContext context, AssemblyName assembly)
+        {
+            Log.Verbose("Attempting to resolve {0}", assembly);
+
+            string assemblyPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"./plugins/{assembly.Name}.dll"));
+            return context.LoadFromAssemblyPath(assemblyPath);
+        }
+
+        private static Assembly? CurrentDomain_AssemblyResolve(object? sender, ResolveEventArgs args)
+        {
+            Assembly? assembly = null;
+
+            // Ignore version for internal dependencies
+            if (args.Name.Contains("GLOKON.Baiters.Core") || args.Name.Contains("GLOKON.Baiters.GodotInterop"))
+            {
+                var assemblyName = new AssemblyName(args.Name);
+
+                // Prevents infinte loop, as args will contain the assembly FullName once resolved
+                if (assemblyName.Name != args.Name)
+                {
+                    assembly = ((AppDomain)sender).Load(assemblyName.Name);
+                }
+            }
+
+            return assembly;
         }
     }
 }
