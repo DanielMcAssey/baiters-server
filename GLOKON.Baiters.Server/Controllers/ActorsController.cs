@@ -23,7 +23,7 @@ namespace GLOKON.Baiters.Server.Controllers
         }
 
         [HttpPost("spawn/{type}")]
-        public IActionResult Delete([FromRoute] string type)
+        public IActionResult SpawnType([FromRoute] string type)
         {
             if (gm.Spawner.Spawn(type))
             {
