@@ -6,7 +6,7 @@ namespace GLOKON.Baiters.Core.Models.Actor
     {
         private DateTimeOffset? _despawnAt = null;
         private uint? _despawnTime = null;
-        private bool _syncRequired = ownerId == 0; // If the server owns it, we need to sync it after its created
+        private bool _syncRequired = true; // Sync it initially
 
         public DateTimeOffset SpawnedAt { get; } = DateTimeOffset.UtcNow;
 
