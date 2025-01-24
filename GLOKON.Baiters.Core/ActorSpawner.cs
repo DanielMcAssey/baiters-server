@@ -36,7 +36,7 @@ namespace GLOKON.Baiters.Core
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                if (server.NpcActorCount < options.Modifiers.MaxNpcActors)
+                if (server.OwnedActors.Count() < options.Modifiers.MaxNpcActors)
                 {
                     try
                     {
@@ -69,7 +69,7 @@ namespace GLOKON.Baiters.Core
             switch (type)
             {
                 case ActorType.Fish:
-                    if (server.GetActorsByType(ActorType.Fish).Count() < options.Modifiers.MaxFish)
+                    if (server.GetActorsByType(ActorType.Fish, server.ServerId).Count() < options.Modifiers.MaxFish)
                     {
                         SpawnFish();
                         return true;
@@ -77,7 +77,7 @@ namespace GLOKON.Baiters.Core
 
                     break;
                 case ActorType.Bird:
-                    if (server.GetActorsByType(ActorType.Bird).Count() < options.Modifiers.MaxBird)
+                    if (server.GetActorsByType(ActorType.Bird, server.ServerId).Count() < options.Modifiers.MaxBird)
                     {
                         SpawnBird();
                         return true;
@@ -85,7 +85,7 @@ namespace GLOKON.Baiters.Core
 
                     break;
                 case ActorType.RainCloud:
-                    if (server.GetActorsByType(ActorType.RainCloud).Count() < options.Modifiers.MaxRainCloud)
+                    if (server.GetActorsByType(ActorType.RainCloud, server.ServerId).Count() < options.Modifiers.MaxRainCloud)
                     {
                         SpawnRainCloud();
                         return true;
@@ -93,7 +93,7 @@ namespace GLOKON.Baiters.Core
 
                     break;
                 case ActorType.Meteor:
-                    if (server.GetActorsByType(ActorType.Meteor).Count() < options.Modifiers.MaxMeteor)
+                    if (server.GetActorsByType(ActorType.Meteor, server.ServerId).Count() < options.Modifiers.MaxMeteor)
                     {
                         SpawnFish(ActorType.Meteor);
                         return true;
@@ -101,7 +101,7 @@ namespace GLOKON.Baiters.Core
 
                     break;
                 case ActorType.VoidPortal:
-                    if (server.GetActorsByType(ActorType.VoidPortal).Count() < options.Modifiers.MaxVoidPortal)
+                    if (server.GetActorsByType(ActorType.VoidPortal, server.ServerId).Count() < options.Modifiers.MaxVoidPortal)
                     {
                         SpawnVoidPortal();
                         return true;
@@ -109,7 +109,7 @@ namespace GLOKON.Baiters.Core
 
                     break;
                 case ActorType.Metal:
-                    if (server.GetActorsByType(ActorType.Metal).Count() < options.Modifiers.MaxMetal)
+                    if (server.GetActorsByType(ActorType.Metal, server.ServerId).Count() < options.Modifiers.MaxMetal)
                     {
                         SpawnMetal();
                         return true;
@@ -126,14 +126,14 @@ namespace GLOKON.Baiters.Core
             if (mainZone.SceneLocations.TryGetValue(MainZoneGroup.TrashPoints, out var trashPoints))
             {
                 Vector3 position = trashPoints[random.Next(trashPoints.Length)] + new Vector3(random.Next(-3, 3), 0, random.Next(-3, 3));
-                server.SpawnActor(new Bird(position));
+                server.SpawnActor(new Bird(position, server.ServerId));
             }
         }
 
         public void SpawnRainCloud()
         {
             Vector3 position = new(random.Next(-100, 150), 42f, random.Next(-150, 100));
-            server.SpawnActor(new RainCloud(position));
+            server.SpawnActor(new RainCloud(position, server.ServerId));
         }
 
         public void SpawnFish(string type = ActorType.Fish)
@@ -141,7 +141,7 @@ namespace GLOKON.Baiters.Core
             if (mainZone.SceneLocations.TryGetValue(MainZoneGroup.FishSpawns, out var fishPoints))
             {
                 Vector3 position = fishPoints[random.Next(fishPoints.Length)] + new Vector3(0, .08f, 0);
-                server.SpawnActor(new Fish(type, position));
+                server.SpawnActor(new Fish(type, position, server.ServerId));
             }
         }
 
@@ -150,7 +150,7 @@ namespace GLOKON.Baiters.Core
             if (mainZone.SceneLocations.TryGetValue(MainZoneGroup.HiddenSpots, out var hiddenPoints))
             {
                 Vector3 position = hiddenPoints[random.Next(hiddenPoints.Length)];
-                server.SpawnActor(new VoidPortal(position));
+                server.SpawnActor(new VoidPortal(position, server.ServerId));
             }
         }
 
@@ -164,7 +164,7 @@ namespace GLOKON.Baiters.Core
                     position = shorelinePoints[random.Next(shorelinePoints.Length)];
                 }
 
-                server.SpawnActor(new Metal(position));
+                server.SpawnActor(new Metal(position, server.ServerId));
             }
         }
 

@@ -9,7 +9,7 @@ namespace GLOKON.Baiters.Core.Models.Actor
 
         public bool IsStatic { get; } = false;
 
-        public RainCloud(Vector3 position): base(ActorType.RainCloud)
+        public RainCloud(Vector3 position, ulong ownerId) : base(ActorType.RainCloud, ownerId)
         {
             Position = position;
             Vector3 toCenter = Vector3.Normalize(position - new Vector3(30, 40, -50));

@@ -165,7 +165,7 @@ namespace GLOKON.Baiters.Core
 
                 ReceivePackets();
 
-                foreach (var actor in _actors)
+                foreach (var actor in OwnedActors)
                 {
                     actor.Value.OnUpdate();
 
@@ -244,6 +244,11 @@ namespace GLOKON.Baiters.Core
         public IEnumerable<KeyValuePair<long, Actor>> GetActorsByType(string type)
         {
             return _actors.Where((kv) => kv.Value.Type == type);
+        }
+
+        public IEnumerable<KeyValuePair<long, Actor>> GetActorsByType(string type, ulong ownedBy)
+        {
+            return _actors.Where((kv) => kv.Value.Type == type && kv.Value.OwnerId == ownedBy);
         }
 
         public bool TryGetPlayer(ulong steamId, out Player? player)

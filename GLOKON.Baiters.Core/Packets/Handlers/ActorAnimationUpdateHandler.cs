@@ -2,7 +2,7 @@
 
 namespace GLOKON.Baiters.Core.Packets.Handlers
 {
-    internal class ActorAnimationUpdateHandler(BaitersServer server) : IPacketHandler
+    internal class ActorAnimationUpdateHandler() : IPacketHandler
     {
         public void Handle(ulong sender, Packet packet)
         {

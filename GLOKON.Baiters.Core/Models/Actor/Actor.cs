@@ -2,7 +2,7 @@
 
 namespace GLOKON.Baiters.Core.Models.Actor
 {
-    public abstract class Actor(string type, ulong ownerId = 0)
+    public abstract class Actor(string type, ulong ownerId)
     {
         private DateTimeOffset? _despawnAt = null;
         private uint? _despawnTime = null;
