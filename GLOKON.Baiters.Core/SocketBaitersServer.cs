@@ -6,7 +6,6 @@ using Steamworks;
 using Steamworks.Data;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
-using System.Security.Principal;
 
 namespace GLOKON.Baiters.Core
 {
@@ -16,13 +15,13 @@ namespace GLOKON.Baiters.Core
 
         private SocketManager? _socketManager;
 
-        public override Task RunAsync(CancellationToken cancellationToken)
+        internal override Task RunAsync(CancellationToken cancellationToken)
         {
             _socketManager = SteamNetworkingSockets.CreateRelaySocket(0, this);
             return base.RunAsync(cancellationToken);
         }
 
-        public override void Stop()
+        internal override void Stop()
         {
             if (_socketManager != null)
             {

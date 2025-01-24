@@ -123,7 +123,7 @@ namespace GLOKON.Baiters.Core
             }
         }
 
-        public virtual void Setup()
+        internal virtual void Setup()
         {
             Log.Information("Setting up server...");
 
@@ -140,7 +140,7 @@ namespace GLOKON.Baiters.Core
             Log.Information("Server setup");
         }
 
-        public virtual async Task RunAsync(CancellationToken cancellationToken)
+        internal virtual async Task RunAsync(CancellationToken cancellationToken)
         {
             if (!string.IsNullOrWhiteSpace(options.CustomLobbyCode))
             {
@@ -192,7 +192,7 @@ namespace GLOKON.Baiters.Core
             }
         }
 
-        public virtual void Stop()
+        internal virtual void Stop()
         {
             Log.Information("Stopping server...");
 

@@ -13,7 +13,7 @@ namespace GLOKON.Baiters.Core
     {
         private readonly ConcurrentDictionary<ulong, NetIdentity> _connections = new();
 
-        public override void Setup()
+        internal override void Setup()
         {
             base.Setup();
 
@@ -22,7 +22,7 @@ namespace GLOKON.Baiters.Core
             SteamNetworkingMessages.OnMessage += SteamNetworkingMessages_OnMessage;
         }
 
-        public override void Stop()
+        internal override void Stop()
         {
             base.Stop();
 
@@ -62,25 +62,6 @@ namespace GLOKON.Baiters.Core
             if (_connections.TryGetValue(steamId, out var netIdentity))
             {
                 InternalSendPacket(steamId, netIdentity, data, channel, reliable);
-            }
-        }
-
-        private bool TryGetConnection(ulong steamId, out NetIdentity netIdentity)
-        {
-            if (_connections.TryGetValue(steamId, out netIdentity))
-            {
-                return true;
-            }
-
-            try
-            {
-                _connections.TryAdd(steamId, (NetIdentity)(SteamId)steamId);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Failed to convert SteamID to NetIdentity for {0}", steamId);
-                return false;
             }
         }
 

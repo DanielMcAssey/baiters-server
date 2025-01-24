@@ -2,7 +2,10 @@
 
 Building plugins for Baiters is really easy!
 
-There is an example plugin on this repository, the ChatCommands plugin, so feel free to use that as a basis.
+Save time by using the [plugin template repository](https://github.com/DanielMcAssey/baiters-server-plugin-example) to create your plugin.
+
+Alternatively, there is an example plugin on this repository, the ChatCommands plugin, so feel free to use that as a basis.
+
 
 ## Steps
 

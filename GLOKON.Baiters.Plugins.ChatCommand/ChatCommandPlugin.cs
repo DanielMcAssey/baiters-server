@@ -1,6 +1,5 @@
 ﻿using GLOKON.Baiters.Core;
 using GLOKON.Baiters.Core.Constants;
-using GLOKON.Baiters.Core.Models.Game;
 using GLOKON.Baiters.Core.Plugins;
 using System.Reflection;
 

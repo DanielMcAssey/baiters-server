@@ -8,7 +8,7 @@ namespace GLOKON.Baiters.Core
 {
     public sealed class P2PBaitersServer(IOptions<WebFishingOptions> options) : BaitersServer(options)
     {
-        public override void Setup()
+        internal override void Setup()
         {
             base.Setup();
 

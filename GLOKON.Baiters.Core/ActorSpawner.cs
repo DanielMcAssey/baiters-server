@@ -32,7 +32,7 @@ namespace GLOKON.Baiters.Core
             spawnProbabilities.Add(ActorType.VoidPortal, (long)(options.Modifiers.VoidPortalChance * 1000));
         }
 
-        public async Task RunAsync(CancellationToken cancellationToken)
+        internal async Task RunAsync(CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
             {
