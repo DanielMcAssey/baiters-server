@@ -78,7 +78,7 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
                     break;
                 case "_wipe_actor":
                     long wipeActorId = (long)(actionParams.GetValue(0) ?? -1);
-                    if (server.TryGetActor(wipeActorId, out var actor) && actor != null)
+                    if (server.TryGetActor(wipeActorId, out var actor) && actor != null && actor.OwnerId == server.ServerId)
                     {
                         if (ActorType.ServerOnly.Contains(actor.Type))
                         {

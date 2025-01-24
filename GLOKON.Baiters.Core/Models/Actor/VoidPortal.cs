@@ -5,7 +5,7 @@ namespace GLOKON.Baiters.Core.Models.Actor
 {
     public sealed class VoidPortal : Actor
     {
-        public VoidPortal(Vector3 position) : base(ActorType.VoidPortal)
+        public VoidPortal(Vector3 position, ulong ownerId) : base(ActorType.VoidPortal, ownerId)
         {
             Position = position;
             DespawnTime = 600;
