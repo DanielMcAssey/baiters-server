@@ -22,12 +22,25 @@ namespace GLOKON.Baiters.Core.Plugins
             {
                 try
                 {
-                    AssemblyName thisFile = AssemblyName.GetAssemblyName(pluginPath); ;
-                    pluginAssm.Add(Assembly.LoadFrom(pluginPath));
+                    Assembly pluginAssembly = Assembly.Load(AssemblyName.GetAssemblyName(pluginPath));
+
+                    foreach (var pluginDependency in pluginAssembly.GetReferencedAssemblies())
+                    {
+                        try
+                        {
+                            AppDomain.CurrentDomain.Load(pluginDependency);
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error(ex, "Failed to load plugin dependency ({0})", pluginDependency.FullName);
+                        }
+                    }
+
+                    pluginAssm.Add(pluginAssembly);
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex, "Failed to load plugin file ({PluginPath})", pluginPath);
+                    Log.Error(ex, "Failed to load plugin file ({0})", pluginPath);
                 }
             }
 
@@ -39,22 +52,22 @@ namespace GLOKON.Baiters.Core.Plugins
 
                 foreach (Type pluginType in pluginTypes)
                 {
-                    if (Activator.CreateInstance(pluginType, gm) is BaitersPlugin plugin)
+                    try
                     {
-                        try
+                        if (Activator.CreateInstance(pluginType, gm) is BaitersPlugin plugin)
                         {
                             plugin.OnInit();
                             Plugins.Add(plugin);
                             Log.Information("{0}:{1} plugin loaded by {2}", plugin.Name, plugin.Version, plugin.Author);
                         }
-                        catch (Exception ex)
+                        else
                         {
-                            Log.Error(ex, "Failed to initialize plugin {0}:{1}", plugin.Name, plugin.Version);
+                            Log.Error("Failed to instantiate plugin ({0})", pluginType.FullName);
                         }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        Log.Error("Failed to create plugin ({0})", pluginType.FullName);
+                        Log.Error(ex, "Failed to load plugin ({0})", pluginType.FullName);
                     }
                 }
             }
