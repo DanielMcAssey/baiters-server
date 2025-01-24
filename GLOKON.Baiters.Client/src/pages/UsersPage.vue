@@ -36,17 +36,7 @@ function fetchData(): void {
   $http.get(`/api/users/`)
     .then((response) => {
       if (response.data) {
-        const responseData = response.data;
-        const items = [];
-
-        for (const id of Object.keys(responseData)) {
-          items.push({
-            id: id,
-            ...responseData[id],
-          });
-        }
-
-        results.value = items;
+        results.value = response.data;
       } else {
         results.value = [];
       }
@@ -234,6 +224,11 @@ onMounted(() => {
         <p class="text-sm mr-auto">
           Here you will find all users currently on the server
         </p>
+        <Button icon="fas fa-rotate-right"
+                severity="primary"
+                :loading="isLoading"
+                @click="fetchData()" />
+
         <Button icon="fas fa-envelope"
                 label="Send Letter to Everyone"
                 severity="info"

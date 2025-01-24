@@ -130,6 +130,10 @@ onMounted(() => {
         <p class="text-sm mr-auto">
           Here you will find all actors currently spawned
         </p>
+        <Button icon="fas fa-rotate-right"
+                severity="primary"
+                :loading="isLoading"
+                @click="fetchData()" />
         <Button icon="fas fa-plus"
                 label="Ban SteamID"
                 severity="info"

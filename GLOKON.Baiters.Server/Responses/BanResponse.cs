@@ -6,7 +6,7 @@ namespace GLOKON.Baiters.Server.Responses
     {
         public DateTime CreatedAt { get; set; } = playerBan.CreatedAt;
 
-        public ulong SteamId { get; set; } = steamId;
+        public string SteamId { get; set; } = steamId.ToString();
 
         public string PlayerName { get; set; } = playerBan.PlayerName;
 

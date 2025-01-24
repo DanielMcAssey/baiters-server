@@ -4,6 +4,7 @@ import {useToast} from "primevue/usetoast";
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import type { AxiosInstance } from 'axios';
+import Button from 'primevue/button';
 const toast = useToast();
 
 const isLoading = ref(false);
@@ -49,6 +50,11 @@ onMounted(() => {
         <p class="text-sm mr-auto">
           Here you will find all plugins enabled on the server
         </p>
+
+        <Button icon="fas fa-rotate-right"
+                severity="primary"
+                :loading="isLoading"
+                @click="fetchData()" />
       </div>
       <DataTable :value="results" data-key="id" paginator :row-hover="true" :loading="isLoading"
                  :rows="50" :rowsPerPageOptions="[25, 50, 100]" stripedRows responsiveLayout="scroll">

@@ -7,11 +7,11 @@ namespace GLOKON.Baiters.Server.Responses
     {
         public DateTimeOffset SpawnedAt { get; set; } = actor.SpawnedAt;
 
-        public long Id { get; set; } = id;
+        public string Id { get; set; } = id.ToString();
 
         public string Type { get; set; } = actor.Type;
 
-        public ulong OwnerId { get; set; } = actor.OwnerId;
+        public string OwnerId { get; set; } = actor.OwnerId.ToString();
 
         public Vector3 Position { get; set; } = actor.Position;
 

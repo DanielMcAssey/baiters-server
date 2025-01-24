@@ -4,7 +4,7 @@ namespace GLOKON.Baiters.Server.Responses
 {
     internal struct ChalkCanvasResponse(long id, ChalkCanvas chalkCanvas)
     {
-        public long Id { get; set; } = id;
+        public string Id { get; set; } = id.ToString();
 
         public ChalkCanvasPoint[] Points { get; set; } = chalkCanvas.Cells.Values.ToArray();
 

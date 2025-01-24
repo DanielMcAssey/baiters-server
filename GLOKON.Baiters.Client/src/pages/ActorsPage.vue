@@ -153,6 +153,10 @@ onMounted(() => {
         <p class="text-sm mr-auto">
           Here you will find all actors currently spawned
         </p>
+        <Button icon="fas fa-rotate-right"
+                severity="primary"
+                :loading="isLoading"
+                @click="fetchData()" />
         <SplitButton label="Spawn Actor"
                      severity="info"
                      icon="fas fa-wrench"

@@ -1,6 +1,7 @@
 ﻿using GLOKON.Baiters.Core;
 using GLOKON.Baiters.Core.Models.Game;
 using GLOKON.Baiters.Server.Requests;
+using GLOKON.Baiters.Server.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,7 +15,7 @@ namespace GLOKON.Baiters.Server.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            return Ok(gm.Server.Players);
+            return Ok(gm.Server.Players.Select((player) => new PlayerResponse(player.Key, player.Value)).ToList().OrderByDescending(player => player.FisherName));
         }
 
         [HttpPost("kick/{steamId}")]

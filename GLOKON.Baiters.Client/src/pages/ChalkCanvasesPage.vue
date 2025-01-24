@@ -163,6 +163,10 @@ onMounted(() => {
         <p class="text-sm mr-auto">
           Here you will find all chalk canvases currently in-game
         </p>
+        <Button icon="fas fa-rotate-right"
+                severity="primary"
+                :loading="isLoading"
+                @click="fetchData()" />
       </div>
       <DataTable :value="results" data-key="id" paginator :row-hover="true" :loading="isLoading"
                  :rows="50" :rowsPerPageOptions="[25, 50, 100]" stripedRows responsiveLayout="scroll">

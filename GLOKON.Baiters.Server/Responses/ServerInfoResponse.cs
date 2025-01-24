@@ -2,7 +2,7 @@
 {
     internal struct ServerInfoResponse
     {
-        public required ulong ServerSteamId { get; set; }
+        public required string ServerSteamId { get; set; }
 
         public required string LobbyCode { get; set; }
 

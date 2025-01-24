@@ -15,7 +15,7 @@ namespace GLOKON.Baiters.Server.Controllers
         {
             return Ok(new ServerInfoResponse
             {
-                ServerSteamId = gm.Server.ServerId,
+                ServerSteamId = gm.Server.ServerId.ToString(),
                 LobbyCode = gm.Server.LobbyCode,
                 PlayerCount = gm.Server.PlayerCount,
                 MaxPlayers = gm.Server.MaxPlayerCount,
