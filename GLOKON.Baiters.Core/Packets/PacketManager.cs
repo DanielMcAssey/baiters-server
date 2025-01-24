@@ -26,7 +26,7 @@ namespace GLOKON.Baiters.Core.Packets
             handlers.Add(PacketType.NewPlayerJoin, new NewPlayerJoinHandler(server, options.CommandPrefix, options.JoinMessage));
             handlers.Add(PacketType.InstanceActor, new InstanceActorHandler(server));
             handlers.Add(PacketType.ActorUpdate, new ActorUpdateHandler(server));
-            handlers.Add(PacketType.ActorAnimationUpdate, new ActorAnimationUpdateHandler(server));
+            handlers.Add(PacketType.ActorAnimationUpdate, new ActorAnimationUpdateHandler());
             handlers.Add(PacketType.ActorAction, new ActorActionHandler(server));
             handlers.Add(PacketType.RequestActors, new RequestActorsHandler(server));
             handlers.Add(PacketType.ChalkPacket, new ChalkPacketHandler(server));
