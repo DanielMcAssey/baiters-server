@@ -49,6 +49,12 @@ namespace GLOKON.Baiters.Server.Controllers
             return Ok();
         }
 
+        [HttpGet("cosmetics")]
+        public IActionResult ListCosmetics()
+        {
+            return Ok(gm.Assets.DefaultCosmetics.OrderByDescending(cosmetic => cosmetic.Name));
+        }
+
         [HttpPost("cosmetics/{steamId?}")]
         public IActionResult SetPlayerCosmetics([FromRoute] string? steamId, [FromBody] Cosmetics request)
         {
@@ -65,6 +71,12 @@ namespace GLOKON.Baiters.Server.Controllers
             }
 
             return Ok();
+        }
+
+        [HttpGet("items")]
+        public IActionResult ListItems()
+        {
+            return Ok(gm.Assets.DefaultItems.OrderByDescending(item => item.Name));
         }
 
         [HttpPost("held-item/{steamId?}")]

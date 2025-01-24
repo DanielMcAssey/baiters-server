@@ -172,6 +172,10 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="storage\" />
+  </ItemGroup>
+
   <Choose>
     <When Condition="'$(Configuration)'=='Release'">
       <ItemGroup>

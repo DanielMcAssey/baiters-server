@@ -65,6 +65,7 @@ namespace GLOKON.Baiters.Server
             services.AddSingleton<BaitersServer, NetworkMessageBaitersServer>(); // SteamNetworkingMessages Server
             services.AddSingleton<ActorSpawner>();
             services.AddSingleton<ActorActioner>();
+            services.AddSingleton<AssetManager>();
             services.AddSingleton<GameManager>();
             services.AddHostedService<GameManagerService>();
 
