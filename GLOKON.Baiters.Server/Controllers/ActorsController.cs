@@ -25,15 +25,23 @@ namespace GLOKON.Baiters.Server.Controllers
         [HttpPost("spawn/{type}")]
         public IActionResult Delete([FromRoute] string type)
         {
-            gm.Spawner.Spawn(type);
-            return Ok();
+            if (gm.Spawner.Spawn(type))
+            {
+                return Ok();
+            }
+
+            return BadRequest();
         }
 
         [HttpDelete("{id}")]
         public IActionResult Delete([FromRoute] long id)
         {
-            gm.Server.RemoveActor(id);
-            return NoContent();
+            if (gm.Server.RemoveActor(id))
+            {
+                return NoContent();
+            }
+
+            return BadRequest();
         }
     }
 }

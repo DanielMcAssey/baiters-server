@@ -335,12 +335,12 @@ namespace GLOKON.Baiters.Core
             return _actors.TryGetValue(actorId, out actor);
         }
 
-        public void AddActor(long actorId, Actor actor)
+        public bool AddActor(long actorId, Actor actor)
         {
-            _actors.TryAdd(actorId, actor);
+            return _actors.TryAdd(actorId, actor);
         }
 
-        public void RemoveActor(long actorId)
+        public bool RemoveActor(long actorId)
         {
             SendPacket(new(PacketType.ActorAction)
             {
@@ -349,14 +349,19 @@ namespace GLOKON.Baiters.Core
                 ["params"] = Array.Empty<object>(),
             }, DataChannel.ActorAction);
 
-            _actors.TryRemove(actorId, out _);
+            return _actors.TryRemove(actorId, out _);
         }
 
-        public void SpawnActor(Actor actor)
+        public bool SpawnActor(Actor actor)
         {
             long actorId = random.NextInt64();
-            AddActor(actorId, actor);
-            SendActor(actorId, actor);
+            if (AddActor(actorId, actor))
+            {
+                SendActor(actorId, actor);
+                return true;
+            }
+
+            return false;
         }
 
         public void SetActorZone(long actorId, string zone, ulong? steamId = null)
