@@ -44,6 +44,9 @@ jobs:
 
       - name: (NuGet) Pack Core Library
         run: dotnet pack GLOKON.Baiters.Core/GLOKON.Baiters.Core.csproj --configuration Release --output nupkgs
+        
+      - name: (NuGet) Pack Core Library
+        run: dotnet pack GLOKON.Baiters.GodotInterop/GLOKON.Baiters.GodotInterop.csproj --configuration Release --output nupkgs
 
       - name: (NuGet) Publish Core Library
         run: dotnet nuget push "nupkgs/*.nupkg" -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json

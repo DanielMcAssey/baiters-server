@@ -1,29 +1,8 @@
 {
-  "name": "@danielmcassey/baiters-server",
-  "description": "WebFishing Server with support for custom plugins",
-  "version": "0.0.0-development",
-  "author": {
-    "name": "Daniel McAssey",
-    "email": "hello@glokon.me"
-  },
-  "keywords": [
-    "webfishing",
-    "server",
-    "plugins"
-  ],
   "devDependencies": {
     "@google/semantic-release-replace-plugin": "^1.2.7",
     "@semantic-release/github": "^11.0.1",
     "semantic-release-export-data": "^1.1.0"
   },
-  "bugs": {
-    "url": "https://github.com/DanielMcAssey/baiters-server/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/DanielMcAssey/baiters-server.git"
-  },
-  "homepage": "https://github.com/DanielMcAssey/baiters-server",
-  "license": "MIT",
   "private": true
 }
