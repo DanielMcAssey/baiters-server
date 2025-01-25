@@ -31,6 +31,7 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
                     case ActorType.Player:
                         if (server.TryGetPlayer(sender, out var playerToSpawn) && playerToSpawn != null)
                         {
+                            _ = playerToSpawn.IsSyncRequired; // Trip fuse, to prevent non-owned entity from initial sync
                             server.JoinPlayer(sender, actorId, playerToSpawn);
                         }
                         else
@@ -40,13 +41,15 @@ namespace GLOKON.Baiters.Core.Packets.Handlers
                         break;
                     default:
                         // TODO: Do we need to instantiate all the different types or just use the generic actor?
-                        server.AddActor(actorId, new GenericActor(type, sender)
+                        var actor = new GenericActor(type, sender)
                         {
                             Position = (Vector3)pktParams["at"],
                             Rotation = (Vector3)pktParams["rot"],
                             Zone = (string)pktParams["zone"],
                             ZoneOwnerId = (long)pktParams["zone_owner"]
-                        });
+                        };
+                        _ = actor.IsSyncRequired; // Trip fuse, to prevent non-owned entity from initial sync
+                        server.AddActor(actorId, actor);
                         break;
                 }
             }
